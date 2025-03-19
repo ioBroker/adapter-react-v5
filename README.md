@@ -1,5 +1,9 @@
 # Help ReactJS classes for adapter config
 
+# ⚠️ DEPRECATED
+This repository is no longer maintained. Please use [ioBroker.admin](https://github.com/ioBroker/ioBroker.admin/tree/master/packages/adapter-react-v5) instead.
+
+----------------
 You can find demo on https://github.com/ioBroker/adapter-react-demo
 
 ## Getting started
