@@ -689,7 +689,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.0.2 (2025-10-23)
 
 -   (@GermanBluefox) Split packages from mono-repo
 
