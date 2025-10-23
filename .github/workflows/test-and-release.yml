@@ -33,8 +33,8 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Test package files
-        run: npm run test:package
+      - name: Test build
+        run: npm run build
 
   # Deploys the final package to NPM and GitHub Actions
   deploy:

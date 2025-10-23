@@ -55,6 +55,7 @@
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
         "@iobroker/build-tools": "^2.0.15",
+        "@iobroker/eslint-config": "^2.2.0",
         "@iobroker/js-controller-common": "^7.0.8-alpha.7-20250928-40cb80c18",
         "@iobroker/js-controller-common-db": "^7.0.8-alpha.7-20250928-40cb80c18",
         "@iobroker/socket-client": "5.0.2",
@@ -78,6 +79,6 @@
         "@types/react-color": "^3.0.13",
         "ajv": "^8.17.1",
         "ts-node": "^10.9.2",
-        "typescript": "~5.8.3"
+        "typescript": "~5.9.3"
     }
 }
