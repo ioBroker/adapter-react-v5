@@ -48,9 +48,9 @@
     ],
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/ioBroker/iobroker.admin/issues"
+        "url": "https://github.com/ioBroker/gui-components/issues"
     },
-    "homepage": "https://github.com/ioBroker/iobroker.admin#readme",
+    "homepage": "https://github.com/ioBroker/gui-components#readme",
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
