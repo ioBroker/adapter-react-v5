@@ -1,4 +1,4 @@
-import type { Connection } from '@/index';
+import type { Connection } from '../index';
 
 export type IobUri = string;
 export type IobUriType = 'object' | 'state' | 'file' | 'http' | 'base64';

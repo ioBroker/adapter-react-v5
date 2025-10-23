@@ -691,7 +691,7 @@ You can find the migration instructions:
 ## Changelog
 ### **WORK IN PROGRESS**
 
--   (@GermanBluefox) Added new component: IconDeviceType
+-   (@GermanBluefox) Split packages from mono-repo
 
 ### 7.2.3 (2024-10-05)
 

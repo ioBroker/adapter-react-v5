@@ -20,8 +20,7 @@
         "2-copy": "node tasks --2-copy",
         "3-patchReadme": "node tasks --3-patchReadme",
         "npm": "npm i -f",
-        "lint": "eslint -c eslint.config.mjs src",
-        "test": "ts-node ../jsonConfig/test/testSchema.ts"
+        "lint": "eslint -c eslint.config.mjs src"
     },
     "repository": {
         "type": "git",
@@ -55,6 +54,7 @@
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
+        "@iobroker/build-tools": "^2.0.15",
         "@iobroker/js-controller-common": "^7.0.8-alpha.7-20250928-40cb80c18",
         "@iobroker/js-controller-common-db": "^7.0.8-alpha.7-20250928-40cb80c18",
         "@iobroker/socket-client": "5.0.2",

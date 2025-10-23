@@ -2872,7 +2872,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         initValue: boolean | number | string;
     } = null;
     /** Namespaces which are allowed to be edited by non-expert users */
-    static #NON_EXPERT_NAMESPACES = ['0_userdata.0.', 'alias.0.'];
+    static NON_EXPERT_NAMESPACES = ['0_userdata.0.', 'alias.0.'];
 
     constructor(props: ObjectBrowserProps) {
         super(props);
@@ -3317,7 +3317,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         /** id to test */
         id: string,
     ): boolean {
-        return !!ObjectBrowserClass.#NON_EXPERT_NAMESPACES.find(saveNamespace => id.startsWith(saveNamespace));
+        return !!ObjectBrowserClass.NON_EXPERT_NAMESPACES.find(saveNamespace => id.startsWith(saveNamespace));
     }
 
     private expandAllSelected(cb?: () => void): void {
