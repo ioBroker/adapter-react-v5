@@ -1,5 +1,5 @@
 {
-  "name": "@iobroker/gui-components",
+  "name": "@iobroker/adapter-react-v5",
   "version": "8.0.2",
   "description": "React components to develop ioBroker interfaces with react.",
   "author": {
@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ioBroker/gui-components.git"
+    "url": "git+https://github.com/ioBroker/adapter-react-v5.git"
   },
   "publishConfig": {
     "access": "public"
@@ -48,9 +48,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ioBroker/gui-components/issues"
+    "url": "https://github.com/ioBroker/adapter-react-v5/issues"
   },
-  "homepage": "https://github.com/ioBroker/gui-components#readme",
+  "homepage": "https://github.com/ioBroker/adapter-react-v5#readme",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
