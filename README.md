@@ -691,8 +691,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-
-### **WORK IN PROGRESS**
+### 8.0.4 (2025-10-25)
 
 - (@GermanBluefox) Fixed filter in the object browser
 
