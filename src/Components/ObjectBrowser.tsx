@@ -1057,6 +1057,7 @@ function filterObject(
     });
 }
 
+// It is an export function and used somewhere else
 export function filterRoles(
     roleArray: { role: string; type: ioBroker.CommonType }[],
     type: ioBroker.CommonType,
@@ -1069,7 +1070,7 @@ export function filterRoles(
             !bigRoleArray.includes(role.role) &&
             bigRoleArray.push(role.role),
     );
-    defaultRoles.forEach(
+    defaultRoles?.forEach(
         role =>
             (role.type === 'mixed' || role.type) === type &&
             !bigRoleArray.includes(role.role) &&
@@ -1116,6 +1117,261 @@ function generateFile(
     el.click();
 
     document.body.removeChild(el);
+}
+
+interface CustomFilterSelectProps {
+    name: 'room' | 'func' | 'type' | 'role' | 'custom';
+    texts: Record<string, string>;
+    initialValue: string[] | undefined;
+    onChange: (name: 'room' | 'func' | 'type' | 'role' | 'custom', value: string[] | undefined) => void;
+    values: (string | InputSelectItem)[];
+}
+
+interface CustomFilterSelectState {
+    value: string[];
+}
+
+class CustomFilterSelect extends Component<CustomFilterSelectProps, CustomFilterSelectState> {
+    private readonly hasIcons: boolean;
+    private timer: ReturnType<typeof setTimeout> | null = null;
+    constructor(props: CustomFilterSelectProps) {
+        super(props);
+        this.state = {
+            value: props.initialValue || [],
+        };
+        this.hasIcons = !!props.values?.find(item => (item as InputSelectItem).icon);
+    }
+
+    componentWillUnmount(): void {
+        if (this.timer) {
+            clearTimeout(this.timer);
+        }
+    }
+
+    render(): React.JSX.Element {
+        return (
+            <div style={{ position: 'relative' }}>
+                <Select
+                    variant="standard"
+                    key={this.props.name}
+                    sx={styles.headerCellInput}
+                    className="no-underline"
+                    multiple
+                    renderValue={value => {
+                        if (!value?.length) {
+                            return this.props.name === 'custom'
+                                ? this.props.texts.showAll
+                                : this.props.texts[`filter_${this.props.name}`];
+                        }
+                        return value.map(val => {
+                            const item = this.props.values.find(i =>
+                                typeof i === 'object' ? i.value === val : i === val,
+                            );
+                            let id: string;
+                            let _name: string;
+                            let icon: null | JSX.Element | undefined;
+                            if (typeof item === 'object') {
+                                id = item.value;
+                                _name = item.name;
+                                icon = item.icon;
+                            } else {
+                                id = item!;
+                                _name = item!;
+                            }
+                            return (
+                                <Box
+                                    component="span"
+                                    sx={styles.headerCellSelectItem}
+                                    key={id}
+                                >
+                                    {icon || (this.hasIcons ? <div className="itemIcon" /> : null)}
+                                    {_name}
+                                </Box>
+                            );
+                        });
+                    }}
+                    value={this.state.value}
+                    onChange={event => {
+                        let selectedValues = event.target.value as string[];
+                        // '_' may be selected only alone
+                        if (this.state.value[0] === '_' && selectedValues.includes('_') && selectedValues.length > 1) {
+                            const pos = selectedValues.indexOf('_');
+                            if (pos !== -1) {
+                                selectedValues.splice(pos, 1);
+                            }
+                        } else if (this.state.value[0] !== '_' && selectedValues.includes('_')) {
+                            selectedValues = ['_'];
+                        }
+
+                        // '_' may be selected only alone
+                        if (selectedValues.includes('')) {
+                            selectedValues = [];
+                        }
+
+                        this.setState({ value: selectedValues }, () => {
+                            if (this.timer) {
+                                clearTimeout(this.timer);
+                            }
+                            this.timer = setTimeout(() => {
+                                this.timer = null;
+                                this.props.onChange(this.props.name, selectedValues);
+                            }, 400);
+                        });
+                    }}
+                    onClose={() => {
+                        if (this.timer) {
+                            clearTimeout(this.timer);
+                            this.timer = null;
+                            this.props.onChange(this.props.name, this.state.value);
+                        }
+                    }}
+                    inputProps={{ name: this.props.name, id: this.props.name }}
+                    displayEmpty
+                >
+                    <MenuItem
+                        key="empty"
+                        value=""
+                    >
+                        <span style={styles.selectNone}>
+                            {this.props.name === 'custom'
+                                ? this.props.texts.showAll
+                                : this.props.texts[`filter_${this.props.name}`]}
+                        </span>
+                    </MenuItem>
+                    {this.props.values?.map(item => {
+                        let id: string;
+                        let _name: string;
+                        let icon: null | JSX.Element | undefined;
+                        if (typeof item === 'object') {
+                            id = item.value;
+                            _name = item.name;
+                            icon = item.icon;
+                        } else {
+                            id = item;
+                            _name = item;
+                        }
+                        return (
+                            <MenuItem
+                                sx={styles.headerCellSelectItem}
+                                key={id}
+                                value={id}
+                            >
+                                {icon || (this.hasIcons ? <div className="itemIcon" /> : null)}
+                                {_name}
+                            </MenuItem>
+                        );
+                    })}
+                </Select>
+                {this.state.value.length ? (
+                    <Box
+                        component="div"
+                        sx={styles.selectClearButton}
+                    >
+                        <IconButton
+                            size="small"
+                            onClick={() => {
+                                if (this.timer) {
+                                    clearTimeout(this.timer);
+                                    this.timer = null;
+                                }
+                                this.setState({ value: [] }, () => this.props.onChange(this.props.name, undefined));
+                            }}
+                        >
+                            <IconClose />
+                        </IconButton>
+                    </Box>
+                ) : null}
+            </div>
+        );
+    }
+}
+
+interface CustomFilterInputProps {
+    name: 'name' | 'id';
+    texts: Record<string, string>;
+    initialValue: string | undefined;
+    onChange: (name: 'name' | 'id', value: string | undefined) => void;
+    t: (text: string) => string;
+    styles?: React.CSSProperties;
+}
+
+interface CustomFilterInputState {
+    value: string;
+}
+
+class CustomFilterInput extends Component<CustomFilterInputProps, CustomFilterInputState> {
+    private timer: ReturnType<typeof setTimeout> | null = null;
+    constructor(props: CustomFilterInputProps) {
+        super(props);
+        this.state = {
+            value: props.initialValue || '',
+        };
+    }
+
+    componentWillUnmount(): void {
+        if (this.timer) {
+            clearTimeout(this.timer);
+        }
+    }
+
+    render(): React.JSX.Element {
+        return (
+            <FormControl
+                sx={this.props.styles}
+                key={this.props.name}
+                title={this.props.t('ra_You can use * as wildcard')}
+                margin="dense"
+            >
+                <Input
+                    classes={{ underline: 'no-underline' }}
+                    id={this.props.name}
+                    placeholder={this.props.texts[`filter_${this.props.name}`]}
+                    value={this.state.value}
+                    onChange={event => {
+                        const selectedValues = event.target.value;
+                        this.setState({ value: selectedValues }, () => {
+                            if (this.timer) {
+                                clearTimeout(this.timer);
+                            }
+                            this.timer = setTimeout(() => {
+                                this.timer = null;
+                                this.props.onChange(this.props.name, selectedValues);
+                            }, 400);
+                        });
+                    }}
+                    onBlur={() => {
+                        if (this.timer) {
+                            clearTimeout(this.timer);
+                            this.timer = null;
+                            this.props.onChange(this.props.name, this.state.value);
+                        }
+                    }}
+                    autoComplete="off"
+                />
+                {this.state.value ? (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            right: 0,
+                        }}
+                    >
+                        <IconButton
+                            size="small"
+                            onClick={() => {
+                                if (this.timer) {
+                                    clearTimeout(this.timer);
+                                    this.timer = null;
+                                }
+                                this.setState({ value: '' }, () => this.props.onChange(this.props.name, undefined));
+                            }}
+                        >
+                            <IconClose />
+                        </IconButton>
+                    </div>
+                ) : null}
+            </FormControl>
+        );
+    }
 }
 
 // d=data, t=target, s=start, e=end, m=middle
@@ -1445,13 +1701,15 @@ function applyFilter(
         }
         if (!filteredOut && context.custom?.length) {
             if (common) {
-                if (context.custom.includes('_')) {
+                if (context.custom[0] === '_') {
                     filteredOut = !!common.custom;
                 } else if (common.custom) {
                     filteredOut = !context.custom.find(custom => common.custom[custom]);
+                } else {
+                    filteredOut = true;
                 }
             } else {
-                filteredOut = true;
+                filteredOut = context.custom[0] !== '_';
             }
         }
     }
@@ -2780,7 +3038,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     private localStorage: Storage = ((window as any)._localStorage as Storage) || window.localStorage;
     private lastAppliedFilter: string | null = null;
     private readonly tableRef: React.RefObject<HTMLDivElement>;
-    private readonly filterRefs: Record<string, React.RefObject<HTMLSelectElement>>;
     private pausedSubscribes: boolean = false;
     private selectFirst: string;
     private root: TreeItem | null = null;
@@ -2789,7 +3046,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     private unsubscribeTimer: ReturnType<typeof setTimeout> | null = null;
     private statesUpdateTimer: ReturnType<typeof setTimeout> | null = null;
     private objectsUpdateTimer: ReturnType<typeof setTimeout> | null = null;
-    private filterTimer: ReturnType<typeof setTimeout> | null = null;
     private readonly visibleCols: ObjectBrowserPossibleColumns[];
     private readonly texts: Record<string, string>;
     private readonly possibleCols: ObjectBrowserPossibleColumns[];
@@ -2917,20 +3173,35 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             filter = { ...DEFAULT_FILTER };
         }
         // Migrate old filters to new one
-        if (typeof filter.room === 'string') {
-            filter.room = [filter.room];
+        if (typeof filter.room === 'string' && filter.room) {
+            filter.room = [filter.room].filter(s => s);
+            if (!filter.room.length) {
+                delete filter.room;
+            }
         }
-        if (typeof filter.func === 'string') {
-            filter.func = [filter.func];
+        if (typeof filter.func === 'string' && filter.func) {
+            filter.func = [filter.func].filter(s => s);
+            if (!filter.func.length) {
+                delete filter.func;
+            }
         }
-        if (typeof filter.role === 'string') {
-            filter.role = [filter.role];
+        if (typeof filter.role === 'string' && filter.role) {
+            filter.role = [filter.role].filter(s => s);
+            if (!filter.role.length) {
+                delete filter.role;
+            }
         }
         if (typeof filter.type === 'string') {
-            filter.type = [filter.type];
+            filter.type = [filter.type].filter(s => s);
+            if (!filter.type.length) {
+                delete filter.type;
+            }
         }
         if (typeof filter.custom === 'string') {
-            filter.custom = [filter.custom];
+            filter.custom = [filter.custom].filter(s => s);
+            if (!filter.custom.length) {
+                delete filter.custom;
+            }
         }
 
         filter.expertMode =
@@ -2939,9 +3210,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 : (((window as any)._sessionStorage as Storage) || window.sessionStorage).getItem('App.expertMode') ===
                   'true';
         this.tableRef = createRef();
-        this.filterRefs = {};
-
-        Object.keys(DEFAULT_FILTER).forEach(name => (this.filterRefs[name] = createRef()));
 
         this.visibleCols = props.columns || SCREEN_WIDTHS[props.width || 'lg'].fields;
         // remove type column if only one type must be selected
@@ -3278,8 +3546,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             // Show first selected item
             const node = this.state.selected?.length && findNode(this.root, this.state.selected[0]);
 
-            this.lastAppliedFilter = null;
-
             // If the selected ID is not visible, reset filter
             if (
                 node &&
@@ -3296,11 +3562,13 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             ) {
                 // reset filter
                 this.setState({ filter: { ...DEFAULT_FILTER }, columnsForAdmin }, () => {
+                    this.doFilter();
                     this.setState({ loaded: true, updating: false }, () =>
                         this.expandAllSelected(() => this.onAfterSelect()),
                     );
                 });
             } else {
+                this.doFilter();
                 this.setState({ loaded: true, updating: false, columnsForAdmin }, () =>
                     this.expandAllSelected(() => this.onAfterSelect()),
                 );
@@ -3464,10 +3732,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
      * Called when component is unmounted.
      */
     componentWillUnmount(): void {
-        if (this.filterTimer) {
-            clearTimeout(this.filterTimer);
-            this.filterTimer = null;
-        }
         window.removeEventListener('contextmenu', this.onContextMenu, true);
         window.removeEventListener('keydown', this.onKeyPress, true);
         window.removeEventListener('keyup', this.onKeyPress, true);
@@ -3697,29 +3961,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                         disableRipple
                     />
                     <ListItemText primary={this.texts[`filter_${id}`] || this.props.t(`ra_${id}`)} />
-                    {/*
-                <ListItemSecondaryAction>
-                    <FormControl
-                        variant="standard"
-                        style={{ ...styles.columnsDialogInputWidth, marginTop: 0, marginBottom: 0 }}
-                        margin="dense"
-                    >
-                        <Input
-                            classes={{ underline: 'no-underline' }}
-                            placeholder={this.props.t('ra_Width')}
-                            value={this.state.columnsWidths[id] || ''}
-                            onChange={e => {
-                                const columnsWidths = JSON.parse(JSON.stringify(this.state.columnsWidths));
-                                columnsWidths[id] = e.target.value;
-                                this.localStorage.setItem((this.props.dialogName || 'App') + '.columnsWidths', JSON.stringify(columnsWidths));
-                                this.calculateColumnsVisibility(null, null, null, columnsWidths);
-                                this.setState({ columnsWidths });
-                            }}
-                            autoComplete="off"
-                        />
-                    </FormControl>
-                </ListItemSecondaryAction>
-                */}
                 </ListItemButton>
             ));
     }
@@ -3853,29 +4094,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                                                 />
                                             </ListItemIcon>
                                             <ListItemText primary={`${column.name} (${adapter})`} />
-                                            {/*
-                                <ListItemSecondaryAction>
-                                    <FormControl
-                                        variant="standard"
-                                        style={{ ...styles.columnsDialogInputWidth, marginTop: 0, marginBottom: 0 }}
-                                        margin="dense"
-                                    >
-                                        <Input
-                                            classes={{ underline: 'no-underline' }}
-                                            placeholder={this.props.t('ra_Width')}
-                                            value={this.state.columnsWidths['_' + adapter + '_' + column.path] || ''}
-                                            onChange={e => {
-                                                const columnsWidths = JSON.parse(JSON.stringify(this.state.columnsWidths));
-                                                columnsWidths['_' + adapter + '_' + column.path] = e.target.value;
-                                                this.localStorage.setItem((this.props.dialogName || 'App') + '.columnsWidths', JSON.stringify(columnsWidths));
-                                                this.calculateColumnsVisibility(null, null, null, columnsWidths);
-                                                this.setState({ columnsWidths });
-                                            }}
-                                            autoComplete="off"
-                                        />
-                                    </FormControl>
-                                </ListItemSecondaryAction>
-                                */}
                                         </ListItemButton>
                                     )),
                                 )}
@@ -4243,132 +4461,49 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         }
     }
 
-    private onFilter(name?: string, value?: string | boolean): void {
-        this.filterTimer = null;
-        const filter: ObjectBrowserFilter = { ...this.state.filter };
-
-        Object.keys(this.filterRefs).forEach((_name: keyof ObjectBrowserFilter): void => {
-            if (this.filterRefs[_name]?.current) {
-                const filterRef: HTMLSelectElement = this.filterRefs[_name].current;
-                for (let i = 0; i < filterRef.children.length; i++) {
-                    if (filterRef.children[i].tagName === 'INPUT') {
-                        if (
-                            _name === 'role' ||
-                            _name === 'type' ||
-                            _name === 'func' ||
-                            _name === 'custom' ||
-                            _name === 'room'
-                        ) {
-                            const value = (filterRef.children[i] as HTMLInputElement).value;
-                            if (value) {
-                                filter[_name] = value.split(',');
-                            } else {
-                                filter[_name] = undefined;
-                            }
-                        } else {
-                            (filter as Record<string, string>)[_name] = (
-                                filterRef.children[i] as HTMLInputElement
-                            ).value;
-                        }
-
-                        break;
-                    }
-                }
-            }
-        });
-
-        if (name) {
-            (filter as Record<string, string | boolean | undefined>)[name] = value;
-            if (name === 'expertMode') {
-                (((window as any)._sessionStorage as Storage) || window.sessionStorage).setItem(
-                    'App.expertMode',
-                    value ? 'true' : 'false',
-                );
-            }
-        }
-
-        if (JSON.stringify(this.state.filter) !== JSON.stringify(filter)) {
-            this.localStorage.setItem(`${this.props.dialogName || 'App'}.objectFilter`, JSON.stringify(filter));
-            this.setState({ filter }, () => this.props.onFilterChanged && this.props.onFilterChanged(filter));
-        }
-    }
-
     clearFilter(): void {
-        const filter: ObjectBrowserFilter = { ...this.state.filter };
-
-        Object.keys(this.filterRefs).forEach(name => {
-            if (this.filterRefs[name]?.current) {
-                const filterRef: HTMLSelectElement = this.filterRefs[name].current;
-                for (let i = 0; i < filterRef.childNodes.length; i++) {
-                    const item = filterRef.childNodes[i];
-                    if ((item as HTMLInputElement).tagName === 'INPUT') {
-                        (filter as Record<string, string>)[name] = '';
-                        (item as HTMLInputElement).value = '';
-                        break;
-                    }
-                }
-            }
-        });
-
-        if (JSON.stringify(this.state.filter) !== JSON.stringify(filter)) {
-            this.localStorage.setItem(`${this.props.dialogName || 'App'}.objectFilter`, JSON.stringify(filter));
-            this.setState({ filter, filterKey: this.state.filterKey + 1 }, () => this.props.onFilterChanged?.(filter));
+        if (JSON.stringify(this.state.filter) !== JSON.stringify(DEFAULT_FILTER)) {
+            this.setState({ filter: { ...DEFAULT_FILTER }, filterKey: this.state.filterKey + 1 }, () => {
+                this.doFilter();
+                this.props.onFilterChanged?.({ ...DEFAULT_FILTER });
+            });
         }
     }
 
     isFilterEmpty(): boolean {
-        const someNotEmpty = Object.keys(this.state.filter).find(
-            attr => attr !== 'expertMode' && (this.state.filter as Record<string, string>)[attr],
+        return (
+            !!this.state.filter.id ||
+            !!this.state.filter.name ||
+            !!this.state.filter.room?.length ||
+            !!this.state.filter.func?.length ||
+            !!this.state.filter.role?.length ||
+            !!this.state.filter.type?.length ||
+            !!this.state.filter.custom?.length
         );
-        return !someNotEmpty;
     }
 
-    private getFilterInput(filterName: string): JSX.Element {
+    private getFilterInput(name: 'id' | 'name'): JSX.Element {
         return (
-            <FormControl
-                sx={this.styles.filterInput}
-                key={`${filterName}_${this.state.filterKey}`}
-                title={
-                    filterName === 'name' || filterName === 'id'
-                        ? this.props.t('ra_You can use * as wildcard')
-                        : undefined
-                }
-                // style={{ marginTop: 0, marginBottom: 0 }}
-                margin="dense"
-            >
-                <Input
-                    ref={this.filterRefs[filterName]}
-                    classes={{ underline: 'no-underline' }}
-                    id={filterName}
-                    placeholder={this.texts[`filter_${filterName}`]}
-                    defaultValue={(this.state.filter as Record<string, string>)[filterName] || ''}
-                    onChange={() => {
-                        if (this.filterTimer) {
-                            clearTimeout(this.filterTimer);
-                        }
-                        this.filterTimer = setTimeout(() => this.onFilter(), 400);
-                    }}
-                    autoComplete="off"
-                />
-                {(this.filterRefs[filterName]?.current?.firstChild as HTMLInputElement)?.value ? (
-                    <div
-                        style={{
-                            position: 'absolute',
-                            right: 0,
-                        }}
-                    >
-                        <IconButton
-                            size="small"
-                            onClick={() => {
-                                (this.filterRefs[filterName].current?.firstChild as HTMLInputElement).value = '';
-                                this.onFilter(filterName, '');
-                            }}
-                        >
-                            <IconClose />
-                        </IconButton>
-                    </div>
-                ) : null}
-            </FormControl>
+            <CustomFilterInput
+                key={`${name}_${this.state.filterKey}`}
+                styles={this.styles.filterInput}
+                name={name}
+                texts={this.texts}
+                t={this.props.t}
+                initialValue={this.state.filter[name]}
+                onChange={(name, value) => {
+                    const filter = { ...this.state.filter };
+                    if (value === undefined) {
+                        delete filter[name];
+                    } else {
+                        filter[name] = value;
+                    }
+                    this.setState({ filter }, () => {
+                        this.doFilter();
+                        this.props.onFilterChanged?.(filter);
+                    });
+                }}
+            />
         );
     }
 
@@ -4376,85 +4511,26 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         name: 'room' | 'func' | 'type' | 'custom' | 'role',
         values?: (string | InputSelectItem)[],
     ): JSX.Element {
-        const hasIcons = !!values?.find(item => (item as InputSelectItem).icon);
-
         return (
-            <div style={{ position: 'relative' }}>
-                <Select
-                    variant="standard"
-                    key={`${name}_${this.state.filterKey}`}
-                    ref={this.filterRefs[name]}
-                    sx={styles.headerCellInput}
-                    className="no-underline"
-                    multiple
-                    onChange={() => {
-                        if (this.filterTimer) {
-                            clearTimeout(this.filterTimer);
-                        }
-                        this.filterTimer = setTimeout(() => this.onFilter(), 400);
-                    }}
-                    defaultValue={this.state.filter[name] || []}
-                    inputProps={{ name, id: name }}
-                    displayEmpty
-                >
-                    <MenuItem
-                        key="empty"
-                        value=""
-                    >
-                        <span style={styles.selectNone}>
-                            {name === 'custom' ? this.texts.showAll : this.texts[`filter_${name}`]}
-                        </span>
-                    </MenuItem>
-                    {values?.map(item => {
-                        let id: string;
-                        let _name: string;
-                        let icon: null | JSX.Element | undefined;
-                        if (typeof item === 'object') {
-                            id = item.value;
-                            _name = item.name;
-                            icon = item.icon;
-                        } else {
-                            id = item;
-                            _name = item;
-                        }
-                        return (
-                            <MenuItem
-                                sx={styles.headerCellSelectItem}
-                                key={id}
-                                value={id}
-                            >
-                                {icon || (hasIcons ? <div className="itemIcon" /> : null)}
-                                {_name}
-                            </MenuItem>
-                        );
-                    })}
-                </Select>
-                {(this.filterRefs[name]?.current?.childNodes[1] as HTMLInputElement)?.value ? (
-                    <Box
-                        component="div"
-                        sx={styles.selectClearButton}
-                    >
-                        <IconButton
-                            size="small"
-                            onClick={() => {
-                                const newFilter: ObjectBrowserFilter = { ...this.state.filter };
-                                delete newFilter[name];
-                                (this.filterRefs[name].current?.childNodes[1] as HTMLInputElement).value = '';
-                                this.localStorage.setItem(
-                                    `${this.props.dialogName || 'App'}.objectFilter`,
-                                    JSON.stringify(newFilter),
-                                );
-                                this.setState(
-                                    { filter: newFilter, filterKey: this.state.filterKey + 1 },
-                                    () => this.props.onFilterChanged && this.props.onFilterChanged(newFilter),
-                                );
-                            }}
-                        >
-                            <IconClose />
-                        </IconButton>
-                    </Box>
-                ) : null}
-            </div>
+            <CustomFilterSelect
+                key={`${name}_${this.state.filterKey}`}
+                name={name}
+                texts={this.texts}
+                initialValue={this.state.filter[name] || []}
+                values={values}
+                onChange={(name, value) => {
+                    const filter = { ...this.state.filter };
+                    if (value === undefined) {
+                        delete filter[name];
+                    } else {
+                        filter[name] = value;
+                    }
+                    this.setState({ filter }, () => {
+                        this.doFilter();
+                        this.props.onFilterChanged?.(filter);
+                    });
+                }}
+            />
         );
     }
 
@@ -5203,7 +5279,18 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                             <IconButton
                                 key="expertMode"
                                 color={this.state.filter.expertMode ? 'secondary' : 'default'}
-                                onClick={() => this.onFilter('expertMode', !this.state.filter.expertMode)}
+                                onClick={() => {
+                                    const filter = { ...this.state.filter };
+                                    filter.expertMode = !filter.expertMode;
+                                    this.localStorage.setItem(
+                                        `${this.props.dialogName || 'App'}.objectFilter`,
+                                        JSON.stringify(filter),
+                                    );
+
+                                    this.setState({
+                                        filter,
+                                    });
+                                }}
                                 size="large"
                             >
                                 <IconExpert />
@@ -6218,7 +6305,9 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                                         checked={itemEnums.includes(id)}
                                         tabIndex={-1}
                                         disableRipple
-                                        inputProps={{ 'aria-labelledby': labelId }}
+                                        slotProps={{
+                                            input: { 'aria-labelledby': labelId },
+                                        }}
                                     />
                                 </ListItemIcon>
                                 <ListItemText id={labelId}>{name}</ListItemText>
@@ -9070,6 +9159,38 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         );
     }
 
+    doFilter(doNotStore?: boolean): void {
+        if (!this.objects || !this.root) {
+            return;
+        }
+
+        if (!doNotStore) {
+            this.localStorage.setItem(
+                `${this.props.dialogName || 'App'}.objectFilter`,
+                JSON.stringify(this.state.filter),
+            );
+        }
+
+        const counter = { count: 0 };
+
+        applyFilter(
+            this.root,
+            this.state.filter,
+            this.props.lang,
+            this.objects,
+            undefined,
+            counter,
+            this.props.customFilter,
+            this.props.types,
+        );
+
+        if (counter.count < 500 && !this.state.expandAllVisible) {
+            setTimeout(() => this.setState({ expandAllVisible: true }));
+        } else if (counter.count >= 500 && this.state.expandAllVisible) {
+            setTimeout(() => this.setState({ expandAllVisible: false }));
+        }
+    }
+
     /**
      * The rendering method of this component.
      */
@@ -9107,32 +9228,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 aliasAlone: Utils.getStyle(this.props.theme, styles.cellIdAlias, styles.cellIdAliasAlone),
             };
             this.styleTheme = this.props.themeType;
-        }
-
-        // apply filter if changed
-        const jsonFilter = JSON.stringify(this.state.filter);
-
-        if (this.lastAppliedFilter !== jsonFilter && this.objects && this.root) {
-            const counter = { count: 0 };
-
-            applyFilter(
-                this.root,
-                this.state.filter,
-                this.props.lang,
-                this.objects,
-                undefined,
-                counter,
-                this.props.customFilter,
-                this.props.types,
-            );
-
-            if (counter.count < 500 && !this.state.expandAllVisible) {
-                setTimeout(() => this.setState({ expandAllVisible: true }));
-            } else if (counter.count >= 500 && this.state.expandAllVisible) {
-                setTimeout(() => this.setState({ expandAllVisible: false }));
-            }
-
-            this.lastAppliedFilter = jsonFilter;
         }
 
         this.unsubscribeTimer = setTimeout(() => {

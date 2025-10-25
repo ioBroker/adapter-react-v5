@@ -13,7 +13,7 @@ If you want to create the configuration page with ReactJS:
     - Change `name` from `src` to `ADAPTERNAME-admin` (Of course replace `ADAPTERNAME` with yours)
     - Add to devDependencies:
         ```json
-        "@iobroker/adapter-react-v5": "^7.4.10",
+        { "@iobroker/adapter-react-v5": "^7.4.10" }
         ```
         Versions can be higher.
         So your `src/package.json` should look like:
@@ -48,13 +48,15 @@ If you want to create the configuration page with ReactJS:
 7. Add scripts to your `package.json` `scripts` section:
 
 ```json
-"scripts": {
-    "0-clean": "node tasks --0-clean",
-    "1-npm": "node tasks --1-npm",
-    "2-build": "node tasks --2-build",
-    "3-copy": "node tasks --3-copy",
-    "4-patch": "node tasks --4-patch",
-    "build": "node tasks"
+ {
+    "scripts": {
+        "0-clean": "node tasks --0-clean",
+        "1-npm": "node tasks --1-npm",
+        "2-build": "node tasks --2-build",
+        "3-copy": "node tasks --3-copy",
+        "4-patch": "node tasks --4-patch",
+        "build": "node tasks"
+    }
 }
 ```
 
@@ -136,7 +138,7 @@ class App extends GenericApp {
             extendedProps.socket.port = 8081;
         }
 
-        // allow to manage GenericApp the sentry initialisation or do not set the sentryDSN if no sentry available
+        // allow to manage GenericApp the sentry initialization or do not set the sentryDSN if no sentry available
         extendedProps.sentryDSN = 'https://yyy@sentry.iobroker.net/xx';
 
         super(extendedProps);
@@ -192,7 +194,7 @@ onPrepareSave(settings) {
      } else {
          return true;
      }
- }
+}
 ```
 
 ## Components
@@ -648,21 +650,21 @@ class MyComponent extends Component {
 
 ## List of adapters that use adapter-react
 
--   Admin
--   Backitup
--   iot
--   echarts
--   text2command
--   scenes
--   javascript
--   devices
--   eventlist
--   cameras
--   web
--   vis-2
--   vis-2-widgets-xxx
--   fullcalendar
--   openweathermap
+- Admin
+- Backitup
+- iot
+- echarts
+- text2command
+- scenes
+- javascript
+- devices
+- eventlist
+- cameras
+- web
+- vis-2
+- vis-2-widgets-xxx
+- fullcalendar
+- openweathermap
 
 ## Usability
 
@@ -679,9 +681,9 @@ The icons may not be reused in other projects without the proper flaticon licens
 
 You can find the migration instructions:
 
--   [from adapter-react-v5@6.x to adapter-react-v5@7.x](MIGRATION_6_7.md)
--   [from adapter-react-v5@5.x to adapter-react-v5@6.x](MIGRATION_5_6.md)
--   [from adapter-react to adapter-react-v5@5.x](MIGRATION_4_5.md)
+- [from adapter-react-v5@6.x to adapter-react-v5@7.x](MIGRATION_6_7.md)
+- [from adapter-react-v5@5.x to adapter-react-v5@6.x](MIGRATION_5_6.md)
+- [from adapter-react to adapter-react-v5@5.x](MIGRATION_4_5.md)
 
 <!--
 	Placeholder for the next version (at the beginning of the line):
@@ -689,747 +691,752 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Fixed filter in the object browser
+
 ### 8.0.3 (2025-10-23)
 
--   (@GermanBluefox) Split packages from mono-repo
+- (@GermanBluefox) Split packages from mono-repo
 
 ### 7.2.3 (2024-10-05)
 
--   (@GermanBluefox) Corrected error in the simple CRON dialog
+- (@GermanBluefox) Corrected error in the simple CRON dialog
 
 ### 7.2.2 (2024-10-04)
 
--   (@GermanBluefox) Small layout change for Icon Picker
+- (@GermanBluefox) Small layout change for Icon Picker
 
 ### 7.2.1 (2024-09-30)
 
--   (@GermanBluefox) Allowed using an array of elements in dialogs
--   (@GermanBluefox) Allowed to use `socket.iob` instead of `socket.io`
+- (@GermanBluefox) Allowed using an array of elements in dialogs
+- (@GermanBluefox) Allowed to use `socket.iob` instead of `socket.io`
 
 ### 7.1.4 (2024-09-15)
 
--   (@GermanBluefox) Updated socket classes
+- (@GermanBluefox) Updated socket classes
 
 ### 7.1.3 (2024-09-15)
 
--   (@GermanBluefox) Updated socket classes
--   (@GermanBluefox) Added additional confirmation dialog for CRONs for every minute execution
+- (@GermanBluefox) Updated socket classes
+- (@GermanBluefox) Added additional confirmation dialog for CRONs for every minute execution
 
 ### 7.1.1 (2024-09-13)
 
--   (@GermanBluefox) Corrected TabContainer
+- (@GermanBluefox) Corrected TabContainer
 
 ### 7.1.0 (2024-09-12)
 
--   (@GermanBluefox) Optimized the icon picker
--   (@GermanBluefox) Used common eslint-config
+- (@GermanBluefox) Optimized the icon picker
+- (@GermanBluefox) Used common eslint-config
 
 ### 7.0.2 (2024-09-10)
 
--   (@GermanBluefox) Showed the context menu under cursor position in the object browser
--   (@GermanBluefox) Added links to aliases in the object browser
+- (@GermanBluefox) Showed the context menu under cursor position in the object browser
+- (@GermanBluefox) Added links to aliases in the object browser
 
 ### 7.0.1 (2024-08-29)
 
--   (@GermanBluefox) Updated the object browser
--   (@GermanBluefox) Used MUI Library 6.0
+- (@GermanBluefox) Updated the object browser
+- (@GermanBluefox) Used MUI Library 6.0
 
 ### 6.1.10 (2024-08-30)
 
--   (@GermanBluefox) Updated the object browser
+- (@GermanBluefox) Updated the object browser
 
 ### 6.1.9 (2024-08-14)
 
--   (@GermanBluefox) Updated JSON schema
+- (@GermanBluefox) Updated JSON schema
 
 ### 6.1.8 (2024-08-03)
 
--   (@GermanBluefox) Added translations
+- (@GermanBluefox) Added translations
 
 ### 6.1.6 (2024-07-23)
 
--   (@GermanBluefox) Optimize package
+- (@GermanBluefox) Optimize package
 
 ### 6.1.5 (2024-07-20)
 
--   (@GermanBluefox) Added sources to package
+- (@GermanBluefox) Added sources to package
 
 ### 6.1.3 (2024-07-20)
 
--   (@GermanBluefox) Better typing of legacy connection
+- (@GermanBluefox) Better typing of legacy connection
 
 ### 6.1.1 (2024-07-16)
 
--   (@GermanBluefox) Added translations
+- (@GermanBluefox) Added translations
 
 ### 6.1.0 (2024-07-15)
 
--   (@GermanBluefox) Replace by CRON to text the package to `cronstrue`
+- (@GermanBluefox) Replace by CRON to text the package to `cronstrue`
 
 ### 6.0.19 (2024-07-14)
 
--   (@GermanBluefox) added some packages for federation
+- (@GermanBluefox) added some packages for federation
 
 ### 6.0.17 (2024-07-14)
 
--   (@GermanBluefox) Allowed playing mp3 files in the file browser
--   (@GermanBluefox) Corrected jump by object selection
+- (@GermanBluefox) Allowed playing mp3 files in the file browser
+- (@GermanBluefox) Corrected jump by object selection
 
 ### 6.0.14 (2024-07-07)
 
--   (@GermanBluefox) Corrected theme type selection
+- (@GermanBluefox) Corrected theme type selection
 
 ### 6.0.13 (2024-06-30)
 
--   (@GermanBluefox) Corrected color picker
+- (@GermanBluefox) Corrected color picker
 
 ### 6.0.12 (2024-06-29)
 
--   (@GermanBluefox) Added support for the overrides in the theme
+- (@GermanBluefox) Added support for the overrides in the theme
 
 ### 6.0.10 (2024-06-27)
 
--   (@GermanBluefox) Added translation
--   (@GermanBluefox) Mobile object browser improved
+- (@GermanBluefox) Added translation
+- (@GermanBluefox) Mobile object browser improved
 
 ### 6.0.9 (2024-06-26)
 
--   (@GermanBluefox) Corrected Icons
+- (@GermanBluefox) Corrected Icons
 
 ### 6.0.8 (2024-06-26)
 
--   (@GermanBluefox) Corrected types of the select ID dialog
--   (@GermanBluefox) Made the tooltips neutral to the pointer events
+- (@GermanBluefox) Corrected types of the select ID dialog
+- (@GermanBluefox) Made the tooltips neutral to the pointer events
 
 ### 6.0.6 (2024-06-24)
 
--   (@GermanBluefox) Synchronised with admin
--   (@GermanBluefox) Added translations for time scheduler
+- (@GermanBluefox) Synchronised with admin
+- (@GermanBluefox) Added translations for time scheduler
 
 ### 6.0.4 (2024-06-21)
 
--   (@GermanBluefox) Removed the usage of `withStyles` in favor of `sx` and `style` properties (see [Migration from v5 to v6](#migration-from-v5-to-v6)
--   (@GermanBluefox) (BREAKING) Higher version of `@mui/material` (5.15.20) is used
+- (@GermanBluefox) Removed the usage of `withStyles` in favor of `sx` and `style` properties (see [Migration from v5 to v6](#migration-from-v5-to-v6)
+- (@GermanBluefox) (BREAKING) Higher version of `@mui/material` (5.15.20) is used
 
 ### 5.0.8 (2024-06-15)
 
--   (@GermanBluefox) Added `modulefederation.admin.config.js` for module federation
+- (@GermanBluefox) Added `modulefederation.admin.config.js` for module federation
 
 ### 5.0.5 (2024-06-10)
 
--   (@GermanBluefox) Sources were synchronized with admin
+- (@GermanBluefox) Sources were synchronized with admin
 
 ### 5.0.4 (2024-06-07)
 
--   (@GermanBluefox) Added better typing
+- (@GermanBluefox) Added better typing
 
 ### 5.0.2 (2024-05-30)
 
--   (@GermanBluefox) Added better typing
--   (@GermanBluefox) Json-Config is now a separate package and must be installed additionally
+- (@GermanBluefox) Added better typing
+- (@GermanBluefox) Json-Config is now a separate package and must be installed additionally
 
 ### 5.0.0 (2024-05-29)
 
--   (@GermanBluefox) Types are now exported
--   (@GermanBluefox) Translator renamed to Translate
--   (@GermanBluefox) Breaking: Theme renamed to IobTheme because of the naming conflict
+- (@GermanBluefox) Types are now exported
+- (@GermanBluefox) Translator renamed to Translate
+- (@GermanBluefox) Breaking: Theme renamed to IobTheme because of the naming conflict
 
 ### 4.13.24 (2024-05-25)
 
--   (@GermanBluefox) Updated packages
+- (@GermanBluefox) Updated packages
 
--   ### 4.13.22 (2024-05-23)
--   (@GermanBluefox) Updated packages
+- ### 4.13.22 (2024-05-23)
+- (@GermanBluefox) Updated packages
 
 ### 4.13.20 (2024-05-22)
 
--   (@GermanBluefox) Better types added
--   (@GermanBluefox) updated theme definitions
--   (@GermanBluefox) corrected dates in cron dialog
+- (@GermanBluefox) Better types added
+- (@GermanBluefox) updated theme definitions
+- (@GermanBluefox) corrected dates in cron dialog
 
 ### 4.13.14 (2024-05-19)
 
--   (@GermanBluefox) Updated packages
+- (@GermanBluefox) Updated packages
 
 ### 4.13.13 (2024-05-09)
 
--   (@GermanBluefox) Updated ioBroker types
+- (@GermanBluefox) Updated ioBroker types
 
 ### 4.13.12 (2024-05-06)
 
--   (@GermanBluefox) All files are migrated to Typescript
+- (@GermanBluefox) All files are migrated to TypeScript
 
 ### 4.13.11 (2024-04-23)
 
--   (@GermanBluefox) Corrected the size of icons
+- (@GermanBluefox) Corrected the size of icons
 
 ### 4.13.10 (2024-04-22)
 
--   (@GermanBluefox) Migrated all icons to Typescript
+- (@GermanBluefox) Migrated all icons to TypeScript
 
 ### 4.13.9 (2024-04-20)
 
--   (@GermanBluefox) Updated socket-client package
+- (@GermanBluefox) Updated socket-client package
 
 ### 4.13.8 (2024-04-19)
 
--   (@GermanBluefox) Corrected CRON selector
+- (@GermanBluefox) Corrected CRON selector
 
 ### 4.13.7 (2024-04-19)
 
--   (@GermanBluefox) Migrated ColorPicker to typescript
+- (@GermanBluefox) Migrated ColorPicker to TypeScript
 
 ### 4.13.6 (2024-04-11)
 
--   (@GermanBluefox) Migrated TreeTable to typescript
--   (@GermanBluefox) corrected the object subscription
+- (@GermanBluefox) Migrated TreeTable to TypeScript
+- (@GermanBluefox) corrected the object subscription
 
 ### 4.13.5 (2024-04-02)
 
--   (@GermanBluefox) used new connection classes
--   (@GermanBluefox) Improved the `SelectID` dialog
+- (@GermanBluefox) used new connection classes
+- (@GermanBluefox) Improved the `SelectID` dialog
 
 ### 4.13.3 (2024-04-01)
 
--   (@GermanBluefox) used new connection classes
+- (@GermanBluefox) used new connection classes
 
 ### 4.12.3 (2024-03-30)
 
--   (@GermanBluefox) Migrated legacy connection to typescript
+- (@GermanBluefox) Migrated legacy connection to TypeScript
 
 ### 4.12.2 (2024-03-25)
 
--   (@GermanBluefox) Added support for remote cloud
+- (@GermanBluefox) Added support for remote cloud
 
 ### 4.11.6 (2024-03-19)
 
--   (@GermanBluefox) Corrected rendering of LoaderMV
+- (@GermanBluefox) Corrected rendering of LoaderMV
 
 ### 4.11.4 (2024-03-18)
 
--   (@GermanBluefox) Corrected types of IconPicker
+- (@GermanBluefox) Corrected types of IconPicker
 
 ### 4.11.3 (2024-03-17)
 
--   (@GermanBluefox) Made filters for the file selector dialog optional
+- (@GermanBluefox) Made filters for the file selector dialog optional
 
 ### 4.11.2 (2024-03-16)
 
--   (@GermanBluefox) Migrated GenericApp to typescript
+- (@GermanBluefox) Migrated GenericApp to TypeScript
 
 ### 4.10.4 (2024-03-16)
 
--   (@GermanBluefox) Migrated some components to typescript
+- (@GermanBluefox) Migrated some components to TypeScript
 
 ### 4.10.1 (2024-03-11)
 
--   (@GermanBluefox) Migrated some components to typescript
+- (@GermanBluefox) Migrated some components to TypeScript
 
 ### 4.9.11 (2024-03-08)
 
--   (foxriver76) type GenericApp socket correctly
+- (foxriver76) type GenericApp socket correctly
 
 ### 4.9.10 (2024-02-21)
 
--   (@GermanBluefox) translations
--   (@GermanBluefox) updated JSON config
+- (@GermanBluefox) translations
+- (@GermanBluefox) updated JSON config
 
 ### 4.9.9 (2024-02-16)
 
--   (foxriver76) also check plugin state of instance to see if Sentry is explicitly disabled
+- (foxriver76) also check plugin state of instance to see if Sentry is explicitly disabled
 
 ### 4.9.8 (2024-02-13)
 
--   (@GermanBluefox) allowed hiding wizard in cron dialog
+- (@GermanBluefox) allowed hiding wizard in cron dialog
 
 ### 4.9.7 (2024-02-03)
 
--   (foxriver76) allow passing down the instance number do avoid determining from url
+- (foxriver76) allow passing down the instance number do avoid determining from url
 
 ### 4.9.5 (2024-01-01)
 
--   (foxriver76) make `copyToClipboard` event parameter optional
+- (foxriver76) make `copyToClipboard` event parameter optional
 
 ### 4.9.4 (2024-01-01)
 
--   (foxriver76) try to fix `SelectID` scrolling
+- (foxriver76) try to fix `SelectID` scrolling
 
 ### 4.9.2 (2023-12-30)
 
--   (foxriver76) bump version of `@iobroker/json-config`
+- (foxriver76) bump version of `@iobroker/json-config`
 
 ### 4.9.1 (2023-12-22)
 
--   (foxriver76) `@iobroker/json-config` moved to real dependencies
+- (foxriver76) `@iobroker/json-config` moved to real dependencies
 
 ### 4.9.0 (2023-12-22)
 
--   (foxriver76) migrate to `@iobroker/json-config` module to have a single point of truth
--   (@GermanBluefox) Allowed using of `filterFunc` as string
+- (foxriver76) migrate to `@iobroker/json-config` module to have a single point of truth
+- (@GermanBluefox) Allowed using of `filterFunc` as string
 
 ### 4.8.1 (2023-12-14)
 
--   (@GermanBluefox) Added Device manager to JSON Config
+- (@GermanBluefox) Added Device manager to JSON Config
 
 ### 4.7.15 (2023-12-12)
 
--   (@GermanBluefox) Corrected parsing of a text
+- (@GermanBluefox) Corrected parsing of a text
 
 ### 4.7.13 (2023-12-10)
 
--   (@GermanBluefox) Added possibility to define the root style and embedded property
+- (@GermanBluefox) Added possibility to define the root style and embedded property
 
 ### 4.7.11 (2023-12-06)
 
--   (@GermanBluefox) Extended color picker with "noInputField" option
+- (@GermanBluefox) Extended color picker with "noInputField" option
 
 ### 4.7.9 (2023-12-04)
 
--   (@GermanBluefox) Corrected the icon picker
+- (@GermanBluefox) Corrected the icon picker
 
 ### 4.7.8 (2023-12-04)
 
--   (foxriver76) port to `@iobroker/types`
+- (foxriver76) port to `@iobroker/types`
 
 ### 4.7.6 (2023-11-29)
 
--   (@GermanBluefox) Added translations
+- (@GermanBluefox) Added translations
 
 ### 4.7.5 (2023-11-28)
 
--   (@GermanBluefox) Corrected subscribe on objects in the legacy connection
+- (@GermanBluefox) Corrected subscribe on objects in the legacy connection
 
 ### 4.7.4 (2023-11-23)
 
--   (@GermanBluefox) Updated packages
--   (@GermanBluefox) Made getStates method in legacy connection compatible with new one
+- (@GermanBluefox) Updated packages
+- (@GermanBluefox) Made getStates method in legacy connection compatible with new one
 
 ### 4.7.3 (2023-11-08)
 
--   (@GermanBluefox) Updated packages
+- (@GermanBluefox) Updated packages
 
 ### 4.7.2 (2023-11-03)
 
--   (foxriver76) fixed problem with color picker, where editing TextField was buggy
--   (foxriver76) fixed light mode color of a path in FileBrowser
+- (foxriver76) fixed problem with color picker, where editing TextField was buggy
+- (foxriver76) fixed light mode color of a path in FileBrowser
 
 ### 4.7.0 (2023-10-31)
 
--   (@GermanBluefox) Synced with admin
--   (@GermanBluefox) Added GIF to image files
+- (@GermanBluefox) Synced with admin
+- (@GermanBluefox) Added GIF to image files
 
 ### 4.6.7 (2023-10-19)
 
--   (@GermanBluefox) Added return value for `subscribeOnInstance` for Connection class
+- (@GermanBluefox) Added return value for `subscribeOnInstance` for Connection class
 
 ### 4.6.6 (2023-10-13)
 
--   (@GermanBluefox) Fixed the legacy connection
+- (@GermanBluefox) Fixed the legacy connection
 
 ### 4.6.5 (2023-10-12)
 
--   (foxriver76) fixed object browser with date
+- (foxriver76) fixed object browser with date
 
 ### 4.6.4 (2023-10-11)
 
--   (@GermanBluefox) Updated the packages
+- (@GermanBluefox) Updated the packages
 
 ### 4.6.3 (2023-10-09)
 
--   (@GermanBluefox) Just updated the packages
--   (@GermanBluefox) Synced with admin
+- (@GermanBluefox) Just updated the packages
+- (@GermanBluefox) Synced with admin
 
 ### 4.6.2 (2023-09-29)
 
--   (@GermanBluefox) Experimental feature added: update states on re-subscribe
+- (@GermanBluefox) Experimental feature added: update states on re-subscribe
 
 ### 4.5.5 (2023-09-27)
 
--   (@GermanBluefox) Added export for IconNoIcon
+- (@GermanBluefox) Added export for IconNoIcon
 
 ### 4.5.4 (2023-09-17)
 
--   (@GermanBluefox) Added the restricting to folder property for select file dialog
+- (@GermanBluefox) Added the restricting to folder property for select file dialog
 
 ### 4.5.3 (2023-08-20)
 
--   (foxriver76) fixed css classes of TableResize, see https://github.com/ioBroker/ioBroker.admin/issues/1860
+- (foxriver76) fixed css classes of TableResize, see https://github.com/ioBroker/ioBroker.admin/issues/1860
 
 ### 4.5.2 (2023-08-20)
 
--   (foxriver76) added missing export of TableResize
+- (foxriver76) added missing export of TableResize
 
 ### 4.5.1 (2023-08-19)
 
--   (foxriver76) fix dialog TextInput
+- (foxriver76) fix dialog TextInput
 
 ### 4.5.0 (2023-08-18)
 
--   (@GermanBluefox) Synchronize components with admin
+- (@GermanBluefox) Synchronize components with admin
 
 ### 4.4.8 (2023-08-17)
 
--   (@GermanBluefox) Added translations
+- (@GermanBluefox) Added translations
 
 ### 4.4.7 (2023-08-10)
 
--   (@GermanBluefox) Added `subscribeStateAsync` method to wait for answer
--   (@GermanBluefox) Added support for arrays for un/subscriptions
+- (@GermanBluefox) Added `subscribeStateAsync` method to wait for answer
+- (@GermanBluefox) Added support for arrays for un/subscriptions
 
 ### 4.4.5 (2023-08-01)
 
--   (@GermanBluefox) Updated packages
+- (@GermanBluefox) Updated packages
 
 ### 4.3.3 (2023-07-28)
 
--   (@GermanBluefox) Added translations
+- (@GermanBluefox) Added translations
 
 ### 4.3.0 (2023-07-19)
 
--   (@GermanBluefox) Updated packages
--   (@GermanBluefox) Added translations
--   (@GermanBluefox) Synced object browser
--   (@GermanBluefox) formatting
+- (@GermanBluefox) Updated packages
+- (@GermanBluefox) Added translations
+- (@GermanBluefox) Synced object browser
+- (@GermanBluefox) formatting
 
 ### 4.2.1 (2023-07-17)
 
--   (@GermanBluefox) Updated packages
--   (@GermanBluefox) Added translations
+- (@GermanBluefox) Updated packages
+- (@GermanBluefox) Added translations
 
 ### 4.2.0 (2023-07-07)
 
--   (@GermanBluefox) Updated packages
--   (@GermanBluefox) Added new method `getObjectsById` to the socket communication
+- (@GermanBluefox) Updated packages
+- (@GermanBluefox) Added new method `getObjectsById` to the socket communication
 
 ### 4.1.2 (2023-06-20)
 
--   (@GermanBluefox) Allowed setting theme name directly by theme toggle
+- (@GermanBluefox) Allowed setting theme name directly by theme toggle
 
 ### 4.1.0 (2023-05-10)
 
--   (@GermanBluefox) `craco-module-federation.js` was added. For node 16
+- (@GermanBluefox) `craco-module-federation.js` was added. For node 16
 
 ### 4.0.27 (2023-05-09)
 
--   (@GermanBluefox) Allowed showing only specific root in SelectIDDialog
+- (@GermanBluefox) Allowed showing only specific root in SelectIDDialog
 
 ### 4.0.26 (2023-05-08)
 
--   (@GermanBluefox) Added IDs to the buttons in the dialog for GUI tests
+- (@GermanBluefox) Added IDs to the buttons in the dialog for GUI tests
 
 ### 4.0.25 (2023-04-23)
 
--   (@GermanBluefox) Extended `TextWithIcon` with defined color and icon
+- (@GermanBluefox) Extended `TextWithIcon` with defined color and icon
 
 ### 4.0.24 (2023-04-03)
 
--   (@GermanBluefox) Updated the file selector in tile mode
+- (@GermanBluefox) Updated the file selector in tile mode
 
 ### 4.0.23 (2023-03-27)
 
--   (@GermanBluefox) Added translations
+- (@GermanBluefox) Added translations
 
 ### 4.0.22 (2023-03-22)
 
--   (@GermanBluefox) Re-Activate legacy connection
+- (@GermanBluefox) Re-Activate legacy connection
 
 ### 4.0.21 (2023-03-22)
 
--   (@GermanBluefox) Added translations
+- (@GermanBluefox) Added translations
 
 ### 4.0.20 (2023-03-21)
 
--   (@GermanBluefox) Color picker was improved
+- (@GermanBluefox) Color picker was improved
 
 ### 4.0.19 (2023-03-20)
 
--   (@GermanBluefox) Packages were updated
--   (@GermanBluefox) Added new translations
+- (@GermanBluefox) Packages were updated
+- (@GermanBluefox) Added new translations
 
 ### 4.0.18 (2023-03-16)
 
--   (@GermanBluefox) Packages were updated
+- (@GermanBluefox) Packages were updated
 
 ### 4.0.17 (2023-03-15)
 
--   (@GermanBluefox) Added translations
--   (@GermanBluefox) Added port controller to JSON config
+- (@GermanBluefox) Added translations
+- (@GermanBluefox) Added port controller to JSON config
 
 ### 4.0.15 (2023-03-12)
 
--   (@GermanBluefox) Updated the object browser and file browser
+- (@GermanBluefox) Updated the object browser and file browser
 
 ### 4.0.14 (2023-03-03)
 
--   (@GermanBluefox) added handler of alert messages
+- (@GermanBluefox) added handler of alert messages
 
 ### 4.0.13 (2023-02-15)
 
--   (@GermanBluefox) Corrected the theme button
+- (@GermanBluefox) Corrected the theme button
 
 ### 4.0.12 (2023-02-15)
 
--   (@GermanBluefox) made the fix for `echarts`
+- (@GermanBluefox) made the fix for `echarts`
 
 ### 4.0.11 (2023-02-14)
 
--   (@GermanBluefox) Updated packages
--   (@GermanBluefox) The `chartReady` event was omitted
+- (@GermanBluefox) Updated packages
+- (@GermanBluefox) The `chartReady` event was omitted
 
 ### 4.0.10 (2023-02-10)
 
--   (@GermanBluefox) Updated packages
--   (@GermanBluefox) made the fix for `material`
+- (@GermanBluefox) Updated packages
+- (@GermanBluefox) made the fix for `material`
 
 ### 4.0.9 (2023-02-02)
 
--   (@GermanBluefox) Updated packages
+- (@GermanBluefox) Updated packages
 
 ### 4.0.8 (2022-12-19)
 
--   (@GermanBluefox) Extended socket with `log` command
+- (@GermanBluefox) Extended socket with `log` command
 
 ### 4.0.6 (2022-12-19)
 
--   (@GermanBluefox) Corrected URL for the connection
+- (@GermanBluefox) Corrected URL for the connection
 
 ### 4.0.5 (2022-12-14)
 
--   (@GermanBluefox) Added support of custom palette for color picker
+- (@GermanBluefox) Added support of custom palette for color picker
 
 ### 4.0.2 (2022-12-01)
 
--   (@GermanBluefox) use `@iobroker/socket-client` instead of `Connection.tsx`
+- (@GermanBluefox) use `@iobroker/socket-client` instead of `Connection.tsx`
 
 ### 3.5.3 (2022-11-30)
 
--   (@GermanBluefox) Improved `renderTextWithA` function to support `<b>` and `<i>` tags
+- (@GermanBluefox) Improved `renderTextWithA` function to support `<b>` and `<i>` tags
 
 ### 3.5.2 (2022-11-30)
 
--   (@GermanBluefox) updated json config component
+- (@GermanBluefox) updated json config component
 
 ### 3.4.1 (2022-11-29)
 
--   (@GermanBluefox) Added button text for message dialog
+- (@GermanBluefox) Added button text for message dialog
 
 ### 3.4.0 (2022-11-29)
 
--   (@GermanBluefox) Added file selector
+- (@GermanBluefox) Added file selector
 
 ### 3.3.0 (2022-11-26)
 
--   (@GermanBluefox) Added subscribe on files
+- (@GermanBluefox) Added subscribe on files
 
 ### 3.2.7 (2022-11-13)
 
--   (@GermanBluefox) Added `fullWidth` property to `Dialog`
+- (@GermanBluefox) Added `fullWidth` property to `Dialog`
 
 ### 3.2.6 (2022-11-08)
 
--   (xXBJXx) Improved TreeTable component
+- (xXBJXx) Improved TreeTable component
 
 ### 3.2.5 (2022-11-08)
 
--   (@GermanBluefox) Added the role filter for the object browser
+- (@GermanBluefox) Added the role filter for the object browser
 
 ### 3.2.4 (2022-11-03)
 
--   (@GermanBluefox) Added support for alfa channel for `invertColor`
+- (@GermanBluefox) Added support for alfa channel for `invertColor`
 
 ### 3.2.3 (2022-10-26)
 
--   (@GermanBluefox) Corrected expert mode for object browser
+- (@GermanBluefox) Corrected expert mode for object browser
 
 ### 3.2.2 (2022-10-25)
 
--   (@GermanBluefox) Added support for prefixes for translations
+- (@GermanBluefox) Added support for prefixes for translations
 
 ### 3.2.1 (2022-10-24)
 
--   (@GermanBluefox) Corrected color inversion
+- (@GermanBluefox) Corrected color inversion
 
 ### 3.2.0 (2022-10-19)
 
--   (@GermanBluefox) Added ukrainian translation
+- (@GermanBluefox) Added ukrainian translation
 
 ### 3.1.35 (2022-10-17)
 
--   (@GermanBluefox) small changes for material
+- (@GermanBluefox) small changes for material
 
 ### 3.1.34 (2022-08-24)
 
--   (@GermanBluefox) Implemented fallback to english by translations
+- (@GermanBluefox) Implemented fallback to english by translations
 
 ### 3.1.33 (2022-08-24)
 
--   (@GermanBluefox) Added support for onchange flag
+- (@GermanBluefox) Added support for onchange flag
 
 ### 3.1.30 (2022-08-23)
 
--   (@GermanBluefox) Added method `getCompactSystemRepositories`
--   (@GermanBluefox) corrected error in `ObjectBrowser`
+- (@GermanBluefox) Added method `getCompactSystemRepositories`
+- (@GermanBluefox) corrected error in `ObjectBrowser`
 
 ### 3.1.27 (2022-08-01)
 
--   (@GermanBluefox) Disable file editing in FileViewer
+- (@GermanBluefox) Disable file editing in FileViewer
 
 ### 3.1.26 (2022-08-01)
 
--   (@GermanBluefox) Added translations
--   (@GermanBluefox) JSON schema was extended with missing definitions
+- (@GermanBluefox) Added translations
+- (@GermanBluefox) JSON schema was extended with missing definitions
 
 ### 3.1.24 (2022-07-28)
 
--   (@GermanBluefox) Updated file browser and object browser
+- (@GermanBluefox) Updated file browser and object browser
 
 ### 3.1.23 (2022-07-25)
 
--   (@GermanBluefox) Extend custom filter for object selector
+- (@GermanBluefox) Extend custom filter for object selector
 
 ### 3.1.22 (2022-07-22)
 
--   (@GermanBluefox) Added i18n tools for development
+- (@GermanBluefox) Added i18n tools for development
 
 ### 3.1.20 (2022-07-14)
 
--   (@GermanBluefox) Allowed to show select dialog with the expert mode enabled
+- (@GermanBluefox) Allowed to show select dialog with the expert mode enabled
 
 ### 3.1.19 (2022-07-08)
 
--   (@GermanBluefox) Allowed extending translations for all languages together
+- (@GermanBluefox) Allowed extending translations for all languages together
 
 ### 3.1.18 (2022-07-06)
 
--   (@GermanBluefox) Added translation
+- (@GermanBluefox) Added translation
 
 ### 3.1.17 (2022-07-05)
 
--   (@GermanBluefox) Deactivate JSON editor for JSONConfig because of space
+- (@GermanBluefox) Deactivate JSON editor for JSONConfig because of space
 
 ### 3.1.16 (2022-06-27)
 
--   (@GermanBluefox) Update object browser
+- (@GermanBluefox) Update object browser
 
 ### 3.1.15 (2022-06-27)
 
--   (@GermanBluefox) Allowed using of spaces in name
+- (@GermanBluefox) Allowed using of spaces in name
 
 ### 3.1.14 (2022-06-23)
 
--   (@GermanBluefox) Added translations
+- (@GermanBluefox) Added translations
 
 ### 3.1.11 (2022-06-22)
 
--   (@GermanBluefox) Added preparations for iobroker cloud
+- (@GermanBluefox) Added preparations for iobroker cloud
 
 ### 3.1.10 (2022-06-22)
 
--   (@GermanBluefox) Added translations
+- (@GermanBluefox) Added translations
 
 ### 3.1.9 (2022-06-20)
 
--   (@GermanBluefox) Allowed working behind reverse proxy
+- (@GermanBluefox) Allowed working behind reverse proxy
 
 ### 3.1.7 (2022-06-19)
 
--   (@GermanBluefox) Added file select dialog
+- (@GermanBluefox) Added file select dialog
 
 ### 3.1.3 (2022-06-13)
 
--   (@GermanBluefox) Added table with resized headers
+- (@GermanBluefox) Added table with resized headers
 
 ### 3.1.2 (2022-06-09)
 
--   (@GermanBluefox) Added new document icon (read only)
+- (@GermanBluefox) Added new document icon (read only)
 
 ### 3.1.1 (2022-06-09)
 
--   (@GermanBluefox) Allowed working behind reverse proxy
+- (@GermanBluefox) Allowed working behind reverse proxy
 
 ### 3.1.0 (2022-06-07)
 
--   (@GermanBluefox) Some german texts were corrected
+- (@GermanBluefox) Some german texts were corrected
 
 ### 3.0.17 (2022-06-03)
 
--   (@GermanBluefox) Allowed calling getAdapterInstances not for admin too
+- (@GermanBluefox) Allowed calling getAdapterInstances not for admin too
 
 ### 3.0.15 (2022-06-01)
 
--   (@GermanBluefox) Updated JsonConfigComponent: password, table
+- (@GermanBluefox) Updated JsonConfigComponent: password, table
 
 ### 3.0.14 (2022-05-25)
 
--   (@GermanBluefox) Added ConfigGeneric to import
+- (@GermanBluefox) Added ConfigGeneric to import
 
 ### 3.0.7 (2022-05-25)
 
--   (@GermanBluefox) Made the module definitions
+- (@GermanBluefox) Made the module definitions
 
 ### 3.0.6 (2022-05-25)
 
--   (@GermanBluefox) Added JsonConfigComponent
+- (@GermanBluefox) Added JsonConfigComponent
 
 ### 2.1.11 (2022-05-24)
 
--   (@GermanBluefox) Update file browser. It supports now the file changed events.
+- (@GermanBluefox) Update file browser. It supports now the file changed events.
 
 ### 2.1.10 (2022-05-24)
 
--   (@GermanBluefox) Corrected object browser
+- (@GermanBluefox) Corrected object browser
 
 ### 2.1.9 (2022-05-16)
 
--   (@GermanBluefox) Corrected expert mode in object browser
+- (@GermanBluefox) Corrected expert mode in object browser
 
 ### 2.1.7 (2022-05-09)
 
--   (@GermanBluefox) Changes were synchronized with adapter-react-v5
--   (@GermanBluefox) Added `I18n.disableWarning` method
+- (@GermanBluefox) Changes were synchronized with adapter-react-v5
+- (@GermanBluefox) Added `I18n.disableWarning` method
 
 ### 2.1.6 (2022-03-28)
 
--   (@GermanBluefox) Added `log` method to connection
--   (@GermanBluefox) Corrected translations
+- (@GermanBluefox) Added `log` method to connection
+- (@GermanBluefox) Corrected translations
 
 ### 2.1.1 (2022-03-27)
 
--   (@GermanBluefox) Corrected error in TreeTable
+- (@GermanBluefox) Corrected error in TreeTable
 
 ### 2.1.0 (2022-03-26)
 
--   (@GermanBluefox) BREAKING_CHANGE: Corrected error with readFile(base64=false)
+- (@GermanBluefox) BREAKING_CHANGE: Corrected error with readFile(base64=false)
 
 ### 2.0.0 (2022-03-26)
 
--   (@GermanBluefox) Initial version
+- (@GermanBluefox) Initial version
 
 ### 0.1.0 (2022-03-23)
 
--   (@GermanBluefox) Fixed theme errors
+- (@GermanBluefox) Fixed theme errors
 
 ### 0.0.4 (2022-03-22)
 
--   (@GermanBluefox) Fixed eslint warnings
+- (@GermanBluefox) Fixed eslint warnings
 
 ### 0.0.3 (2022-03-19)
 
--   (@GermanBluefox) beta version
+- (@GermanBluefox) beta version
 
 ### 0.0.2 (2022-02-24)
 
--   (@GermanBluefox) try to publish a first version
+- (@GermanBluefox) try to publish a first version
 
 ### 0.0.1 (2022-02-24)
 
--   initial commit
+- initial commit
 
 ## License
 
 The MIT License (MIT)
 
-Copyright (c) 2019-2025 @GermanBluefox <dogafox@gmail.com>
+Copyright © 2019-2025 @GermanBluefox <dogafox@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

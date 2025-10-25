@@ -3,3 +3,6 @@
 /build/
 /i18n/
 /index.css
+/test-gui/build/
+/test-gui/node_modules/
+/test-gui/package-lock.json
