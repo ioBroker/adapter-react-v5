@@ -3036,7 +3036,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         aliasesMap: {},
     };
     private localStorage: Storage = ((window as any)._localStorage as Storage) || window.localStorage;
-    private lastAppliedFilter: string | null = null;
     private readonly tableRef: React.RefObject<HTMLDivElement>;
     private pausedSubscribes: boolean = false;
     private selectFirst: string;
@@ -4313,10 +4312,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 });
                 this.root = root;
                 this.info = info;
-                this.lastAppliedFilter = null; // apply filter anew
-
                 if (!this.pausedSubscribes) {
-                    this.forceUpdate();
+                    this.doFilter();
                 }
                 // else it will be re-rendered when the dialog will be closed
             }, 500);
@@ -9188,6 +9185,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             setTimeout(() => this.setState({ expandAllVisible: true }));
         } else if (counter.count >= 500 && this.state.expandAllVisible) {
             setTimeout(() => this.setState({ expandAllVisible: false }));
+        } else {
+            this.forceUpdate();
         }
     }
 
