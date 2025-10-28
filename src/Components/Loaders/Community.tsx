@@ -5,8 +5,7 @@
  *
  */
 import React, { useEffect } from 'react';
-import type { ThemeName, ThemeType } from '../types';
-// import './loader.css'
+import type { ThemeName, ThemeType } from '../../types';
 
 declare global {
     interface Window {
