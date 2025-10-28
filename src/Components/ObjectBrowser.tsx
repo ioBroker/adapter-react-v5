@@ -3121,6 +3121,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         aliasReadWrite?: React.CSSProperties;
         aliasAlone?: React.CSSProperties;
     } = {};
+    private expertMode: boolean = false;
     private customColumnDialog: null | {
         value: boolean | number | string;
         type: 'boolean' | 'number' | 'string';
@@ -3136,6 +3137,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             this.localStorage.getItem(`${props.dialogName || 'App'}.objectSelected`) || '';
 
         this.selectFirst = '';
+
+        this.expertMode = !!this.props.expertMode;
 
         if (lastSelectedItemStr.startsWith('[')) {
             try {
@@ -9233,6 +9236,11 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             this.unsubscribeTimer = null;
             this.checkUnsubscribes();
         }, 200);
+
+        if (this.expertMode !== !!this.state.filter.expertMode) {
+            this.expertMode = !!this.state.filter.expertMode;
+            this.doFilter(true);
+        }
 
         if (!this.state.loaded) {
             return <CircularProgress key={`${this.props.dialogName}_c`} />;

@@ -25,8 +25,8 @@ import { ObjectBrowser, type ObjectBrowserFilter } from '../../src/Components/Ob
 import { PROGRESS } from '../../src/LegacyConnection';
 import { AdminConnection } from '@iobroker/socket-client';
 import '../../src/index.css';
-import { Tab, Tabs } from '@mui/material';
-import { LoaderNW, ToggleThemeMenu } from '../../src';
+import { IconButton, Tab, Tabs } from '@mui/material';
+import { IconExpert, LoaderNW, ToggleThemeMenu } from '../../src';
 
 interface AppState {
     connected: boolean;
@@ -34,6 +34,7 @@ interface AppState {
     tab: 'ObjectBrowser' | 'LoaderNW';
     theme: IobTheme;
     themeName: ThemeName;
+    expertMode: boolean;
 }
 
 export default class App extends Component<object, AppState> {
@@ -62,6 +63,7 @@ export default class App extends Component<object, AppState> {
             loaded: false,
             theme,
             themeName,
+            expertMode: window.localStorage.getItem('gui-test-expert-mode') === 'true',
             tab: (window.localStorage.getItem('gui-test-tab') as AppState['tab']) || 'ObjectBrowser',
         };
 
@@ -95,6 +97,7 @@ export default class App extends Component<object, AppState> {
     renderObjectBrowser(): React.JSX.Element {
         return (
             <ObjectBrowser
+                expertMode={this.state.expertMode}
                 key="browser"
                 dialogName="admin"
                 style={{ width: '100%', height: '100%' }}
@@ -167,6 +170,16 @@ export default class App extends Component<object, AppState> {
                                 }}
                                 t={I18n.t}
                             />
+                            <IconButton
+                                onClick={() => {
+                                    this.setState({ expertMode: !this.state.expertMode });
+                                    window.localStorage.setItem('gui-test-expert-mode', String(!this.state.expertMode));
+                                }}
+                                style={{ color: this.state.expertMode ? 'orange' : undefined }}
+                                title={I18n.t('Expert Mode')}
+                            >
+                                <IconExpert />
+                            </IconButton>
                         </Tabs>
                         {!this.state.loaded && <div style={{ color: 'white' }}>Loading...</div>}
                         {this.state.loaded && this.state.tab === 'ObjectBrowser' && this.renderObjectBrowser()}
