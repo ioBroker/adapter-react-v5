@@ -691,7 +691,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.0.7 (2025-10-28)
 
 - (@GermanBluefox) Added `updateSmartNameEx` function to Utils
 - (@GermanBluefox) Corrected expert mode toggle in object browser
