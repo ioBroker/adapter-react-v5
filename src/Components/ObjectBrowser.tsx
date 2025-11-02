@@ -3224,6 +3224,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                         void this.parseJsonFile(text);
                     }
                 }}
+                themeName={this.props.themeName}
+                themeType={this.props.themeType}
                 t={this.props.t}
             />
         );

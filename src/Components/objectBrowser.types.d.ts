@@ -71,6 +71,8 @@ export interface ObjectViewFileDialogProps {
 export interface InsertJsonObjectsDialogProps {
     t: Translate;
     onClose: (json?: string) => void;
+    themeType: ThemeType;
+    themeName: ThemeName;
 }
 
 export interface TreeItemData {
