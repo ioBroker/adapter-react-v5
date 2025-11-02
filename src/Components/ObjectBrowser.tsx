@@ -3481,13 +3481,13 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                             open={!!this.state.showImportMenu}
                             onClose={() => this.setState({ showImportMenu: null })}
                         >
-                            <MenuItem onClick={() => this.onOpenFile()}>
+                            <MenuItem onClick={() => this.setState({ showImportMenu: null }, () => this.onOpenFile())}>
                                 <ListItemIcon>
                                     <UploadFile />
                                 </ListItemIcon>
                                 <ListItemText>{this.props.t('ra_From file')}</ListItemText>
                             </MenuItem>
-                            <MenuItem onClick={() => this.setState({ showImportDialog: true })}>
+                            <MenuItem onClick={() => this.setState({ showImportMenu: null, showImportDialog: true })}>
                                 <ListItemIcon>
                                     <ContentPaste />
                                 </ListItemIcon>
