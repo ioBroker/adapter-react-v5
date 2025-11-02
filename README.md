@@ -691,6 +691,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Added possibility to import objects from text
+- (@GermanBluefox) Object browser was split into a few files
+
 ### 8.0.7 (2025-10-28)
 
 - (@GermanBluefox) Added `updateSmartNameEx` function to Utils

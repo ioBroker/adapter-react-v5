@@ -33,6 +33,7 @@ export { extendDeviceTypeTranslation } from './Components/DeviceType/deviceTypeT
 export { Loader } from './Components/Loader';
 export { Logo } from './Components/Logo';
 export { MDUtils } from './Components/MDUtils';
+export { ObjectBrowserClass, ObjectBrowser, getSelectIdIconFromObjects, ITEM_IMAGES } from './Components/ObjectBrowser';
 export {
     type TreeItemData,
     type TreeItem,
@@ -40,11 +41,8 @@ export {
     type ObjectBrowserCustomFilter,
     type ObjectBrowserColumn,
     type ObjectBrowserProps,
-    ObjectBrowserClass,
-    ObjectBrowser,
-    getSelectIdIconFromObjects,
-    ITEM_IMAGES,
-} from './Components/ObjectBrowser';
+} from './Components/objectBrowser.types';
+
 export { InfoBox } from './Components/InfoBox';
 export { Router } from './Components/Router';
 export { SaveCloseButtons } from './Components/SaveCloseButtons';

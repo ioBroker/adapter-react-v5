@@ -13,12 +13,12 @@ import { Cancel as IconCancel, Check as IconOk } from '@mui/icons-material';
 import type { Connection } from '../Connection';
 
 import { I18n } from '../i18n';
+import { ObjectBrowser } from '../Components/ObjectBrowser';
 import {
-    ObjectBrowser,
     type ObjectBrowserFilter,
     type ObjectBrowserColumn,
     type ObjectBrowserCustomFilter,
-} from '../Components/ObjectBrowser';
+} from '../Components/objectBrowser.types';
 import type { IobTheme } from '../types';
 
 export interface SelectIDFilters {

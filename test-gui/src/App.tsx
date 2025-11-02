@@ -25,7 +25,7 @@ import { ObjectBrowser, type ObjectBrowserFilter } from '../../src/Components/Ob
 import { PROGRESS } from '../../src/LegacyConnection';
 import { AdminConnection } from '@iobroker/socket-client';
 import '../../src/index.css';
-import { IconButton, Tab, Tabs } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, IconButton, Tab, Tabs, TextField } from '@mui/material';
 import { IconExpert, LoaderNW, ToggleThemeMenu } from '../../src';
 
 interface AppState {
@@ -35,6 +35,47 @@ interface AppState {
     theme: IobTheme;
     themeName: ThemeName;
     expertMode: boolean;
+    showInputTextDialog: boolean;
+    inputTextDialogValue: string;
+}
+
+function InputTextDialog(props: { onClose: (text?: string) => void }): React.JSX.Element | null {
+    const [text, setText] = React.useState<string>('');
+    return (
+        <Dialog
+            open={!0}
+            onClose={() => props.onClose()}
+            maxWidth="md"
+            fullWidth
+        >
+            <DialogContent>
+                <TextField
+                    variant="standard"
+                    multiline
+                    rows={15}
+                    fullWidth
+                    value={text}
+                    onChange={e => setText(e.target.value)}
+                />
+            </DialogContent>
+            <DialogActions>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => props.onClose(text)}
+                >
+                    Ok
+                </Button>
+                <Button
+                    variant="contained"
+                    color="grey"
+                    onClick={() => props.onClose()}
+                >
+                    Cancel
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
 }
 
 export default class App extends Component<object, AppState> {
@@ -65,6 +106,8 @@ export default class App extends Component<object, AppState> {
             themeName,
             expertMode: window.localStorage.getItem('gui-test-expert-mode') === 'true',
             tab: (window.localStorage.getItem('gui-test-tab') as AppState['tab']) || 'ObjectBrowser',
+            showInputTextDialog: false,
+            inputTextDialogValue: '',
         };
 
         I18n.setTranslations(translations);
@@ -111,6 +154,7 @@ export default class App extends Component<object, AppState> {
                 themeType="dark"
                 theme={this.state.theme}
                 enableStateValueEdit
+                objectBrowserInsertJsonObjects={InputTextDialog}
                 onFilterChanged={(filterConfig: ObjectBrowserFilter) => {
                     this.filters = filterConfig;
                     console.log(this.filters);
