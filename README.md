@@ -691,7 +691,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.0.9 (2025-11-02)
 - (@GermanBluefox) Added possibility to import objects from text
 - (@GermanBluefox) Object browser was split into a few files
 
