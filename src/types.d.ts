@@ -3,7 +3,6 @@ import type { Theme as MuiTheme, Palette as MuiPalette } from '@mui/material/sty
 import type { AdminConnection, Connection } from '@iobroker/socket-client';
 
 import type { LegacyConnection } from './LegacyConnection';
-import type Router from './Components/Router';
 
 export type Translate = (key: string, ...args: (string | number | boolean)[]) => string;
 

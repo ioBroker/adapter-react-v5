@@ -3221,7 +3221,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 onClose={(text?: string): void => {
                     this.setState({ showImportDialog: false });
                     if (text) {
-                        this.parseJsonFile(text);
+                        void this.parseJsonFile(text);
                     }
                 }}
                 t={this.props.t}
