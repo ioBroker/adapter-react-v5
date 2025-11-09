@@ -691,7 +691,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.0.12 (2025-11-09)
 - (@GermanBluefox) Fixing ref for Icon and TabContent components
 
 ### 8.0.9 (2025-11-02)
