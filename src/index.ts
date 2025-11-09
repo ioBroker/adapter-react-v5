@@ -94,7 +94,7 @@ export { DialogError } from './Dialogs/Error';
 export { DialogError as Error } from './Dialogs/Error'; // deprecated
 export { DialogMessage } from './Dialogs/Message';
 export { DialogMessage as Message } from './Dialogs/Message'; // deprecated
-export { DialogSelectID } from './Dialogs/SelectID';
+export { DialogSelectID, type SelectIDFilters } from './Dialogs/SelectID';
 export { DialogSelectID as SelectID } from './Dialogs/SelectID'; // deprecated
 export { DialogSelectFile } from './Dialogs/SelectFile';
 export { DialogSelectFile as SelectFile } from './Dialogs/SelectFile'; // deprecated
