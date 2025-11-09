@@ -33,6 +33,7 @@ function copyAllFiles() {
     try {
         !existsSync('build') && mkdirSync('build');
         copyFiles(['src/*.d.ts'], 'build');
+        copyFiles(['src/Components/objectBrowser.types.d.ts'], 'build/Components');
         copyFiles(
             ['src/assets/lamp_ceiling.svg', 'src/assets/lamp_table.svg', 'src/assets/no_icon.svg'],
             'build/assets',
