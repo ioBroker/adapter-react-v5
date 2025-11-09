@@ -26,12 +26,12 @@ import { PROGRESS } from '../../src/LegacyConnection';
 import { AdminConnection } from '@iobroker/socket-client';
 import '../../src/index.css';
 import { Button, Dialog, DialogActions, DialogContent, IconButton, Tab, Tabs, TextField } from '@mui/material';
-import { IconExpert, LoaderNW, ToggleThemeMenu } from '../../src';
+import { Icon, IconExpert, LoaderNW, ToggleThemeMenu } from '../../src';
 
 interface AppState {
     connected: boolean;
     loaded: boolean;
-    tab: 'ObjectBrowser' | 'LoaderNW';
+    tab: 'ObjectBrowser' | 'LoaderNW' | 'Icon';
     theme: IobTheme;
     themeName: ThemeName;
     expertMode: boolean;
@@ -81,6 +81,8 @@ function InputTextDialog(props: { onClose: (text?: string) => void }): React.JSX
 export default class App extends Component<object, AppState> {
     private filters: ObjectBrowserFilter = {};
     private readonly socket: AdminConnection;
+    private readonly imgRef: React.RefObject<HTMLImageElement> = React.createRef();
+    private imageInterval: ReturnType<typeof setInterval> | null = null;
 
     constructor(props: any) {
         super(props);
@@ -137,6 +139,13 @@ export default class App extends Component<object, AppState> {
         });
     }
 
+    componentWillUnmount(): void {
+        if (this.imageInterval) {
+            clearInterval(this.imageInterval);
+            this.imageInterval = null;
+        }
+    }
+
     renderObjectBrowser(): React.JSX.Element {
         return (
             <ObjectBrowser
@@ -172,6 +181,24 @@ export default class App extends Component<object, AppState> {
         return <LoaderNW themeType={this.state.themeName as ThemeType} />;
     }
 
+    renderIcon(): React.JSX.Element {
+        if (!this.imageInterval) {
+            this.imageInterval = setInterval(() => {
+                if (this.imgRef.current) {
+                    this.imgRef.current.src = `https://picsum.photos/200/300?random=${Math.random()}`;
+                }
+            }, 1000);
+        }
+
+        return (
+            <Icon
+                src="https://picsum.photos/200/300"
+                style={{ width: 300, height: 200 }}
+                ref={this.imgRef}
+            />
+        );
+    }
+
     render(): React.JSX.Element {
         return (
             <StyledEngineProvider injectFirst>
@@ -186,6 +213,10 @@ export default class App extends Component<object, AppState> {
                             value={this.state.tab}
                             onChange={(_event, newValue) => {
                                 this.setState({ tab: newValue });
+                                if (this.imageInterval) {
+                                    clearInterval(this.imageInterval);
+                                    this.imageInterval = null;
+                                }
                                 if (!newValue.includes('Loader')) {
                                     window.localStorage.setItem('gui-test-tab', newValue);
                                 }
@@ -200,6 +231,10 @@ export default class App extends Component<object, AppState> {
                             <Tab
                                 label="Loader NW"
                                 value="LoaderNW"
+                            />
+                            <Tab
+                                label="Icon"
+                                value="Icon"
                             />
                             <div style={{ flexGrow: 1 }} />
                             <ToggleThemeMenu
@@ -228,6 +263,7 @@ export default class App extends Component<object, AppState> {
                         {!this.state.loaded && <div style={{ color: 'white' }}>Loading...</div>}
                         {this.state.loaded && this.state.tab === 'ObjectBrowser' && this.renderObjectBrowser()}
                         {this.state.loaded && this.state.tab === 'LoaderNW' && this.renderLoaderNW()}
+                        {this.state.loaded && this.state.tab === 'Icon' && this.renderIcon()}
                     </div>
                 </ThemeProvider>
             </StyledEngineProvider>

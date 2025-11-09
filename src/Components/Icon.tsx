@@ -15,7 +15,6 @@ import {
 } from '@mui/icons-material';
 
 import { IconAlias } from '../icons/IconAlias';
-import { Utils } from './Utils';
 
 /**
  * Get icon by object type (state, channel, device, ...).
@@ -75,7 +74,7 @@ export function getSelectIdIcon(obj: ioBroker.Object | null, imagePrefix?: strin
                     let instance;
                     if (obj.type === 'instance' || obj.type === 'adapter') {
                         src = `${imagePrefix}/adapter/${common.name as string}/${cIcon}`;
-                    } else if (obj._id && obj._id.startsWith('system.adapter.')) {
+                    } else if (obj._id?.startsWith('system.adapter.')) {
                         instance = obj._id.split('.', 3);
                         if (cIcon[0] === '/') {
                             instance[2] += cIcon;
@@ -120,8 +119,6 @@ export interface IconProps {
     styleUTF8?: React.CSSProperties;
     /** On error handler */
     onError?: ReactEventHandler<HTMLImageElement>;
-    /** Reference to image */
-    ref?: React.RefObject<HTMLImageElement>;
     /** Alternative text for image */
     alt?: string;
 }
@@ -129,54 +126,84 @@ export interface IconProps {
 const REMOTE_SERVER = window.location.hostname.endsWith('iobroker.in');
 const REMOTE_PREFIX = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
 
-export function Icon(props: IconProps): React.JSX.Element | null {
-    if (props.src) {
-        if (typeof props.src === 'string') {
-            if (props.src.length < 3) {
-                // utf-8 char
-                if (props.sx) {
+export const Icon = React.forwardRef<HTMLImageElement | HTMLSpanElement, IconProps>(
+    function IconComponent(props, ref): React.JSX.Element | null {
+        if (props.src) {
+            if (typeof props.src === 'string') {
+                if (props.src.length < 3) {
+                    // utf-8 char
+                    if (props.sx) {
+                        return (
+                            <Box
+                                component="span"
+                                sx={props.sx}
+                                ref={ref as React.Ref<HTMLSpanElement>}
+                                title={props.title || undefined}
+                                style={{ height: 27, marginTop: -8, ...(props.styleUTF8 || props.style) }}
+                                className={props.className ? `iconOwn ${props.className}` : 'iconOwn'}
+                            >
+                                {props.src}
+                            </Box>
+                        );
+                    }
                     return (
-                        <Box
-                            component="span"
-                            sx={props.sx}
+                        <span
+                            ref={ref as React.Ref<HTMLSpanElement>}
                             title={props.title || undefined}
                             style={{ height: 27, marginTop: -8, ...(props.styleUTF8 || props.style) }}
-                            className={Utils.clsx(props.className, 'iconOwn')}
+                            className={props.className ? `iconOwn ${props.className}` : 'iconOwn'}
                         >
                             {props.src}
-                        </Box>
+                        </span>
                     );
                 }
-                return (
-                    <span
-                        title={props.title || undefined}
-                        style={{ height: 27, marginTop: -8, ...(props.styleUTF8 || props.style) }}
-                        className={Utils.clsx(props.className, 'iconOwn')}
-                    >
-                        {props.src}
-                    </span>
-                );
-            }
-            if (props.src.startsWith('data:image/svg')) {
-                return (
-                    <SVG
-                        title={props.title || undefined}
-                        src={props.src}
-                        className={Utils.clsx(props.className, 'iconOwn')}
-                        width={props.style?.width || 28}
-                        height={props.style?.height || props.style?.width || 28}
-                        style={props.style || undefined}
-                    />
-                );
-            }
-            if (REMOTE_SERVER && !props.src.startsWith('http://') && !props.src.startsWith('https://')) {
-                let src = props.src;
-                if (src.startsWith('./')) {
-                    src = REMOTE_PREFIX + src.substring(2);
-                } else if (!src.startsWith('/')) {
-                    src = REMOTE_PREFIX + src;
+                if (props.src.startsWith('data:image/svg')) {
+                    return (
+                        <SVG
+                            title={props.title || undefined}
+                            src={props.src}
+                            className={props.className ? `iconOwn ${props.className}` : 'iconOwn'}
+                            width={props.style?.width || 28}
+                            height={props.style?.height || props.style?.width || 28}
+                            style={props.style || undefined}
+                        />
+                    );
                 }
+                if (REMOTE_SERVER && !props.src.startsWith('http://') && !props.src.startsWith('https://')) {
+                    let src = props.src;
+                    if (src.startsWith('./')) {
+                        src = REMOTE_PREFIX + src.substring(2);
+                    } else if (!src.startsWith('/')) {
+                        src = REMOTE_PREFIX + src;
+                    }
 
+                    if (props.sx) {
+                        return (
+                            <Box
+                                component="img"
+                                sx={props.sx}
+                                title={props.title || undefined}
+                                style={props.style || undefined}
+                                className={props.className ? `iconOwn ${props.className}` : 'iconOwn'}
+                                src={`https://remote-files.iobroker.in${src}`}
+                                alt={props.alt || undefined}
+                                ref={ref as React.Ref<HTMLImageElement>}
+                                onError={e => props.onError?.(e)}
+                            />
+                        );
+                    }
+                    return (
+                        <img
+                            title={props.title || undefined}
+                            style={props.style || undefined}
+                            className={props.className ? `iconOwn ${props.className}` : 'iconOwn'}
+                            src={`https://remote-files.iobroker.in${src}`}
+                            alt={props.alt || undefined}
+                            ref={ref as React.Ref<HTMLImageElement>}
+                            onError={e => props.onError?.(e)}
+                        />
+                    );
+                }
                 if (props.sx) {
                     return (
                         <Box
@@ -184,11 +211,11 @@ export function Icon(props: IconProps): React.JSX.Element | null {
                             sx={props.sx}
                             title={props.title || undefined}
                             style={props.style || undefined}
-                            className={Utils.clsx(props.className, 'iconOwn')}
-                            src={`https://remote-files.iobroker.in${src}`}
+                            className={props.className ? `iconOwn ${props.className}` : 'iconOwn'}
+                            src={props.src}
                             alt={props.alt || undefined}
-                            ref={props.ref}
-                            onError={e => props.onError && props.onError(e)}
+                            ref={ref as React.Ref<HTMLImageElement>}
+                            onError={props.onError}
                         />
                     );
                 }
@@ -196,43 +223,19 @@ export function Icon(props: IconProps): React.JSX.Element | null {
                     <img
                         title={props.title || undefined}
                         style={props.style || undefined}
-                        className={Utils.clsx(props.className, 'iconOwn')}
-                        src={`https://remote-files.iobroker.in${src}`}
-                        alt={props.alt || undefined}
-                        ref={props.ref}
-                        onError={e => props.onError && props.onError(e)}
-                    />
-                );
-            }
-            if (props.sx) {
-                return (
-                    <Box
-                        component="img"
-                        sx={props.sx}
-                        title={props.title || undefined}
-                        style={props.style || undefined}
-                        className={Utils.clsx(props.className, 'iconOwn')}
+                        className={props.className ? `iconOwn ${props.className}` : 'iconOwn'}
                         src={props.src}
                         alt={props.alt || undefined}
-                        ref={props.ref}
+                        ref={ref as React.Ref<HTMLImageElement>}
                         onError={props.onError}
                     />
                 );
             }
-            return (
-                <img
-                    title={props.title || undefined}
-                    style={props.style || undefined}
-                    className={Utils.clsx(props.className, 'iconOwn')}
-                    src={props.src}
-                    alt={props.alt || undefined}
-                    ref={props.ref}
-                    onError={props.onError}
-                />
-            );
-        }
 
-        return props.src;
-    }
-    return null;
-}
+            return props.src;
+        }
+        return null;
+    },
+);
+
+Icon.displayName = 'Icon';
