@@ -16,7 +16,7 @@ interface LogoProps {
  * @param props Properties
  */
 export function LoaderNW(props: LogoProps): React.JSX.Element {
-    const themeType = props.themeType || 'light';
+    const themeType = props.themeType || 'dark';
     const size = props.size || 300;
 
     return (
@@ -63,8 +63,8 @@ export function LoaderNW(props: LogoProps): React.JSX.Element {
           @keyframes jump {
             0% { fill: #00af78; }
             25% { fill: #00af78; }
-            25.01% { fill: ${themeType === 'dark' ? '#ffffff' : '#00785A'}; }
-            100% { fill: ${themeType === 'dark' ? '#ffffff' : '#00785A'}; }
+            25.01% { fill: ${themeType === 'dark' ? '#00785A' : '#00785A'}; }
+            100% { fill: ${themeType === 'dark' ? '#00785A' : '#00785A'}; }
           }
           .bar { animation: jump 2s linear infinite; }
           .bar.bar1 { animation-delay: 0s; }

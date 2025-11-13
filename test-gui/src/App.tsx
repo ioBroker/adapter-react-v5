@@ -178,7 +178,7 @@ export default class App extends Component<object, AppState> {
     }
 
     renderLoaderNW(): React.JSX.Element {
-        return <LoaderNW themeType={this.state.themeName as ThemeType} />;
+        return <LoaderNW themeType="dark" />;
     }
 
     renderIcon(): React.JSX.Element {

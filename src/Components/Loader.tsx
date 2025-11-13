@@ -44,7 +44,7 @@ export function Loader(props: LoaderProps): React.JSX.Element {
         return <LoaderMV themeType={props.themeType} />;
     }
     if (vendorPrefix === 'NW') {
-        return <LoaderNW themeType={props.themeType} />;
+        return <LoaderNW themeType="dark" />;
     }
     if (vendorPrefix && vendorPrefix !== '@@vendorPrefix@@') {
         return <LoaderVendor themeType={props.themeType} />;

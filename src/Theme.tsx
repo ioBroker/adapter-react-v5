@@ -329,7 +329,7 @@ export function Theme(type: ThemeName, overrides?: Record<string, any>): IobThem
         localOverrides = {
             MuiAppBar: {
                 colorDefault: {
-                    backgroundColor: '#0F99DE',
+                    backgroundColor: '#272727',
                 },
             },
             MuiLink: {
@@ -342,12 +342,17 @@ export function Theme(type: ThemeName, overrides?: Record<string, any>): IobThem
                     },
                 },
             },
+            MuiPaper: getElevations('#121212', '#fff'),
         };
 
         options = {
             name: type,
             palette: {
-                mode: 'light',
+                mode: 'dark',
+                background: {
+                    paper: '#121212',
+                    default: '#121212',
+                },
                 primary: {
                     main: '#00af78',
                 },
@@ -355,42 +360,9 @@ export function Theme(type: ThemeName, overrides?: Record<string, any>): IobThem
                     main: '#005a40',
                 },
                 expert: '#14bb00',
-            },
-        };
-    } else if (type === 'DX') {
-        localOverrides = {
-            MuiAppBar: {
-                colorDefault: {
-                    backgroundColor: '#a9a9a9',
-                },
-            },
-            MuiLink: {
-                root: {
-                    textTransform: 'uppercase',
-                    transition: 'color .3s ease',
-                    color: orange[400],
-                    '&:hover': {
-                        color: orange[300],
-                    },
-                },
-            },
-        };
-
-        options = {
-            name: type,
-            palette: {
-                mode: 'light',
-                primary: {
-                    main: '#F5F5F7',
-                },
-                secondary: {
-                    main: '#a9a9a9',
-                },
-                expert: '#BD1B24',
                 text: {
-                    primary: '#007AFE',
-                    secondary: '#007AFE',
-                    disabled: '#007AFEAA',
+                    primary: '#ffffff',
+                    secondary: '#ffffff',
                 },
             },
         };
