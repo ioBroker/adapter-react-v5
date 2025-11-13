@@ -691,7 +691,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.0.13 (2025-11-13)
 - (@GermanBluefox) Changed theme for NW
 
 ### 8.0.12 (2025-11-09)
