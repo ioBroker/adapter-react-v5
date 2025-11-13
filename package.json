@@ -60,7 +60,7 @@
     "@iobroker/type-detector": "^4.6.2",
     "@iobroker/types": "^7.0.8-alpha.7-20250928-40cb80c18",
     "@mui/icons-material": "^6.5.0",
-    "@mui/material": "^6.5.0",
+    "@mui/material": "^7.3.5",
     "@sentry/browser": "^10.22.0",
     "cronstrue": "^3.9.0",
     "file-selector": "^2.1.2",
