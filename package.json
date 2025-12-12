@@ -76,7 +76,7 @@
     "@alcalzone/release-script-plugin-license": "^4.0.0",
     "@iobroker/build-tools": "^2.0.15",
     "@iobroker/eslint-config": "^2.2.0",
-    "@types/node": "^24.9.1",
+    "@types/node": "^25.0.1",
     "@types/react": "^18.3.23",
     "@types/react-color": "^3.0.13",
     "ajv": "^8.17.1",
