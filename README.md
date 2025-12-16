@@ -691,7 +691,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### 8.0.15 (2025-12-16)
+### **WORK IN PROGRESS**
 - (@GermanBluefox) Updated packages and used standard GitHub actions
 
 ### 8.0.13 (2025-11-13)
