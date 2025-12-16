@@ -1,7 +1,6 @@
 // please do not delete React, as without it other projects could not be compiled: ReferenceError: React is not defined
 import React from 'react';
 import { Grid2 } from '@mui/material';
-import { IconProps } from './Icon';
 
 const styles: Record<string, React.CSSProperties> = {
     root: {
