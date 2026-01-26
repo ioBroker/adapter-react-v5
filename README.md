@@ -691,6 +691,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Added percentage icon
+
 ### 8.0.16 (2025-12-16)
 - (@GermanBluefox) Updated packages and used standard GitHub actions
 

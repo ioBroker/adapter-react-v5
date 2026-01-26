@@ -93,6 +93,7 @@ const TYPE_ICONS: Record<TypesExtended, React.FC<IconPropsSVG>> = {
     [Types.media]: TypeIconMedia,
     [Types.motion]: TypeIconMotion,
     [Types.ct]: TypeIconCT,
+    [Types.percentage]: TypeIconSlider,
     [Types.rgb]: TypeIconRGB,
     [Types.rgbSingle]: TypeIconRGB,
     [Types.rgbwSingle]: TypeIconRGBWSingle,
