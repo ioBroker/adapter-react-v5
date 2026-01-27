@@ -691,7 +691,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.0.17 (2026-01-27)
 - (@GermanBluefox) Added percentage icon
 
 ### 8.0.16 (2025-12-16)
