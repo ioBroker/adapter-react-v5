@@ -16,5 +16,6 @@ export declare const moduleFederationShared: (
     {
         requiredVersion: '*';
         singleton: true;
+        eager?: boolean;
     }
 >;

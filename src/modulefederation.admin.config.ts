@@ -1,4 +1,4 @@
-const makeShared = (pkgs: string[]): Record<string, { requiredVersion: '*'; singleton: true }> => {
+const makeShared = (pkgs: string[]): Record<string, { requiredVersion: '*'; singleton: true; eager?: boolean }> => {
     const result: Record<string, { requiredVersion: '*'; singleton: true; eager?: boolean }> = {};
     pkgs.forEach(packageName => {
         result[packageName] = {
@@ -22,7 +22,7 @@ export function moduleFederationShared(
               devDependencies?: Record<string, string>;
           }
         | string[],
-): Record<string, { requiredVersion: '*'; singleton: true }> {
+): Record<string, { requiredVersion: '*'; singleton: true; eager?: boolean }> {
     const list: string[] = [
         '@emotion/react',
         '@emotion/styled',
