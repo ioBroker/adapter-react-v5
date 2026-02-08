@@ -691,6 +691,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Small typing fixes
+
 ### 8.0.17 (2026-01-27)
 - (@GermanBluefox) Added percentage icon
 
@@ -1037,7 +1040,7 @@ You can find the migration instructions:
 
 ### 4.7.2 (2023-11-03)
 
-- (foxriver76) fixed problem with color picker, where editing TextField was buggy
+- (foxriver76) fixed the problem with color picker, where editing TextField was buggy
 - (foxriver76) fixed light mode color of a path in FileBrowser
 
 ### 4.7.0 (2023-10-31)
@@ -1080,7 +1083,7 @@ You can find the migration instructions:
 
 ### 4.5.3 (2023-08-20)
 
-- (foxriver76) fixed css classes of TableResize, see https://github.com/ioBroker/ioBroker.admin/issues/1860
+- (foxriver76) fixed CSS classes of TableResize, see https://github.com/ioBroker/ioBroker.admin/issues/1860
 
 ### 4.5.2 (2023-08-20)
 
@@ -1320,7 +1323,7 @@ You can find the migration instructions:
 
 ### 3.1.20 (2022-07-14)
 
-- (@GermanBluefox) Allowed to show select dialog with the expert mode enabled
+- (@GermanBluefox) Allowed showing the select dialog with the expert mode enabled
 
 ### 3.1.19 (2022-07-08)
 

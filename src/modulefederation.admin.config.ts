@@ -1,5 +1,5 @@
 const makeShared = (pkgs: string[]): Record<string, { requiredVersion: '*'; singleton: true }> => {
-    const result: Record<string, { requiredVersion: '*'; singleton: true }> = {};
+    const result: Record<string, { requiredVersion: '*'; singleton: true; eager?: boolean }> = {};
     pkgs.forEach(packageName => {
         result[packageName] = {
             requiredVersion: '*',
