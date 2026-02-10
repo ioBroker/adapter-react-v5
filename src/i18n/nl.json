@@ -90,6 +90,7 @@
     "ra_Error": "Fout",
     "ra_Expand all nodes": "Vouw alle knooppunten uit",
     "ra_Expand one step node": "Vouw een niveau uit",
+    "ra_Expand/Collapse card": "Kaart uit-/inklappen",
     "ra_Export configuration section": "Sectie Exportconfiguratie",
     "ra_Export data to %s file": "Exporteer gegevens naar %s bestand",
     "ra_Failed to open JSON File": "JSON-bestand kan niet worden geopend",

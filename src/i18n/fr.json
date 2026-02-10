@@ -90,6 +90,7 @@
     "ra_Error": "Erreur",
     "ra_Expand all nodes": "Développer tous les nœuds",
     "ra_Expand one step node": "Développer un niveau",
+    "ra_Expand/Collapse card": "Carte Développer/Réduire",
     "ra_Export configuration section": "Exporter la section de configuration",
     "ra_Export data to %s file": "Exporter les données vers le fichier %s",
     "ra_Failed to open JSON File": "Échec de l'ouverture du fichier JSON",

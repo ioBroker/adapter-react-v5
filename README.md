@@ -691,6 +691,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Added translations
+
 ### 8.0.20 (2026-02-09)
 - (@GermanBluefox) Small typing fixes
 

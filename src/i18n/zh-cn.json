@@ -90,6 +90,7 @@
     "ra_Error": "错误",
     "ra_Expand all nodes": "展开所有节点",
     "ra_Expand one step node": "扩大一级",
+    "ra_Expand/Collapse card": "展开/折叠卡",
     "ra_Export configuration section": "导出配置部分",
     "ra_Export data to %s file": "将数据导出到 %s 文件",
     "ra_Failed to open JSON File": "无法打开JSON文件",

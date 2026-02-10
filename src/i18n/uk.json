@@ -90,6 +90,7 @@
     "ra_Error": "Помилка",
     "ra_Expand all nodes": "Розгорнути всі вузли",
     "ra_Expand one step node": "Розгорніть один рівень",
+    "ra_Expand/Collapse card": "Розгорнути/Згорнути картку",
     "ra_Export configuration section": "Розділ конфігурації експорту",
     "ra_Export data to %s file": "Експортувати дані у файл %s",
     "ra_Failed to open JSON File": "Не вдалося відкрити файл JSON",

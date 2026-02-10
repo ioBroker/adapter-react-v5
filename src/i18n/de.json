@@ -90,6 +90,7 @@
     "ra_Error": "Fehler",
     "ra_Expand all nodes": "Alle Knoten aufklappen",
     "ra_Expand one step node": "Eine Ebene aufklappen",
+    "ra_Expand/Collapse card": "Karte ein-/ausklappen",
     "ra_Export configuration section": "Konfigurationsabschnitt exportieren",
     "ra_Export data to %s file": "Daten in %s-Datei exportieren",
     "ra_Failed to open JSON File": "Fehler beim Öffnen der JSON-Datei",
