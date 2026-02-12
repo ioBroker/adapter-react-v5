@@ -65,6 +65,7 @@
     "ra_Delete current row": "删除当前行",
     "ra_Deselect all": "全部取消选择",
     "ra_Device → Channel → State": "设备→频道→状态",
+    "ra_Disable/Enable translation": "禁用/启用翻译",
     "ra_Discard": "丢弃",
     "ra_Disconnected": "断开连接",
     "ra_Do not ask for next 2 hours in this session": "本次会话中不要询问接下来的 2 个小时",
