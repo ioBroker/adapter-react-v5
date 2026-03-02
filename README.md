@@ -690,7 +690,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.1.0 (2026-03-02)
 - (@GermanBluefox) Force react 18
 
 ### 8.0.21 (2026-02-10)
