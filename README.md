@@ -191,9 +191,8 @@ onPrepareSave(settings) {
      super.onPrepareSave(settings);
      if (DATA_INVALID) {
          return false; // configuration will not be saved
-     } else {
-         return true;
      }
+     return true;
 }
 ```
 
@@ -691,6 +690,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Force react 18
+
 ### 8.0.21 (2026-02-10)
 - (@GermanBluefox) Added translations
 
