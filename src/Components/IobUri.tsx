@@ -111,7 +111,7 @@ export function getAttrInObject(
     path: string[] | undefined,
     _position?: number,
 ): any {
-    _position = _position || 0;
+    _position ||= 0;
     if (obj === undefined || obj === null || !path) {
         return obj;
     }
@@ -130,7 +130,7 @@ export function setAttrInObject(
     value: any,
     _position?: number,
 ): any {
-    _position = _position || 0;
+    _position ||= 0;
     if (obj === undefined || obj === null || !path) {
         return value;
     }
