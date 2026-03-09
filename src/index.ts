@@ -30,6 +30,36 @@ export { DeviceTypeSelector } from './Components/DeviceType/DeviceTypeSelector';
 export { DeviceTypeIcon } from './Components/DeviceType/DeviceTypeIcon';
 export { STATES_NAME_ICONS } from './Components/DeviceType/DeviceTypeOptions';
 export { extendDeviceTypeTranslation } from './Components/DeviceType/deviceTypeTranslations';
+export {
+    type IconPropsSVG,
+    Cleaner,
+    DoorClosed,
+    DoorOpened,
+    FireOff,
+    FireOn,
+    FloodOff,
+    FloodOn,
+    Gate,
+    HeatValve,
+    Home,
+    Humidity,
+    IconHome,
+    Jalousie,
+    Material,
+    MotionOff,
+    MotionOn,
+    PushButton,
+    RepairExpert,
+    RGB,
+    Socket,
+    Thermometer,
+    ThermometerSimple,
+    Thermostat,
+    Valve,
+    WindowClosed,
+    WindowOpened,
+    WindowTilted,
+} from './Components/DeviceType/icons';
 export { Loader } from './Components/Loader';
 export { Logo } from './Components/Logo';
 export { MDUtils } from './Components/MDUtils';

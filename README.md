@@ -690,6 +690,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Added export of the types icons
+
 ### 8.1.2 (2026-03-05)
 - (@GermanBluefox) Updated packages
 
