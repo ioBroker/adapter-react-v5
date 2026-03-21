@@ -26,6 +26,7 @@
     "type-lock": "zamek",
     "type-media": "głoska bezdźwięczna",
     "type-motion": "ruch",
+    "type-percentage": "Procent",
     "type-rgb": "Światło RGB",
     "type-rgbSingle": "Pojedyncze światło RGB",
     "type-rgbwSingle": "RGBW jako pojedyncza wartość",

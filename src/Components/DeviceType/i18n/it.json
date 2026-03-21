@@ -26,6 +26,7 @@
     "type-lock": "serratura",
     "type-media": "media",
     "type-motion": "movimento",
+    "type-percentage": "Percentuale",
     "type-rgb": "luce RGB",
     "type-rgbSingle": "Luce RGB singola",
     "type-rgbwSingle": "RGBW come valore singolo",

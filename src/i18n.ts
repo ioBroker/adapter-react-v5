@@ -99,9 +99,8 @@ export class I18n {
                 if (words.en && words.de && words.ru) {
                     Object.keys(words).forEach(key => {
                         const _lang = key as ioBroker.Languages;
-                        I18n.translations[_lang] = I18n.translations[_lang] || {};
-                        const wordsOfOneLang: I18nOneLanguageDictionary | undefined = I18n.translations[_lang];
-                        Object.assign(wordsOfOneLang as Record<string, string>, words[_lang]);
+                        I18n.translations[_lang] ||= {};
+                        Object.assign(I18n.translations[_lang], words[_lang]);
                     });
                 } else {
                     // It could be vice versa: words.word1 = {en: 'translated word1', de: 'übersetztes Wort2'}
@@ -127,19 +126,17 @@ export class I18n {
                 if (!I18n.translations[lang]) {
                     console.warn(`Used unknown language: ${lang}`);
                 }
-                I18n.translations[lang] = I18n.translations[lang] || {};
-                const languageDictionary: I18nOneLanguageDictionary | undefined = I18n.translations[lang];
-                if (languageDictionary) {
-                    Object.keys(words).forEach(word => {
-                        if (!languageDictionary[word]) {
-                            languageDictionary[word] = (words as I18nOneLanguageDictionary)[word];
-                        } else if (languageDictionary[word] !== (words as I18nOneLanguageDictionary)[word]) {
-                            console.warn(
-                                `Translation for word "${word}" in "${lang}" was ignored: existing = "${languageDictionary[word]}", new = ${(words as I18nOneLanguageDictionary)[word]}`,
-                            );
-                        }
-                    });
-                }
+                I18n.translations[lang] ||= {};
+                const languageDictionary = I18n.translations[lang];
+                Object.keys(words).forEach(word => {
+                    if (!languageDictionary[word]) {
+                        languageDictionary[word] = (words as I18nOneLanguageDictionary)[word];
+                    } else if (languageDictionary[word] !== (words as I18nOneLanguageDictionary)[word]) {
+                        console.warn(
+                            `Translation for word "${word}" in "${lang}" was ignored: existing = "${languageDictionary[word]}", new = ${(words as I18nOneLanguageDictionary)[word]}`,
+                        );
+                    }
+                });
             }
         } catch (e: any) {
             console.error(`Cannot apply translations: ${e}`);
@@ -217,7 +214,7 @@ export class I18n {
                 }
             });
             console.log(JSON.stringify(result, null, 2));
-        } else if (typeof filter === 'object') {
+        } else if (filter && typeof filter === 'object') {
             I18n.unknownTranslations.forEach(word => {
                 if (filter.test(word)) {
                     result[word] = word;

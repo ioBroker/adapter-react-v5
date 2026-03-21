@@ -26,6 +26,7 @@
     "type-lock": "Schloss",
     "type-media": "Mediaplayer",
     "type-motion": "Bewegungssensor",
+    "type-percentage": "Prozentsatz",
     "type-rgb": "RGB-Licht",
     "type-rgbSingle": "R,G,B-Licht Einzelwerte",
     "type-rgbwSingle": "R,G,B,W-Licht Einzelwerte",

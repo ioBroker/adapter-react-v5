@@ -26,6 +26,7 @@
     "type-lock": "锁",
     "type-media": "媒体",
     "type-motion": "运动",
+    "type-percentage": "百分比",
     "type-rgb": "RGB灯",
     "type-rgbSingle": "RGB灯单",
     "type-rgbwSingle": "RGBW 作为单一值",

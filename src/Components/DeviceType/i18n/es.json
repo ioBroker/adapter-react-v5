@@ -26,6 +26,7 @@
     "type-lock": "cerrar",
     "type-media": "medios de comunicación",
     "type-motion": "movimiento",
+    "type-percentage": "Porcentaje",
     "type-rgb": "Luz RGB",
     "type-rgbSingle": "Luz RGB individual",
     "type-rgbwSingle": "RGBW como valor único",

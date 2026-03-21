@@ -26,6 +26,7 @@
     "type-lock": "slot",
     "type-media": "media",
     "type-motion": "beweging",
+    "type-percentage": "Percentage",
     "type-rgb": "RGB-licht",
     "type-rgbSingle": "RGB-licht enkel",
     "type-rgbwSingle": "RGBW als enkele waarde",

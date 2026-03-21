@@ -26,6 +26,7 @@
     "type-lock": "Lock",
     "type-media": "Media-player",
     "type-motion": "Motion sensor",
+    "type-percentage": "Percentage",
     "type-rgb": "RGB light",
     "type-rgbSingle": "R,G,B light - single states",
     "type-rgbwSingle": "R,G,B,W light - single states",

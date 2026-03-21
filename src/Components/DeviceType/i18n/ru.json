@@ -26,6 +26,7 @@
     "type-lock": "Замок",
     "type-media": "Медиа-плейер",
     "type-motion": "Датчик движения",
+    "type-percentage": "Проценты",
     "type-rgb": "RGB свет",
     "type-rgbSingle": "R,G,B как отдельные значение",
     "type-rgbwSingle": "R,G,B,W как отдельные значение",

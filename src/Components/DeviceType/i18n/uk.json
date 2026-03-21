@@ -26,6 +26,7 @@
     "type-lock": "замок",
     "type-media": "ЗМІ",
     "type-motion": "руху",
+    "type-percentage": "Відсоток",
     "type-rgb": "RGB світло",
     "type-rgbSingle": "Одиночне світло RGB",
     "type-rgbwSingle": "RGBW як одне значення",

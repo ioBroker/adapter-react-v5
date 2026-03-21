@@ -26,6 +26,7 @@
     "type-lock": "trancar",
     "type-media": "mídia",
     "type-motion": "movimento",
+    "type-percentage": "Percentagem",
     "type-rgb": "Luz RGB",
     "type-rgbSingle": "Luz RGB única",
     "type-rgbwSingle": "RGBW como valor único",
