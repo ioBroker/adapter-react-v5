@@ -155,6 +155,8 @@
     "ra_No response from the backend": "后端无响应",
     "ra_Non-experts may create new objects only in \"0_userdata.0\" or \"alias.0\".": "非专家只能在“ 0_userdata.0”或“ alias.0”中创建新对象。",
     "ra_Not a number": "不是数字",
+    "ra_OAuth Client ID": "OAuth客户端ID",
+    "ra_OAuth Client secret": "OAuth 客户端密钥",
     "ra_Objects": "对象",
     "ra_Ok": "好",
     "ra_On weekdays": "在工作日",

@@ -155,6 +155,8 @@
     "ra_No response from the backend": "Немає відповіді від сервера",
     "ra_Non-experts may create new objects only in \"0_userdata.0\" or \"alias.0\".": "Неексперти можуть створювати нові об’єкти лише в «0_userdata.0» або «alias.0».",
     "ra_Not a number": "Не номер",
+    "ra_OAuth Client ID": "Ідентифікатор клієнта OAuth",
+    "ra_OAuth Client secret": "Секрет клієнта OAuth",
     "ra_Objects": "Об'єкти",
     "ra_Ok": "В порядку",
     "ra_On weekdays": "В будні дні",

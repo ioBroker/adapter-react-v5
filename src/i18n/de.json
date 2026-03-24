@@ -155,6 +155,8 @@
     "ra_No response from the backend": "Keine Antwort vom Backend",
     "ra_Non-experts may create new objects only in \"0_userdata.0\" or \"alias.0\".": "Nicht-Experten dürfen neue Objekte nur in \"0_userdata.0\" oder \"alias.0\" erstellen.",
     "ra_Not a number": "Keine Nummer",
+    "ra_OAuth Client ID": "OAuth-Client-ID",
+    "ra_OAuth Client secret": "OAuth-Client-Secret",
     "ra_Objects": "Objekte",
     "ra_Ok": "OK",
     "ra_On weekdays": "An Wochentagen",
