@@ -480,6 +480,11 @@ export class GenericApp<
         window.removeEventListener('resize', this.onResize, true);
         window.removeEventListener('message', this.onReceiveMessage, false);
 
+        if (this.resizeTimer) {
+            clearTimeout(this.resizeTimer);
+            this.resizeTimer = null;
+        }
+
         // restore window.alert
         if (window.iobOldAlert) {
             window.alert = window.iobOldAlert;
@@ -493,7 +498,7 @@ export class GenericApp<
         if (message?.data) {
             if (message.data === 'updateTheme') {
                 const newThemeName = Utils.getThemeName();
-                Utils.setThemeName(Utils.getThemeName());
+                Utils.setThemeName(newThemeName);
 
                 const newTheme = this.createTheme(newThemeName);
 
@@ -755,7 +760,7 @@ export class GenericApp<
         }
         const ip6 = ips.find(ip => ip.address === '::');
         if (ip6) {
-            ip6.name = `[IPv4] :: - ${I18n.t('ra_Listen on all IPs')}`;
+            ip6.name = `[IPv6] :: - ${I18n.t('ra_Listen on all IPs')}`;
         }
         return ips;
     }

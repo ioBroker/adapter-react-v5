@@ -60,7 +60,7 @@ function TextInputFunc(props: TextInputProps): JSX.Element {
                     onChange={e => {
                         let _error: string | boolean = '';
                         if (props.verify) {
-                            _error = !props.verify(e.target.value);
+                            _error = props.verify(e.target.value);
                         }
 
                         if (props.rule) {

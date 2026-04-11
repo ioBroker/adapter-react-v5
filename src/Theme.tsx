@@ -39,7 +39,7 @@ function toInt(hex: string): { r: number; g: number; b: number } {
  * Convert an RGB object to a hex color string in the format '#rrggbb'.
  */
 function toHex(int: { r: number; g: number; b: number }): string {
-    return `#${Math.round(int.r).toString(16)}${Math.round(int.g).toString(16)}${Math.round(int.b).toString(16)}`;
+    return `#${Math.round(int.r).toString(16).padStart(2, '0')}${Math.round(int.g).toString(16).padStart(2, '0')}${Math.round(int.b).toString(16).padStart(2, '0')}`;
 }
 
 /** Returns the hex color string in the format '#rrggbb' */

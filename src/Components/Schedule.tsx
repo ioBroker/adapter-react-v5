@@ -300,6 +300,21 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
         }
     }
 
+    componentWillUnmount(): void {
+        if (this.timerOnce) {
+            clearTimeout(this.timerOnce);
+            this.timerOnce = null;
+        }
+        if (this.timerFrom) {
+            clearTimeout(this.timerFrom);
+            this.timerFrom = null;
+        }
+        if (this.timerTo) {
+            clearTimeout(this.timerTo);
+            this.timerTo = null;
+        }
+    }
+
     onChange(schedule: ScheduleConfig, force?: boolean): void {
         const isDiff = JSON.stringify(schedule) !== JSON.stringify(this.state.schedule);
         if (force || isDiff) {
@@ -926,8 +941,9 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                             defaultValue={string2USdate(schedule.period.once)}
                             // InputProps={{inputComponent: TextTime}}
                             onChange={e => {
-                                this.timerOnce && clearTimeout(this.timerOnce);
-                                this.timerOnce = null;
+                                if (this.timerOnce) {
+                                    clearTimeout(this.timerOnce);
+                                }
 
                                 if (this.refOnce.current) {
                                     this.refOnce.current.style.background = '#ff000030';
@@ -1920,7 +1936,9 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                         type="date"
                         // inputComponent={TextDate}
                         onChange={e => {
-                            this.timerFrom && clearTimeout(this.timerFrom);
+                            if (this.timerFrom) {
+                                clearTimeout(this.timerFrom);
+                            }
 
                             if (this.refFrom.current) {
                                 this.refFrom.current.style.background = '#ff000030';
@@ -1972,7 +1990,9 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                             defaultValue={string2USdate(schedule.valid.to)}
                             // inputComponent={TextDate}
                             onChange={e => {
-                                this.timerTo && clearTimeout(this.timerTo);
+                                if (this.timerTo) {
+                                    clearTimeout(this.timerTo);
+                                }
 
                                 if (this.refTo.current) {
                                     this.refTo.current.style.background = '#ff000030';

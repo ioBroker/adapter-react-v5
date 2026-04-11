@@ -490,7 +490,7 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
             }
             let hours = parseInt(parts[0], 10) || 0;
             if (hours > 23) {
-                hours = 59;
+                hours = 23;
             }
             if (hours < 0) {
                 hours = 0;
@@ -516,7 +516,7 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
             }
             let hours = parseInt(parts[0], 10) || 0;
             if (hours > 23) {
-                hours = 59;
+                hours = 23;
             }
             if (hours < 0) {
                 hours = 0;
@@ -526,7 +526,7 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
                 date = 31;
             }
             if (date < 1) {
-                hours = 1;
+                date = 1;
             }
             let month = parseInt(partsDate[1], 10) || 1;
             if (month > 12) {

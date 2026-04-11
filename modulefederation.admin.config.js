@@ -28,7 +28,6 @@ const moduleFederationShared = packageJson => {
         'date-fns/locale',
         'leaflet',
         'leaflet-geosearch',
-        'prop-types',
         'react',
         'react-ace',
         'react-dom',

@@ -479,7 +479,7 @@ export class ComplexCron extends Component<ComplexCronProps, ComplexCronState> {
 
         return (
             <div style={styles.mainDiv}>
-                <div style={{ paddingLeft: 8, width: 'calc(100% - px)' }}>
+                <div style={{ paddingLeft: 8, width: 'calc(100% - 8px)' }}>
                     <TextField
                         variant="standard"
                         style={{ width: '100%' }}
@@ -487,7 +487,7 @@ export class ComplexCron extends Component<ComplexCronProps, ComplexCronState> {
                         disabled
                     />
                 </div>
-                <div style={{ paddingLeft: 8, width: 'calc(100% - px)', height: 60 }}>
+                <div style={{ paddingLeft: 8, width: 'calc(100% - 8px)', height: 60 }}>
                     {ComplexCron.convertCronToText(this.state.cron, this.props.language || 'en')}
                     <span style={styles.warning}>
                         {everySecond

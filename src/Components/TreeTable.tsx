@@ -292,6 +292,13 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
         };
     }
 
+    componentWillUnmount(): void {
+        if (this.updateTimeout) {
+            clearTimeout(this.updateTimeout);
+            this.updateTimeout = null;
+        }
+    }
+
     static getDerivedStateFromProps(props: TreeTableProps, state: TreeTableState): Partial<TreeTableState> {
         if (props.glowOnChange) {
             const update: string[] = [];

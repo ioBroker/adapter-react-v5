@@ -192,9 +192,7 @@ export class FileViewerClass extends Component<FileViewerProps, FileViewerState>
         const adapter = parts[0];
         const name = parts.splice(1).join('/');
         if (this.props.supportSubscribes) {
-            this.props.socket
-                .subscribeFiles(adapter, name, this.onFileChanged)
-                .catch(e => window.alert(`Cannot subscribe on file: ${e}`));
+            this.props.socket.unsubscribeFiles(adapter, name, this.onFileChanged);
         }
     }
 
@@ -286,7 +284,7 @@ export class FileViewerClass extends Component<FileViewerProps, FileViewerState>
                     >
                         <source
                             src={this.props.href}
-                            type={`video/${this.state.ext}}`}
+                            type={`video/${this.state.ext}`}
                         />
                     </video>
                 </div>
