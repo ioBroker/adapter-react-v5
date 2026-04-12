@@ -465,7 +465,7 @@ export class GenericApp<
     };
 
     /**
-     * Called immediately after a component is mounted. Setting state here will trigger re-rendering.
+     * Called immediately after a component is mounted. Setting the state here will trigger re-rendering.
      */
     componentDidMount(): void {
         window.addEventListener('resize', this.onResize, true);
