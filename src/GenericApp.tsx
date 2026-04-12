@@ -494,9 +494,12 @@ export class GenericApp<
         super.componentWillUnmount();
     }
 
-    onReceiveMessage = (message: { data: string } | null): void => {
+    onReceiveMessage = (message: { data: string | { type: string } } | null): void => {
         if (message?.data) {
-            if (message.data === 'updateTheme') {
+            if (
+                (typeof message.data === 'string' && message.data === 'updateTheme') ||
+                (message.data && typeof message.data === 'object' && message.data.type === 'updateTheme')
+            ) {
                 const newThemeName = Utils.getThemeName();
                 Utils.setThemeName(newThemeName);
 

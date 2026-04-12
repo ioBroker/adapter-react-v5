@@ -690,6 +690,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Added support for a new post-message about the theme change
+
 ### 8.1.8 (2026-04-11)
 - (@GermanBluefox) Fixed some minor bugs
 
