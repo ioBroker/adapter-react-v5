@@ -690,6 +690,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Force using React 18
+
 ### 8.2.0 (2026-04-17)
 - (@GermanBluefox) Added support for a new post-message about the theme change
 - (@GermanBluefox) Updated packages
