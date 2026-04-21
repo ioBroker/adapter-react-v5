@@ -690,7 +690,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### 8.2.1 (2026-04-18)
+### **WORK IN PROGRESS**
 - (@GermanBluefox) Force using React 18
 
 ### 8.2.0 (2026-04-17)
