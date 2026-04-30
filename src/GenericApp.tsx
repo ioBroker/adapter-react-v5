@@ -176,18 +176,23 @@ export class GenericApp<
         printPrompt();
 
         const query = (window.location.search || '').replace(/^\?/, '').replace(/#.*$/, '');
-        const args: Record<string, string | boolean> = {};
+        const args: {
+            newReact?: boolean;
+            instance?: string | number;
+            theme?: ThemeName;
+        } = {};
         query
             .trim()
             .split('&')
             .filter(t => t.trim())
             .forEach(b => {
                 const parts = b.split('=');
-                args[parts[0]] = parts.length === 2 ? parts[1] : true;
-                if (args[parts[0]] === 'true') {
-                    args[parts[0]] = true;
-                } else if (args[parts[0]] === 'false') {
-                    args[parts[0]] = false;
+                const [name, value] = parts;
+                (args as Record<string, boolean | string>)[name] = parts.length === 2 ? value : true;
+                if ((args as Record<string, boolean | string>)[name] === 'true') {
+                    (args as Record<string, boolean | string>)[name] = true;
+                } else if ((args as Record<string, boolean | string>)[name] === 'false') {
+                    (args as Record<string, boolean | string>)[name] = false;
                 }
             });
 
@@ -211,33 +216,31 @@ export class GenericApp<
             ((window as any)._localStorage || window.localStorage).getItem(`${this.adapterName}-adapter`) ||
             '';
 
-        const themeInstance = this.createTheme();
+        const themeInstance = this.createTheme(args.theme);
 
-        this.state = Object.assign(
-            this.state || {}, // keep the existing state
-            {
-                selectedTab:
-                    ((window as any)._localStorage || window.localStorage).getItem(`${this.adapterName}-adapter`) || '',
-                selectedTabNum: -1,
-                native: {},
-                errorText: '',
-                changed: false,
-                connected: false,
-                loaded: false,
-                isConfigurationError: '',
-                expertMode: false,
-                toast: '',
-                theme: themeInstance,
-                themeName: this.getThemeName(themeInstance),
-                themeType: this.getThemeType(themeInstance),
-                bottomButtons: (settings && settings.bottomButtons) === false ? false : props?.bottomButtons !== false,
-                width: GenericApp.getWidth(),
-                confirmClose: false,
-                _alert: false,
-                _alertType: 'info',
-                _alertMessage: '',
-            },
-        ) as TState;
+        this.state = {
+            ...this.state, // keep the existing state
+            selectedTab:
+                ((window as any)._localStorage || window.localStorage).getItem(`${this.adapterName}-adapter`) || '',
+            selectedTabNum: -1,
+            native: {},
+            errorText: '',
+            changed: false,
+            connected: false,
+            loaded: false,
+            isConfigurationError: '',
+            expertMode: false,
+            toast: '',
+            theme: themeInstance,
+            themeName: this.getThemeName(themeInstance),
+            themeType: this.getThemeType(themeInstance),
+            bottomButtons: (settings && settings.bottomButtons) === false ? false : props?.bottomButtons !== false,
+            width: GenericApp.getWidth(),
+            confirmClose: false,
+            _alert: false,
+            _alertType: 'info',
+            _alertMessage: '',
+        } as TState;
 
         // init translations
         const translations: Record<ioBroker.Languages, Record<string, string>> = dictionary;
@@ -269,7 +272,7 @@ export class GenericApp<
 
         this.encryptedFields = props.encryptedFields || settings?.encryptedFields || [];
 
-        this.sentryDSN = (settings && settings.sentryDSN) || props.sentryDSN;
+        this.sentryDSN = settings?.sentryDSN || props.sentryDSN;
 
         if (window.socketUrl) {
             if (window.socketUrl.startsWith(':')) {
@@ -565,7 +568,7 @@ export class GenericApp<
      * @param name Theme name
      */
     // eslint-disable-next-line class-methods-use-this
-    createTheme(name?: ThemeName | null): IobTheme {
+    createTheme(name?: ThemeName | 'auto' | null): IobTheme {
         return Theme(Utils.getThemeName(name));
     }
 

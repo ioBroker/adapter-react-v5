@@ -11,6 +11,7 @@ import { LoaderNW } from './Loaders/NW';
 import { LoaderVendor } from './Loaders/Vendor';
 import { LoaderCommunity } from './Loaders/Community';
 import { LoaderPT } from './Loaders/PT';
+import { LoaderHA } from './Loaders/HA';
 
 declare global {
     interface Window {
@@ -45,6 +46,9 @@ export function Loader(props: LoaderProps): React.JSX.Element {
     }
     if (vendorPrefix === 'NW') {
         return <LoaderNW themeType="dark" />;
+    }
+    if (vendorPrefix === 'HA') {
+        return <LoaderHA themeType="dark" />;
     }
     if (vendorPrefix && vendorPrefix !== '@@vendorPrefix@@') {
         return <LoaderVendor themeType={props.themeType} />;

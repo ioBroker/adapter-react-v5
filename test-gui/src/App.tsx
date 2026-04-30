@@ -20,18 +20,18 @@ import langUk from '../../src/i18n/uk.json';
 import langZhCn from '../../src/i18n/zh-cn.json';
 import { I18n } from '../../src/i18n';
 import { Theme } from '../../src/Theme';
-import type { IobTheme, ThemeName, ThemeType } from '../../src/types';
+import type { IobTheme, ThemeName } from '../../src/types';
 import { ObjectBrowser, type ObjectBrowserFilter } from '../../src/Components/ObjectBrowser';
 import { PROGRESS } from '../../src/LegacyConnection';
 import { AdminConnection } from '@iobroker/socket-client';
 import '../../src/index.css';
 import { Button, Dialog, DialogActions, DialogContent, IconButton, Tab, Tabs, TextField } from '@mui/material';
-import { Icon, IconExpert, LoaderNW, ToggleThemeMenu } from '../../src';
+import { Icon, IconExpert, LoaderHA, ToggleThemeMenu } from '../../src';
 
 interface AppState {
     connected: boolean;
     loaded: boolean;
-    tab: 'ObjectBrowser' | 'LoaderNW' | 'Icon';
+    tab: 'ObjectBrowser' | 'LoaderHA' | 'Icon';
     theme: IobTheme;
     themeName: ThemeName;
     expertMode: boolean;
@@ -177,8 +177,8 @@ export default class App extends Component<object, AppState> {
         );
     }
 
-    renderLoaderNW(): React.JSX.Element {
-        return <LoaderNW themeType="dark" />;
+    renderLoaderHA(): React.JSX.Element {
+        return <LoaderHA themeType="dark" />;
     }
 
     renderIcon(): React.JSX.Element {
@@ -229,8 +229,8 @@ export default class App extends Component<object, AppState> {
                                 value="ObjectBrowser"
                             />
                             <Tab
-                                label="Loader NW"
-                                value="LoaderNW"
+                                label="Loader HA"
+                                value="LoaderHA"
                             />
                             <Tab
                                 label="Icon"
@@ -262,7 +262,7 @@ export default class App extends Component<object, AppState> {
                         </Tabs>
                         {!this.state.loaded && <div style={{ color: 'white' }}>Loading...</div>}
                         {this.state.loaded && this.state.tab === 'ObjectBrowser' && this.renderObjectBrowser()}
-                        {this.state.loaded && this.state.tab === 'LoaderNW' && this.renderLoaderNW()}
+                        {this.state.loaded && this.state.tab === 'LoaderHA' && this.renderLoaderHA()}
                         {this.state.loaded && this.state.tab === 'Icon' && this.renderIcon()}
                     </div>
                 </ThemeProvider>

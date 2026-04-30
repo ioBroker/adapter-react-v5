@@ -690,6 +690,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) allowed to define the theme by query parameter `?theme=dark` or `?theme=light` or `?theme=auto`
+
 ### 8.2.2 (2026-04-21)
 - (@GermanBluefox) Force using React 18
 

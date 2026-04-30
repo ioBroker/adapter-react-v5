@@ -1521,7 +1521,7 @@ export class Utils {
     /**
      * Get the current theme name (either from local storage or the browser settings).
      */
-    static getThemeName(themeName?: ThemeName | null): ThemeName {
+    static getThemeName(themeName?: ThemeName | 'auto' | null): ThemeName {
         if (
             (window as any).vendorPrefix &&
             (window as any).vendorPrefix !== '@@vendorPrefix@@' &&
@@ -1530,8 +1530,12 @@ export class Utils {
             return (window as any).vendorPrefix;
         }
 
-        themeName = ((window as any)._localStorage || window.localStorage).getItem('App.themeName');
-        if (themeName) {
+        if (themeName === 'auto') {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        themeName ||= ((window as any)._localStorage || window.localStorage).getItem('App.themeName');
+        if (themeName && themeName !== 'auto') {
             return themeName;
         }
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';

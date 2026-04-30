@@ -94,6 +94,7 @@ export { LoaderVendor } from './Components/Loaders/Vendor';
 export { LoaderPT } from './Components/Loaders/PT';
 export { LoaderMV } from './Components/Loaders/MV';
 export { LoaderNW } from './Components/Loaders/NW';
+export { LoaderHA } from './Components/Loaders/HA';
 export { type IconProps } from './Components/Icon';
 export { type IconsIconProps } from './icons/types';
 export { IconAdapter } from './icons/IconAdapter';
