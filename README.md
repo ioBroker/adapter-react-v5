@@ -690,7 +690,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### 8.2.3 (2026-05-15)
+### **WORK IN PROGRESS**
 - (@GermanBluefox) allowed to define the theme by query parameter `?theme=dark` or `?theme=light` or `?theme=auto`
 
 ### 8.2.2 (2026-04-21)

@@ -68,7 +68,7 @@ export type ObjectChangeHandler = (
     oldObj: OldObject,
 ) => void | Promise<void>;
 
-export type ThemeName = 'dark' | 'light' | 'colored' | 'blue' | 'PT' | 'DX' | 'NW';
+export type ThemeName = 'dark' | 'light' | 'colored' | 'blue' | 'PT' | 'DX' | 'NW' | 'HA';
 export type ThemeType = 'dark' | 'light';
 
 export interface GenericAppProps {

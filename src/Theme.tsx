@@ -366,6 +366,47 @@ export function Theme(type: ThemeName, overrides?: Record<string, any>): IobThem
                 },
             },
         };
+    } else if (type === 'HA') {
+        localOverrides = {
+            MuiAppBar: {
+                colorDefault: {
+                    backgroundColor: '#272727',
+                },
+            },
+            MuiLink: {
+                root: {
+                    textTransform: 'uppercase',
+                    transition: 'color .3s ease',
+                    color: '#db0a33',
+                    '&:hover': {
+                        color: '#FF0a33',
+                    },
+                },
+            },
+            MuiPaper: getElevations('#121212', '#fff'),
+        };
+
+        options = {
+            name: type,
+            palette: {
+                mode: 'dark',
+                background: {
+                    paper: '#121212',
+                    default: '#121212',
+                },
+                primary: {
+                    main: '#970720',
+                },
+                secondary: {
+                    main: '#db0a33',
+                },
+                expert: '#db0a33',
+                text: {
+                    primary: '#ffffff',
+                    secondary: '#ffffff',
+                },
+            },
+        };
     } else {
         localOverrides = {
             MuiLink: {

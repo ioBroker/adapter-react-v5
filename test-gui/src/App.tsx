@@ -177,6 +177,7 @@ export default class App extends Component<object, AppState> {
         );
     }
 
+    // eslint-disable-next-line class-methods-use-this
     renderLoaderHA(): React.JSX.Element {
         return <LoaderHA themeType="dark" />;
     }
