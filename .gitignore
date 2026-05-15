@@ -7,4 +7,3 @@
 /test-gui/node_modules/
 /test-gui/package-lock.json
 /.claude/settings.local.json
-/.commitmessage
