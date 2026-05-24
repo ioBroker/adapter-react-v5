@@ -10,17 +10,11 @@ interface LogoProps {
     backgroundImage?: string;
 }
 
-const FLICKER_STYLE_ID = 'loader-ha-flicker-keyframes';
-const FLICKER_KEYFRAMES = `
-@keyframes loaderHA-flicker {
-    0%   { filter: drop-shadow(0 0 4px  #db0a33);                   opacity: 1;    }
-    15%  { filter: drop-shadow(0 0 10px #db0a33) hue-rotate(-2deg); opacity: 0.97; }
-    30%  { filter: drop-shadow(0 0 6px  #db0a33);                   opacity: 1;    }
-    45%  { filter: drop-shadow(0 0 14px #e61a38) hue-rotate(-3deg); opacity: 0.94; }
-    60%  { filter: drop-shadow(0 0 7px  #db0a33) hue-rotate(-1deg); opacity: 1;    }
-    75%  { filter: drop-shadow(0 0 11px #e61a38) hue-rotate(-2deg); opacity: 0.98; }
-    90%  { filter: drop-shadow(0 0 5px  #db0a33);                   opacity: 1;    }
-    100% { filter: drop-shadow(0 0 4px  #db0a33);                   opacity: 1;    }
+const SPIN_STYLE_ID = 'loader-ha-spin-keyframes';
+const SPIN_KEYFRAMES = `
+@keyframes loaderHA-spin {
+    0%   { transform: rotate(0deg);   }
+    100% { transform: rotate(360deg); }
 }`;
 
 /**
@@ -30,13 +24,16 @@ const FLICKER_KEYFRAMES = `
  */
 export function LoaderHA(props: LogoProps): React.JSX.Element {
     const themeType = props.themeType || 'dark';
-    const size = props.size || 300;
+    const logoSize = props.size || 270;
+    const containerSize = logoSize * 1.5;
+    const borderWidth = (logoSize * 14) / 270;
+    const logo2Width = (logoSize * 280) / 270;
 
     React.useEffect(() => {
-        if (!window.document.getElementById(FLICKER_STYLE_ID)) {
+        if (!window.document.getElementById(SPIN_STYLE_ID)) {
             const style = window.document.createElement('style');
-            style.setAttribute('id', FLICKER_STYLE_ID);
-            style.innerHTML = FLICKER_KEYFRAMES;
+            style.setAttribute('id', SPIN_STYLE_ID);
+            style.innerHTML = SPIN_KEYFRAMES;
             window.document.head.appendChild(style);
         }
     }, []);
@@ -72,8 +69,8 @@ export function LoaderHA(props: LogoProps): React.JSX.Element {
             <div
                 style={{
                     position: 'relative',
-                    width: 405,
-                    height: 405,
+                    width: containerSize,
+                    height: containerSize,
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -82,18 +79,31 @@ export function LoaderHA(props: LogoProps): React.JSX.Element {
                 <div
                     style={{
                         position: 'absolute',
-                        width: '100%',
-                        height: '100%',
-                        border: '14px solid transparent',
-                        borderTop: '14px solid rgba(219, 10, 51, 0.75)',
+                        top: -borderWidth,
+                        left: -borderWidth,
+                        right: -borderWidth,
+                        bottom: -borderWidth,
+                        border: `${borderWidth}px solid transparent`,
+                        borderTop: `${borderWidth}px solid rgba(219, 10, 51, 0.50)`,
                         borderRadius: '50%',
-                        animation: 'spin 2.2s linear infinite',
+                        animation: 'loaderHA-spin 3.6s linear infinite',
                     }}
                 ></div>
                 <div
                     style={{
-                        width: 270,
-                        height: 270,
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        border: `${borderWidth}px solid transparent`,
+                        borderTop: `${borderWidth}px solid rgba(219, 10, 51, 0.75)`,
+                        borderRadius: '50%',
+                        animation: 'loaderHA-spin 2.2s linear infinite',
+                    }}
+                ></div>
+                <div
+                    style={{
+                        width: logoSize,
+                        height: logoSize,
                         zIndex: 1,
                         display: 'flex',
                         justifyContent: 'center',
@@ -102,9 +112,8 @@ export function LoaderHA(props: LogoProps): React.JSX.Element {
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        id="Ebene_1"
-                        version="1.1"
                         viewBox="0 0 69.6 148.1"
+                        style={{ width: '100%', height: '100%' }}
                     >
                         <path
                             fill="#db0a33"
@@ -115,7 +124,7 @@ export function LoaderHA(props: LogoProps): React.JSX.Element {
                 <div
                     style={{
                         position: 'absolute',
-                        width: 280,
+                        width: logo2Width,
                         zIndex: 2,
                         top: '57.5%',
                         left: '50%',
@@ -124,8 +133,9 @@ export function LoaderHA(props: LogoProps): React.JSX.Element {
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        width="7152"
-                        height="512"
+                        viewBox="0 0 7152 512"
+                        width="100%"
+                        height="auto"
                     >
                         <path
                             fill="#fff"
