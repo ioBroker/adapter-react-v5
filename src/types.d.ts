@@ -101,6 +101,7 @@ export interface GenericAppSettings extends GenericAppProps {
 interface Palette extends MuiPalette {
     mode: ThemeType;
     expert: string;
+    nonAck?: string;
     grey: {
         main: string;
         dark: string;

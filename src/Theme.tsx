@@ -142,6 +142,7 @@ function getElevations(color: string, overlay: string): Record<string, CSSProper
 interface PaletteOptions extends PaletteOptionsMui {
     mode: ThemeType;
     expert: string;
+    nonAck?: string;
     grey?: {
         main?: string;
         dark?: string;
@@ -401,6 +402,7 @@ export function Theme(type: ThemeName, overrides?: Record<string, any>): IobThem
                     main: '#db0a33',
                 },
                 expert: '#db0a33',
+                nonAck: '#ffe96a',
                 text: {
                     primary: '#ffffff',
                     secondary: '#ffffff',

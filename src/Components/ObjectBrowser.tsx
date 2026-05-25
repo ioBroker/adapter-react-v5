@@ -4107,7 +4107,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             info = item.data.state;
         }
 
-        info.style = getValueStyle({ state, isExpertMode: this.state.filter.expertMode, isButton: item.data.button });
+        info.style = getValueStyle({
+            state,
+            isExpertMode: this.state.filter.expertMode,
+            isButton: item.data.button,
+            nonAckColor: this.props.theme.palette.nonAck,
+        });
 
         let val: JSX.Element[] = info.valTextRx;
         if (!this.state.filter.expertMode) {

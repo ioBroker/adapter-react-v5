@@ -266,6 +266,7 @@ export interface GetValueStyleOptions {
     state: ioBroker.State;
     isExpertMode?: boolean;
     isButton?: boolean;
+    nonAckColor?: string;
 }
 
 export interface ObjectBrowserCustomFilter {

@@ -99,7 +99,7 @@ export default class App extends Component<object, AppState> {
             uk: langUk,
             'zh-cn': langZhCn,
         };
-        const themeName = 'NW';
+        const themeName = 'HA';
         const theme = Theme(themeName);
         this.state = {
             connected: false,

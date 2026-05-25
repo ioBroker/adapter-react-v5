@@ -1596,7 +1596,7 @@ export function formatValue(options: FormatValueOptions): {
  */
 export function getValueStyle(options: GetValueStyleOptions): { color: string } {
     const { state /* , isExpertMode, isButton */ } = options;
-    const color = state?.ack ? (state.q ? '#ffa500' : '') : '#ff2222c9';
+    const color = state?.ack ? (state.q ? '#ffa500' : '') : options.nonAckColor || '#ff2222c9';
 
     // do not show the color of the button in non-expert mode
     // if (!isExpertMode && isButton) {
