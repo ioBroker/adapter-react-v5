@@ -690,7 +690,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.2.6 (2026-05-25)
 - (@GermanBluefox) Updated loader
 
 ### 8.2.4 (2026-05-15)
