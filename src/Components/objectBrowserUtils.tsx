@@ -582,7 +582,7 @@ export function getSelectIdIconFromObjects(
             src = aIcon;
         }
     } else {
-        const common = objects[id] && objects[id].common;
+        const common = objects[id]?.common;
 
         if (common) {
             const cIcon = common.icon;
