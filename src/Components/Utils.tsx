@@ -1545,6 +1545,9 @@ export class Utils {
      * Get the type of theme.
      */
     static getThemeType(themeName?: ThemeName): ThemeType {
+        if ((window as any).vendorPrefix === 'HA' || (window as any).vendorPrefix === 'NW') {
+            return 'dark';
+        }
         if ((window as any).vendorPrefix && (window as any).vendorPrefix !== '@@vendorPrefix@@') {
             return 'light';
         }
