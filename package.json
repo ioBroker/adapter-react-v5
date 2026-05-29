@@ -70,7 +70,7 @@
   "peerDependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "@mui/icons-material": "^6.5.0",
+    "@mui/icons-material": "^9.0.1",
     "@mui/material": "^6.5.0"
   },
   "devDependencies": {
@@ -80,7 +80,7 @@
     "@emotion/styled": "^11.14.1",
     "@iobroker/build-tools": "^3.0.1",
     "@iobroker/eslint-config": "^2.2.0",
-    "@mui/icons-material": "^6.5.0",
+    "@mui/icons-material": "^9.0.1",
     "@mui/material": "^6.5.0",
     "@types/node": "^25.6.0",
     "@types/react": "^18.3.28",
