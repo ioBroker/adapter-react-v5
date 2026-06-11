@@ -132,6 +132,7 @@ import type {
     ObjectBrowserProps,
     AdapterColumn,
     ObjectBrowserFilter,
+    ObjectBrowserNavigation,
     ObjectBrowserPossibleColumns,
     ObjectBrowserState,
     TreeInfo,
@@ -1030,6 +1031,10 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     private readonly tableRef: React.RefObject<HTMLDivElement>;
     private pausedSubscribes: boolean = false;
     private selectFirst: string;
+    /** Last navigation that was applied from `navigateTo` or reported via `onNavigateTo` (loop guard). */
+    private lastNav: ObjectBrowserNavigation | null = null;
+    /** True while applying `navigateTo`, so the derived-state watcher does not echo it back. */
+    private applyingNav: boolean = false;
     private root: TreeItem | null = null;
     private readonly states: Record<string, ioBroker.State> = {};
     private subscribes: string[] = [];
@@ -1557,13 +1562,19 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 this.setState({ filter: { ...DEFAULT_FILTER }, columnsForAdmin }, () => {
                     this.doFilter();
                     this.setState({ loaded: true, updating: false }, () =>
-                        this.expandAllSelected(() => this.onAfterSelect()),
+                        this.expandAllSelected(() => {
+                            this.onAfterSelect();
+                            this.applyInitialNavigateTo();
+                        }),
                     );
                 });
             } else {
                 this.doFilter();
                 this.setState({ loaded: true, updating: false, columnsForAdmin }, () =>
-                    this.expandAllSelected(() => this.onAfterSelect()),
+                    this.expandAllSelected(() => {
+                        this.onAfterSelect();
+                        this.applyInitialNavigateTo();
+                    }),
                 );
             }
         } catch (error) {
@@ -6296,10 +6307,117 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         );
     }
 
+    // --- Routing (navigateTo / onNavigateTo) ---
+    // The browser never reads the URL itself; the parent drives it via `navigateTo` and is informed
+    // of user navigation via `onNavigateTo`. All URL parsing/writing lives in the parent component.
+
+    /** Derive the current navigation target from the dialog/selection state. */
+    private getStateNav(): ObjectBrowserNavigation | null {
+        if (this.state.editObjectDialog) {
+            return { mode: 'edit', id: this.state.editObjectDialog };
+        }
+        if (this.state.customDialog && this.state.customDialog.length === 1 && !this.state.customDialogAll) {
+            return { mode: 'settings', id: this.state.customDialog[0] };
+        }
+        if (this.state.viewFileDialog) {
+            return { mode: 'viewFile', id: this.state.viewFileDialog };
+        }
+        if (this.state.selected.length === 1 && this.state.selected[0]) {
+            return { mode: 'select', id: this.state.selected[0] };
+        }
+        return null;
+    }
+
+    private static navEqual(a: ObjectBrowserNavigation | null, b: ObjectBrowserNavigation | null): boolean {
+        if (!a || !b) {
+            return !a && !b;
+        }
+        return a.mode === b.mode && a.id === b.id;
+    }
+
+    /** Apply a navigation target coming from the parent (`navigateTo`): select + open the dialog. */
+    private applyNavigateTo(nav: ObjectBrowserNavigation | null): void {
+        this.applyingNav = true;
+        const done = (): void => {
+            this.applyingNav = false;
+        };
+        if (!nav?.id) {
+            // No target: just close any open dialog (keep the current selection).
+            this.setState({ editObjectDialog: '', customDialog: null, viewFileDialog: '' }, done);
+            return;
+        }
+        const { id } = nav;
+        const open = (): void => {
+            if (nav.mode === 'edit') {
+                this.setState(
+                    { editObjectDialog: id, editObjectAlias: false, customDialog: null, viewFileDialog: '' },
+                    done,
+                );
+            } else if (nav.mode === 'settings') {
+                this.setState(
+                    { customDialog: [id], customDialogAll: false, editObjectDialog: '', viewFileDialog: '' },
+                    done,
+                );
+            } else if (nav.mode === 'viewFile') {
+                this.setState({ viewFileDialog: id, editObjectDialog: '', customDialog: null }, done);
+            } else {
+                this.setState({ editObjectDialog: '', customDialog: null, viewFileDialog: '' }, done);
+            }
+        };
+        // Select the target (if needed), expand to it and scroll into view, then open the dialog.
+        if (this.state.selected.length === 1 && this.state.selected[0] === id) {
+            open();
+        } else {
+            this.onSelect(id, false, () =>
+                this.expandAllSelected(() => {
+                    this.scrollToItem(id);
+                    open();
+                }),
+            );
+        }
+    }
+
+    /** Apply the initial `navigateTo` after the tree has loaded (called from componentDidMount). */
+    private applyInitialNavigateTo(): void {
+        const nav = this.props.navigateTo ?? null;
+        if (nav?.id) {
+            this.lastNav = nav;
+            this.applyNavigateTo(nav);
+        } else {
+            // Don't push the restored-from-localStorage selection into the URL on load.
+            this.lastNav = this.getStateNav();
+        }
+    }
+
+    /** Reconcile `navigateTo` (parent/URL) with the browser's selection/dialog state. */
+    private reconcileNavigation(prevProps: ObjectBrowserProps): void {
+        if (this.props.navigateTo === undefined && !this.props.onNavigateTo) {
+            return; // routing not used by this consumer
+        }
+        if (this.applyingNav) {
+            return; // currently applying a target; ignore the intermediate state
+        }
+        const propNav = this.props.navigateTo ?? null;
+        const stateNav = this.getStateNav();
+        if (ObjectBrowserClass.navEqual(propNav, stateNav)) {
+            this.lastNav = stateNav;
+            return;
+        }
+        if (!ObjectBrowserClass.navEqual(propNav, prevProps.navigateTo ?? null)) {
+            // The parent (URL) drove a change → apply it to the browser.
+            this.lastNav = propNav;
+            this.applyNavigateTo(propNav);
+        } else if (!ObjectBrowserClass.navEqual(stateNav, this.lastNav)) {
+            // The user changed selection/dialog → report it so the parent can update the URL.
+            this.lastNav = stateNav;
+            this.props.onNavigateTo?.(stateNav);
+        }
+    }
+
     /**
      * Called when component is updated.
      */
-    componentDidUpdate(): void {
+    componentDidUpdate(prevProps: ObjectBrowserProps): void {
         if (this.tableRef.current) {
             const scrollBarWidth = this.tableRef.current.offsetWidth - this.tableRef.current.clientWidth;
             if (this.state.scrollBarWidth !== scrollBarWidth) {
@@ -6308,6 +6426,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 this.scrollToItem(this.selectFirst);
             }
         }
+        this.reconcileNavigation(prevProps);
     }
 
     scrollToItem(id: string): void {

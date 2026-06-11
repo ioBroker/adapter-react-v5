@@ -11,6 +11,7 @@ export {
     type MetaACL,
     type MetaObject,
     type FileBrowserProps,
+    type FileBrowserNavigation,
     type FolderOrFileItem,
     type Folders,
     FileBrowserClass,
@@ -71,6 +72,7 @@ export {
     type ObjectBrowserCustomFilter,
     type ObjectBrowserColumn,
     type ObjectBrowserProps,
+    type ObjectBrowserNavigation,
 } from './Components/objectBrowser.types';
 
 export { InfoBox } from './Components/InfoBox';

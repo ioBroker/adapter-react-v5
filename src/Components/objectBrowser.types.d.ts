@@ -312,12 +312,35 @@ export interface ObjectBrowserFilter {
     expertMode?: boolean;
 }
 
+/**
+ * A navigation target the parent can use to drive the browser (and that the browser reports back).
+ * Maps cleanly to a route like `#tab-objects/<mode>/<id>`. The browser reacts to {@link
+ * ObjectBrowserProps.navigateTo} and emits {@link ObjectBrowserProps.onNavigateTo}, but never reads
+ * the URL itself — the URL parsing/writing stays in the parent component.
+ */
+export interface ObjectBrowserNavigation {
+    /** `select` = just highlight the item; `edit`/`settings` = open the edit/custom dialog; `viewFile` = open the file viewer. */
+    mode: 'select' | 'edit' | 'settings' | 'viewFile';
+    /** The object ID (or the file path for `viewFile`). */
+    id: string;
+}
+
 export interface ObjectBrowserProps {
     /** where to store settings in localStorage */
     dialogName?: string;
     defaultFilters?: ObjectBrowserFilter;
     selected?: string | string[];
     onSelect?: (selected: string | string[], name: string | null, isDouble?: boolean) => void;
+    /**
+     * Drive selection and dialogs from the parent (e.g. from the URL). When this prop changes the
+     * browser selects the object and opens the requested dialog. The browser does NOT read the URL.
+     */
+    navigateTo?: ObjectBrowserNavigation | null;
+    /**
+     * Called when the user navigates inside the browser (selects an object, opens or closes a
+     * dialog) so the parent can reflect it in the URL. The browser never touches the URL itself.
+     */
+    onNavigateTo?: (navigation: ObjectBrowserNavigation | null) => void;
     onFilterChanged?: (newFilter: ObjectBrowserFilter) => void;
     socket: Connection;
     showExpertButton?: boolean;

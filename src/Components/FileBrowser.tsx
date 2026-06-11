@@ -449,6 +449,18 @@ function isFile(path: string): boolean {
 const TABLE = 'Table';
 const TILE = 'Tile';
 
+/**
+ * A navigation target the parent can use to drive the browser (and that the browser reports back).
+ * Maps cleanly to a route like `#tab-files/<mode>/<encoded-id>` (the parent encodes the file path,
+ * whose `/` separators would otherwise clash with the hash). The browser never reads the URL.
+ */
+export interface FileBrowserNavigation {
+    /** `select` = just highlight the file; `view` = open the file viewer. */
+    mode: 'select' | 'view';
+    /** The file path/ID (e.g. `email.admin/custom/assets/Components.js`). */
+    id: string;
+}
+
 export interface FileBrowserProps {
     /** The key to identify this component. */
     key?: string;
@@ -496,6 +508,17 @@ export interface FileBrowserProps {
     filterByType?: 'images' | 'code' | 'txt';
     /** Callback for file selection. */
     onSelect?: (id: string | string[], isDoubleClick?: boolean, isFolder?: boolean) => void;
+    /**
+     * Drive selection and the file viewer from the parent (e.g. from the URL). When this prop
+     * changes the browser selects the file and opens the requested viewer. The browser does NOT
+     * read the URL itself — all URL parsing/writing lives in the parent component.
+     */
+    navigateTo?: FileBrowserNavigation | null;
+    /**
+     * Called when the user navigates inside the browser (selects a file or opens/closes the viewer)
+     * so the parent can reflect it in the URL. The browser never touches the URL itself.
+     */
+    onNavigateTo?: (navigation: FileBrowserNavigation | null) => void;
     /** Theme name */
     themeName?: ThemeName;
     /** Theme type. */
@@ -610,6 +633,10 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
     private readonly limitToPath: string | null = null;
 
     private lastSelect: number | null = null;
+    /** Last navigation applied from `navigateTo` or reported via `onNavigateTo` (loop guard). */
+    private lastNav: FileBrowserNavigation | null = null;
+    /** True while applying `navigateTo`, so the derived-state watcher does not echo it back. */
+    private applyingNav: boolean = false;
 
     private setOpacityTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -789,7 +816,9 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
 
     async componentDidMount(): Promise<void> {
         this.mounted = true;
-        this.loadFolders().catch(error => console.error(`Cannot load folders: ${error}`));
+        this.loadFolders()
+            .then(() => this.applyInitialNavigateTo())
+            .catch(error => console.error(`Cannot load folders: ${error}`));
         this.browseList = [];
         this.browseListRunning = false;
 
@@ -2090,7 +2119,90 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
         return null;
     }
 
-    componentDidUpdate(/* prevProps , prevState, snapshot */): void {
+    // --- Routing (navigateTo / onNavigateTo) ---
+    // The browser never reads the URL; the parent drives it via `navigateTo` and is informed of user
+    // navigation via `onNavigateTo`. All URL parsing/encoding lives in the parent component.
+
+    /** Strip the image prefix from a viewer href to get back the raw file path. */
+    private viewerToId(viewer: string): string {
+        return viewer.startsWith(this.imagePrefix) ? viewer.substring(this.imagePrefix.length) : viewer;
+    }
+
+    /** Derive the current navigation target from the viewer/selection state. */
+    private getStateNav(): FileBrowserNavigation | null {
+        if (this.state.viewer) {
+            return { mode: 'view', id: this.viewerToId(this.state.viewer) };
+        }
+        if (this.state.selected) {
+            return { mode: 'select', id: this.state.selected };
+        }
+        return null;
+    }
+
+    private static navEqual(a: FileBrowserNavigation | null, b: FileBrowserNavigation | null): boolean {
+        if (!a || !b) {
+            return !a && !b;
+        }
+        return a.mode === b.mode && a.id === b.id;
+    }
+
+    /** Apply a navigation target coming from the parent (`navigateTo`): select + open the viewer. */
+    private applyNavigateTo(nav: FileBrowserNavigation | null): void {
+        this.applyingNav = true;
+        const done = (): void => {
+            this.applyingNav = false;
+        };
+        if (!nav?.id) {
+            this.setState({ viewer: '', formatEditFile: '' }, done);
+            return;
+        }
+        const { id } = nav;
+        this.select(id, null, () => {
+            this.scrollToSelected();
+            if (nav.mode === 'view') {
+                this.setState({ viewer: this.imagePrefix + id, formatEditFile: Utils.getFileExtension(id) }, done);
+            } else {
+                this.setState({ viewer: '', formatEditFile: '' }, done);
+            }
+        });
+    }
+
+    /** Apply the initial `navigateTo` once the browser is ready (called from componentDidMount). */
+    public applyInitialNavigateTo(): void {
+        const nav = this.props.navigateTo ?? null;
+        if (nav?.id) {
+            this.lastNav = nav;
+            this.applyNavigateTo(nav);
+        } else {
+            // Don't push the restored-from-localStorage selection into the URL on load.
+            this.lastNav = this.getStateNav();
+        }
+    }
+
+    /** Reconcile `navigateTo` (parent/URL) with the browser's selection/viewer state. */
+    private reconcileNavigation(prevProps: FileBrowserProps): void {
+        if (this.props.navigateTo === undefined && !this.props.onNavigateTo) {
+            return; // routing not used by this consumer
+        }
+        if (this.applyingNav) {
+            return;
+        }
+        const propNav = this.props.navigateTo ?? null;
+        const stateNav = this.getStateNav();
+        if (FileBrowserClass.navEqual(propNav, stateNav)) {
+            this.lastNav = stateNav;
+            return;
+        }
+        if (!FileBrowserClass.navEqual(propNav, prevProps.navigateTo ?? null)) {
+            this.lastNav = propNav;
+            this.applyNavigateTo(propNav);
+        } else if (!FileBrowserClass.navEqual(stateNav, this.lastNav)) {
+            this.lastNav = stateNav;
+            this.props.onNavigateTo?.(stateNav);
+        }
+    }
+
+    componentDidUpdate(prevProps: FileBrowserProps /* , prevState, snapshot */): void {
         if (this.setOpacityTimer) {
             clearTimeout(this.setOpacityTimer);
         }
@@ -2101,6 +2213,8 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
                 (items[i] as HTMLElement).style.opacity = '1';
             }
         }, 100);
+
+        this.reconcileNavigation(prevProps);
     }
 
     findFirstFolder(id: string): string | null {
