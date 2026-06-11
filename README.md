@@ -690,7 +690,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.2.8 (2026-06-11)
 - (@GermanBluefox) Added object and file navigation
 
 ### 8.2.7 (2026-05-29)
