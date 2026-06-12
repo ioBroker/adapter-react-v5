@@ -690,6 +690,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Updated socket-client package to support reverse proxy
+
 ### 8.2.8 (2026-06-11)
 - (@GermanBluefox) Added object and file navigation
 
