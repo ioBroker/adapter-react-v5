@@ -690,7 +690,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.2.10 (2026-06-16)
 - (@GermanBluefox) Corrected the folder creation
 
 ### 8.2.9 (2026-06-12)
