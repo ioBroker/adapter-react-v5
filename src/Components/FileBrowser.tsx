@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2025, Denis Haev <dogafox@gmail.com>
+ * Copyright 2020-2026, Denis Haev <dogafox@gmail.com>
  *
  * MIT License
  *
@@ -2079,8 +2079,8 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
                     labelText={this.props.t('ra_Folder name')}
                     verify={(text: string) =>
                         this.state.folders[parentFolder].find(item => item.name === text)
-                            ? ''
-                            : this.props.t('ra_Duplicate name')
+                            ? this.props.t('ra_Duplicate name')
+                            : ''
                     }
                     onClose={(name: string | null) => {
                         if (name) {
