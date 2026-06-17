@@ -4848,19 +4848,25 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         if (id === '0_userdata') {
             checkColor = COLOR_NAME_USERDATA(this.props.themeType);
             bold = true;
+            invertBackground = false;
         } else if (id === 'alias') {
             checkColor = COLOR_NAME_ALIAS(this.props.themeType);
             bold = true;
+            invertBackground = false;
         } else if (id === 'javascript') {
             checkColor = COLOR_NAME_JAVASCRIPT(this.props.themeType);
             bold = true;
+            invertBackground = false;
         } else if (id === 'system') {
             checkColor = COLOR_NAME_SYSTEM(this.props.themeType);
             bold = true;
+            invertBackground = false;
         } else if (id === 'system.adapter') {
             checkColor = COLOR_NAME_SYSTEM_ADAPTER(this.props.themeType);
+            invertBackground = false;
         } else if (!checkColor || this.state.selected.includes(id)) {
             checkColor = 'inherit';
+            invertBackground = false;
         }
 
         const icons = [];
@@ -4891,6 +4897,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             let colorSet = false;
             if (common.statusStates.errorId && this.states[ids.errorId] && this.states[ids.errorId].val) {
                 checkColor = this.props.themeType === 'dark' ? COLOR_NAME_ERROR_DARK : COLOR_NAME_ERROR_LIGHT;
+                invertBackground = false;
                 colorSet = true;
                 icons.push(
                     <IconError
@@ -4906,6 +4913,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                     if (this.states[ids.onlineId].val) {
                         checkColor =
                             this.props.themeType === 'dark' ? COLOR_NAME_CONNECTED_DARK : COLOR_NAME_CONNECTED_LIGHT;
+                        invertBackground = false;
                         icons.push(
                             <IconConnection
                                 key="conn"
@@ -4918,6 +4926,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                             this.props.themeType === 'dark'
                                 ? COLOR_NAME_DISCONNECTED_DARK
                                 : COLOR_NAME_DISCONNECTED_LIGHT;
+                        invertBackground = false;
                         icons.push(
                             <IconDisconnected
                                 key="disc"
@@ -4950,6 +4959,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                             this.props.themeType === 'dark'
                                 ? COLOR_NAME_DISCONNECTED_DARK
                                 : COLOR_NAME_DISCONNECTED_LIGHT;
+                        invertBackground = false;
                         icons.push(
                             <IconDisconnected
                                 key="disc"
@@ -4960,6 +4970,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                     } else {
                         checkColor =
                             this.props.themeType === 'dark' ? COLOR_NAME_CONNECTED_DARK : COLOR_NAME_CONNECTED_LIGHT;
+                        invertBackground = false;
                         icons.push(
                             <IconConnection
                                 key="conn"
