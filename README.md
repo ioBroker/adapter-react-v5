@@ -690,7 +690,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.2.11 (2026-06-19)
 - (@GermanBluefox) Correcting background of state if overloaded
 - (@GermanBluefox) Moved translations for json-config to other package
 
