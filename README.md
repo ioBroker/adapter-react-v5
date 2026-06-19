@@ -692,6 +692,7 @@ You can find the migration instructions:
 ## Changelog
 ### **WORK IN PROGRESS**
 - (@GermanBluefox) Correcting background of state if overloaded
+- (@GermanBluefox) Moved translations for json-config to other package
 
 ### 8.2.10 (2026-06-16)
 - (@GermanBluefox) Corrected the folder creation
