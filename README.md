@@ -690,7 +690,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.2.12 (2026-06-20)
 - (@GermanBluefox) Correcetd InfoBox color
 
 ### 8.2.11 (2026-06-19)
