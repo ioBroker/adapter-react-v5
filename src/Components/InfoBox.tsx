@@ -126,7 +126,12 @@ export class InfoBox extends React.Component<InfoBoxProps, InfoBoxState> {
                 ) : (
                     <Warning color={this.props.type} />
                 )}
-                <Typography ref={this.refTypo}>{this.props.children}</Typography>
+                <Typography
+                    ref={this.refTypo}
+                    sx={{ color: 'text.primary' }}
+                >
+                    {this.props.children}
+                </Typography>
                 {this.props.closeable ? (
                     <Icon
                         sx={{
