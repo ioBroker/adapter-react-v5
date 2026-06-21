@@ -690,12 +690,15 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Updated socket-client package to support web-socket-only mode
+
 ### 8.2.12 (2026-06-20)
-- (@GermanBluefox) Correcetd InfoBox color
+- (@GermanBluefox) Corrected InfoBox color
 
 ### 8.2.11 (2026-06-19)
 - (@GermanBluefox) Correcting background of state if overloaded
-- (@GermanBluefox) Moved translations for json-config to other package
+- (@GermanBluefox) Moved translations for json-config to another package
 
 ### 8.2.10 (2026-06-16)
 - (@GermanBluefox) Corrected the folder creation

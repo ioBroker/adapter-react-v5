@@ -54,7 +54,7 @@
   "dependencies": {
     "@iobroker/js-controller-common": "^7.2.2",
     "@iobroker/js-controller-common-db": "^7.2.2",
-    "@iobroker/socket-client": "^5.2.0",
+    "@iobroker/socket-client": "^5.2.1",
     "@iobroker/type-detector": "^5.0.13",
     "@iobroker/types": "^7.2.2",
     "@sentry/browser": "^10.57.0",
