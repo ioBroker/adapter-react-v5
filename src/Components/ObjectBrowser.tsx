@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2025, Denis Haev <dogafox@gmail.com>
+ * Copyright 2020-2026, Denis Haev <dogafox@gmail.com>
  *
  * MIT License
  *
@@ -34,6 +34,7 @@ import {
     TextField,
     type Theme,
     Tooltip,
+    type SxProps,
 } from '@mui/material';
 
 // Icons
@@ -168,6 +169,8 @@ const COLOR_NAME_CONNECTED_LIGHT = '#098c04';
 const COLOR_NAME_DISCONNECTED_DARK = '#f3ad11';
 const COLOR_NAME_DISCONNECTED_LIGHT = '#6c5008';
 
+const DEFAULT_DATE_FORMAT = 'YYYY.MM.DD';
+
 const styles: Record<string, any> = {
     toolbar: {
         minHeight: 38, // Theme.toolbar.height,
@@ -263,7 +266,7 @@ const styles: Record<string, any> = {
         height: 'calc(100% - 38px)',
         overflow: 'auto',
     },
-    tableRow: (theme: IobTheme): any => ({
+    tableRow: (theme: IobTheme): SxProps => ({
         pl: 1,
         height: ROW_HEIGHT,
         lineHeight: `${ROW_HEIGHT}px`,
@@ -280,7 +283,7 @@ const styles: Record<string, any> = {
         whiteSpace: 'nowrap',
         flexWrap: 'nowrap',
     }),
-    tableRowLines: (theme: IobTheme): any => ({
+    tableRowLines: (theme: IobTheme): SxProps => ({
         borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#8888882e' : '#8888882e'}`,
         '& > div': {
             borderRight: `1px solid ${theme.palette.mode === 'dark' ? '#8888882e' : '#8888882e'}`,
@@ -295,7 +298,7 @@ const styles: Record<string, any> = {
     tableRowAliasReadWrite: {
         height: ROW_HEIGHT + 22,
     },
-    tableRowFocused: (theme: IobTheme): any => ({
+    tableRowFocused: (theme: IobTheme): SxProps => ({
         '&:after': {
             content: '""',
             position: 'absolute',
@@ -410,7 +413,7 @@ const styles: Record<string, any> = {
         opacity: 0.5,
         fontStyle: 'italic',
     },
-    cellIdAlias: (theme: IobTheme): any => ({
+    cellIdAlias: (theme: IobTheme): SxProps => ({
         fontStyle: 'italic',
         fontSize: 12,
         opacity: 0.7,
@@ -579,7 +582,7 @@ const styles: Record<string, any> = {
     cellButtonsButtonWithoutCustoms: {
         opacity: 0.2,
     },
-    cellButtonsValueButton: (theme: IobTheme): any => ({
+    cellButtonsValueButton: (theme: IobTheme): SxProps => ({
         position: 'absolute',
         top: SMALL_BUTTON_SIZE / 2 - 2,
         opacity: 0.7,
@@ -1073,8 +1076,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     private resizerActiveDiv: HTMLDivElement | null = null;
     private resizerNextDiv: HTMLDivElement | null = null;
     private storedWidths: ScreenWidthOne | null = null;
-    private systemConfig: ioBroker.SystemConfigObject;
-    public objects: Record<string, ioBroker.Object>;
+    private systemConfig: ioBroker.SystemConfigObject | null = null;
+    public objects!: Record<string, ioBroker.Object>;
     private defaultHistory: string = '';
     private ctrlPressed = false;
     private columnsVisibility: {
@@ -1436,23 +1439,20 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 }
             }
 
-            this.systemConfig =
-                this.systemConfig ||
+            this.systemConfig ||=
                 (objects?.['system.config'] as ioBroker.SystemConfigObject) ||
                 (await props.socket.getObject('system.config'));
 
-            this.systemConfig.common = this.systemConfig.common || ({} as ioBroker.SystemConfigCommon);
-            this.systemConfig.common.defaultNewAcl = this.systemConfig.common.defaultNewAcl || {
+            this.systemConfig.common ||= {} as ioBroker.SystemConfigCommon;
+            this.systemConfig.common.defaultNewAcl ||= {
                 object: 0,
                 state: 0,
                 file: 0,
                 owner: 'system.user.admin',
                 ownerGroup: 'system.group.administrator',
             };
-            this.systemConfig.common.defaultNewAcl.owner =
-                this.systemConfig.common.defaultNewAcl.owner || 'system.user.admin';
-            this.systemConfig.common.defaultNewAcl.ownerGroup =
-                this.systemConfig.common.defaultNewAcl.ownerGroup || 'system.group.administrator';
+            this.systemConfig.common.defaultNewAcl.owner ||= 'system.user.admin';
+            this.systemConfig.common.defaultNewAcl.ownerGroup ||= 'system.group.administrator';
             if (typeof this.systemConfig.common.defaultNewAcl.state !== 'number') {
                 // TODO: may be convert here from string
                 this.systemConfig.common.defaultNewAcl.state = 0x664;
@@ -2201,12 +2201,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             } else if (columns) {
                 aColumns = columns as (string | ioBroker.CustomAdminColumn)[];
             }
-            let cColumns: CustomAdminColumnStored[] | null;
+            let cColumns: CustomAdminColumnStored[] | null | undefined;
             if (columns) {
                 cColumns = aColumns
-                    .map((_item: string | ioBroker.CustomAdminColumn) => {
+                    ?.map((_item: string | ioBroker.CustomAdminColumn) => {
                         if (typeof _item !== 'object') {
-                            return { path: _item, name: _item.split('.').pop() };
+                            return { path: _item, name: _item.split('.').pop() } as CustomAdminColumnStored;
                         }
                         const item: ioBroker.CustomAdminColumn = _item;
                         // string => array
@@ -2239,12 +2239,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                             objTypes: item.objTypes,
                         } as CustomAdminColumnStored;
                     })
-                    .filter((item: CustomAdminColumnStored) => item);
+                    .filter((item: CustomAdminColumnStored | null) => item) as CustomAdminColumnStored[];
             } else {
                 cColumns = null;
             }
 
-            if (cColumns?.length) {
+            if (cColumns && cColumns.length) {
                 columnsForAdmin ||= {};
                 columnsForAdmin[obj.common.name] = cColumns.sort((a, b) =>
                     a.path > b.path ? -1 : a.path < b.path ? 1 : 0,
@@ -2504,7 +2504,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 name={name}
                 texts={this.texts}
                 initialValue={this.state.filter[name] || []}
-                values={values}
+                values={values || []}
                 onChange={(name, value) => {
                     const filter = { ...this.state.filter };
                     if (value === undefined) {
@@ -2618,6 +2618,9 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     }
 
     private expandDepth(root: TreeItem, depth: number, expanded: string[]): void {
+        if (!this.root) {
+            throw new Error('No root');
+        }
         root ||= this.root;
         if (depth > 0) {
             root.children?.forEach(item => {
@@ -3002,10 +3005,10 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         if (!this.state.showRenameDialog) {
             return null;
         }
-        const ObjectMoveRenameDialog = this.props.objectMoveRenameDialog;
+        const ObjectMoveRenameDialog = this.props.objectMoveRenameDialog!;
         return (
             <ObjectMoveRenameDialog
-                expertMode={this.props.expertMode}
+                expertMode={!!this.props.expertMode}
                 onClose={() => this.setState({ showRenameDialog: null })}
                 id={this.state.showRenameDialog.id}
                 childrenIds={this.state.showRenameDialog.childrenIds}
@@ -3090,8 +3093,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         if (f) {
             const r = new FileReader();
             r.onload = (e): void => {
-                void this.parseJsonFile(e.target?.result as string);
-                return null;
+                this.parseJsonFile(e.target?.result as string).catch(e => console.log(`Cannot parse file: ${e}`));
             };
             r.readAsText(f);
         } else {
@@ -3223,10 +3225,10 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     }
 
     renderInputJsonDialog(): JSX.Element | null {
-        const ObjectBrowserInsertJsonObjects = this.props.objectBrowserInsertJsonObjects;
         if (!this.state.showImportDialog) {
             return null;
         }
+        const ObjectBrowserInsertJsonObjects = this.props.objectBrowserInsertJsonObjects!;
         return (
             <ObjectBrowserInsertJsonObjects
                 onClose={(text?: string): void => {
@@ -3738,8 +3740,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         const aclSystemConfig =
             item.data.obj.acl &&
             (item.data.obj.type === 'state'
-                ? this.systemConfig.common.defaultNewAcl.state
-                : this.systemConfig.common.defaultNewAcl.object);
+                ? this.systemConfig?.common.defaultNewAcl.state
+                : this.systemConfig?.common.defaultNewAcl.object);
 
         const showEdit = this.state.filter.expertMode || isNonExpertId(item.data.id);
 
@@ -3928,9 +3930,11 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             state,
             obj: obj as ioBroker.StateObject,
             texts: this.texts,
-            dateFormat: this.props.dateFormat || this.systemConfig.common.dateFormat,
+            dateFormat: this.props.dateFormat || this.systemConfig?.common.dateFormat || DEFAULT_DATE_FORMAT,
             isFloatComma:
-                this.props.isFloatComma === undefined ? this.systemConfig.common.isFloatComma : this.props.isFloatComma,
+                this.props.isFloatComma === undefined
+                    ? (this.systemConfig?.common.isFloatComma ?? true)
+                    : this.props.isFloatComma,
             full: true,
         });
         const valFullRx: JSX.Element[] = [];
@@ -4057,10 +4061,10 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 state,
                 obj: obj as ioBroker.StateObject,
                 texts: this.texts,
-                dateFormat: this.props.dateFormat || this.systemConfig.common.dateFormat,
+                dateFormat: this.props.dateFormat || this.systemConfig?.common.dateFormat || DEFAULT_DATE_FORMAT,
                 isFloatComma:
                     this.props.isFloatComma === undefined
-                        ? this.systemConfig.common.isFloatComma
+                        ? (this.systemConfig?.common.isFloatComma ?? true)
                         : this.props.isFloatComma,
             });
             const valTextRx: JSX.Element[] = [];
@@ -4125,7 +4129,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             nonAckColor: this.props.theme.palette.nonAck,
         });
 
-        let val: JSX.Element[] = info.valTextRx;
+        let val: JSX.Element[] | null | undefined = info.valTextRx;
         if (!this.state.filter.expertMode) {
             if (item.data.button) {
                 val = [
@@ -4247,7 +4251,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         }
         const type = this.state.enumDialog.type;
         const item = this.state.enumDialog.item;
-        const itemEnums: string[] = this.state.enumDialogEnums;
+        const itemEnums: string[] = this.state.enumDialogEnums!;
         const enumsOriginal = this.state.enumDialog.enumsOriginal;
 
         const enums = (type === 'room' ? this.info.roomEnums : this.info.funcEnums)
@@ -4378,7 +4382,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                     roleArray={this.info.roles}
                     commonType={this.info.objects[this.state.roleDialog]?.common?.type}
                     onClose={(obj?: ioBroker.Object | null) => {
-                        if (obj) {
+                        if (obj && this.state.roleDialog) {
                             this.info.objects[this.state.roleDialog] = obj;
                         }
                         this.setState({ roleDialog: null });
@@ -4745,7 +4749,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             }
             if (obj.ts) {
                 newValueTitle.push(
-                    `${this.texts.objectChangedByUser} ${Utils.formatDate(new Date(obj.ts), this.props.dateFormat || this.systemConfig.common.dateFormat)}`,
+                    `${this.texts.objectChangedByUser} ${Utils.formatDate(new Date(obj.ts), this.props.dateFormat || this.systemConfig?.common.dateFormat || DEFAULT_DATE_FORMAT)}`,
                 );
             }
         }
@@ -5327,7 +5331,9 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                                   {checkVisibleObjectType && this.states[id]?.ts
                                       ? Utils.formatDate(
                                             new Date(this.states[id].ts),
-                                            this.props.dateFormat || this.systemConfig.common.dateFormat,
+                                            this.props.dateFormat ||
+                                                this.systemConfig?.common.dateFormat ||
+                                                DEFAULT_DATE_FORMAT,
                                         )
                                       : null}
                               </div>
@@ -5349,7 +5355,9 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                                   {checkVisibleObjectType && this.states[id]?.lc
                                       ? Utils.formatDate(
                                             new Date(this.states[id].lc),
-                                            this.props.dateFormat || this.systemConfig.common.dateFormat,
+                                            this.props.dateFormat ||
+                                                this.systemConfig?.common.dateFormat ||
+                                                DEFAULT_DATE_FORMAT,
                                         )
                                       : null}
                               </div>
@@ -5539,10 +5547,13 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                                         state: this.states[id],
                                         obj: this.objects[id] as ioBroker.StateObject,
                                         texts: this.texts,
-                                        dateFormat: this.props.dateFormat || this.systemConfig.common.dateFormat,
+                                        dateFormat:
+                                            this.props.dateFormat ||
+                                            this.systemConfig?.common.dateFormat ||
+                                            DEFAULT_DATE_FORMAT,
                                         isFloatComma:
                                             this.props.isFloatComma === undefined
-                                                ? this.systemConfig.common.isFloatComma
+                                                ? (this.systemConfig?.common.isFloatComma ?? true)
                                                 : this.props.isFloatComma,
                                     });
                                     this.onCopy(e, valText.c !== undefined ? valText.c : valText.v.toString());
@@ -5628,7 +5639,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     /**
      * Renders an item.
      */
-    renderItem(root: TreeItem, isExpanded: boolean | undefined, counter?: { count: number }): JSX.Element[] {
+    renderItem(root: TreeItem, isExpanded: boolean | undefined, counter?: { count: number }): (JSX.Element | null)[] {
         const items: (JSX.Element | null)[] = [];
         counter = counter || { count: 0 };
         const result = this.renderLeaf(root, isExpanded, counter);
@@ -5982,8 +5993,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             }
             this.resizerNextName = this.resizerNextDiv.dataset.name || null;
 
-            this.resizerMin = parseInt(this.resizerActiveDiv.dataset.min, 10) || 0;
-            this.resizerNextMin = parseInt(this.resizerNextDiv.dataset.min, 10) || 0;
+            this.resizerMin = parseInt(this.resizerActiveDiv.dataset.min as string, 10) || 0;
+            this.resizerNextMin = parseInt(this.resizerNextDiv.dataset.min as string, 10) || 0;
 
             this.resizerPosition = e.clientX;
 
@@ -6452,7 +6463,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     }
 
     private renderCustomDialog(): JSX.Element | null {
-        if (this.state.customDialog && this.props.objectCustomDialog) {
+        if (this.state.customDialog && this.props.objectCustomDialog && this.systemConfig) {
             const ObjectCustomDialog = this.props.objectCustomDialog;
 
             return (
@@ -6463,7 +6474,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                     expertMode={this.state.filter.expertMode}
                     isFloatComma={
                         this.props.isFloatComma === undefined
-                            ? this.systemConfig.common.isFloatComma
+                            ? (this.systemConfig?.common.isFloatComma ?? true)
                             : this.props.isFloatComma
                     }
                     t={this.props.t}
@@ -6521,10 +6532,10 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 obj={this.objects[this.state.editObjectDialog]}
                 roleArray={this.info.roles}
                 objects={this.objects}
-                dateFormat={this.props.dateFormat || this.systemConfig.common.dateFormat}
+                dateFormat={this.props.dateFormat || this.systemConfig?.common.dateFormat || DEFAULT_DATE_FORMAT}
                 isFloatComma={
                     this.props.isFloatComma === undefined
-                        ? this.systemConfig.common.isFloatComma
+                        ? (this.systemConfig?.common.isFloatComma ?? true)
                         : this.props.isFloatComma
                 }
                 themeType={this.props.themeType}
@@ -6694,8 +6705,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 const aclSystemConfig =
                     obj.acl &&
                     (obj.type === 'state'
-                        ? this.systemConfig.common.defaultNewAcl.state
-                        : this.systemConfig.common.defaultNewAcl.object);
+                        ? this.systemConfig?.common.defaultNewAcl.state
+                        : this.systemConfig?.common.defaultNewAcl.object);
                 showACL = Number.isNaN(Number(acl)) ? Number(aclSystemConfig).toString(16) : Number(acl).toString(16);
             }
         }
@@ -7193,10 +7204,10 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 socket={this.props.socket}
                 object={this.objects[this.edit.id] as ioBroker.StateObject}
                 defaultHistory={this.defaultHistory}
-                dateFormat={this.props.dateFormat || this.systemConfig.common.dateFormat}
+                dateFormat={this.props.dateFormat || this.systemConfig?.common.dateFormat || DEFAULT_DATE_FORMAT}
                 isFloatComma={
                     this.props.isFloatComma === undefined
-                        ? this.systemConfig.common.isFloatComma
+                        ? (this.systemConfig?.common.isFloatComma ?? true)
                         : this.props.isFloatComma
                 }
                 onClose={(res?: {

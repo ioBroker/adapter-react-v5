@@ -77,7 +77,7 @@ export class SelectWithIcon extends Component<SelectWithIconProps, SelectWithIco
                     color: obj.common?.color,
                 }));
         } else {
-            list = Object.values(props.list)
+            list = Object.values(props.list || {})
                 .filter(obj => obj?._id && obj.common)
                 .map(obj => ({
                     name: Utils.getObjectNameFromObj(obj, props.lang)

@@ -62,7 +62,9 @@ export function TextWithIcon(props: TextWithIconProps): React.JSX.Element {
         if (list) {
             // if a list is array, then it is list of ioBroker.Object
             if (Array.isArray(list)) {
-                const _item: ioBroker.Object = list.find((obj: ioBroker.Object) => obj?._id === prefix + value);
+                const _item: ioBroker.Object | undefined = list.find(
+                    (obj: ioBroker.Object) => obj?._id === prefix + value,
+                );
                 if (_item) {
                     item = {
                         name: Utils.getObjectNameFromObj(_item, props.lang).replace('system.group.', ''),

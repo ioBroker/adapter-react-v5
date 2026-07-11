@@ -152,6 +152,34 @@ function padding(num: number): string {
     return `${num}`;
 }
 
+export interface ScheduleConfigSaved {
+    time?:
+        | {
+              exactTime: boolean;
+          }
+        | {
+              start: string;
+              end: string;
+              mode: string;
+              interval: number;
+          };
+    period?: {
+        once: string;
+        days: number;
+        dows: string;
+        dates: string;
+        weeks: number;
+        months: string | number;
+        years: number;
+        yearMonth: number;
+        yearDate: number;
+    };
+    valid?: {
+        from?: string;
+        to?: string;
+    };
+}
+
 export interface ScheduleConfig {
     time: {
         exactTime: boolean;
@@ -234,7 +262,10 @@ const DEFAULT: ScheduleConfig = {
     },
 };
 
-function string2USdate(date: string): string {
+function string2USdate(date: string | undefined): string {
+    if (!date) {
+        return '';
+    }
     const parts = date.split('.');
     if (parts.length === 3) {
         return `${parts[2]}-${parts[1]}-${parts[0]}`;
@@ -322,13 +353,13 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                 this.setState({ schedule, desc: Schedule.state2text(schedule) });
             }
 
-            const copy: ScheduleConfig = JSON.parse(JSON.stringify(schedule));
-            if (copy.period.once) {
+            const copy: ScheduleConfigSaved = JSON.parse(JSON.stringify(schedule));
+            if (copy.period?.once) {
                 const once = copy.period.once;
                 delete copy.period;
                 copy.period = { once } as ScheduleConfig['period'];
                 delete copy.valid;
-            } else if (copy.period.days) {
+            } else if (copy.period?.days) {
                 const days = copy.period.days;
                 const daysOfWeek = copy.period.dows;
                 delete copy.period;
@@ -336,7 +367,7 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                 if (daysOfWeek && daysOfWeek !== '[]') {
                     copy.period.dows = daysOfWeek;
                 }
-            } else if (copy.period.weeks) {
+            } else if (copy.period?.weeks) {
                 const weeks = copy.period.weeks;
                 const daysOfWeek = copy.period.dows;
                 delete copy.period;
@@ -344,7 +375,7 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                 if (daysOfWeek && daysOfWeek !== '[]') {
                     copy.period.dows = daysOfWeek;
                 }
-            } else if (copy.period.months) {
+            } else if (copy.period?.months) {
                 const months = copy.period.months;
                 const dates = copy.period.dates;
                 delete copy.period;
@@ -352,7 +383,7 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                 if (dates && dates !== '[]') {
                     copy.period.dates = dates;
                 }
-            } else if (copy.period.years) {
+            } else if (copy.period?.years) {
                 const years = copy.period.years;
                 const yearMonth = copy.period.yearMonth;
                 const yearDate = copy.period.yearDate;
@@ -363,24 +394,46 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                 }
             }
 
-            if (copy.time.exactTime) {
-                delete copy.time.end;
-                delete copy.time.mode;
-                delete copy.time.interval;
+            if (
+                (
+                    copy.time as {
+                        exactTime: boolean;
+                    }
+                )?.exactTime
+            ) {
+                copy.time = {
+                    exactTime: (
+                        copy.time as {
+                            exactTime: boolean;
+                        }
+                    )?.exactTime,
+                };
             } else {
-                delete copy.time.exactTime;
+                const _time = copy.time as {
+                    start: string;
+                    end: string;
+                    mode: string;
+                    interval: number;
+                };
+                copy.time = {
+                    start: _time.start,
+                    end: _time.end,
+                    mode: _time.mode,
+                    interval: _time.interval,
+                };
             }
             if (copy.valid) {
                 if (!copy.valid.to) {
                     delete copy.valid.to;
                 }
                 if (
-                    copy.period.days === 1 ||
-                    copy.period.weeks === 1 ||
-                    copy.period.months === 1 ||
-                    copy.period.years === 1
+                    copy.period &&
+                    (copy.period.days === 1 ||
+                        copy.period.weeks === 1 ||
+                        copy.period.months === 1 ||
+                        copy.period.years === 1)
                 ) {
-                    const from = Schedule.string2date(copy.valid.from);
+                    const from = Schedule.string2date(copy.valid?.from);
                     const today = new Date();
                     today.setHours(0);
                     today.setMinutes(0);
@@ -409,7 +462,7 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
         }
 
         const desc = [];
-        const validFrom = Schedule.string2date(schedule.valid.from);
+        const validFrom = Schedule.string2date(schedule.valid?.from);
         if (schedule.period.once) {
             // once
             const once = Schedule.string2date(schedule.period.once);
@@ -601,15 +654,15 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
 
         if (!schedule.period.once) {
             // valid
-            if (validFrom.getTime() > Date.now() && schedule.valid.to) {
+            if (validFrom.getTime() > Date.now() && schedule.valid?.to) {
                 // from XXX to XXXX
-                desc.push(I18n.t('sch_desc_validFromTo', schedule.valid.from, schedule.valid.to));
+                desc.push(I18n.t('sch_desc_validFromTo', schedule.valid?.from, schedule.valid?.to));
             } else if (validFrom.getTime() > Date.now()) {
                 // from XXXX
-                desc.push(I18n.t('sch_desc_validFrom', schedule.valid.from));
-            } else if (schedule.valid.to) {
+                desc.push(I18n.t('sch_desc_validFrom', schedule.valid?.from));
+            } else if (schedule.valid?.to) {
                 // till XXXX
-                desc.push(I18n.t('sch_desc_validTo', schedule.valid.to));
+                desc.push(I18n.t('sch_desc_validTo', schedule.valid?.to));
             }
         }
         return desc.join(' ');
@@ -1908,7 +1961,10 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
         return `${padding(d.getDate())}.${padding(d.getMonth() + 1)}.${padding(d.getFullYear())}`;
     }
 
-    static string2date(str: string): Date {
+    static string2date(str: string | undefined): Date {
+        if (!str) {
+            return new Date();
+        }
         let parts = str.split('.'); // 31.12.2019
         if (parts.length === 1) {
             parts = str.split('-'); // 2018-12-31
@@ -1932,7 +1988,7 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                         style={{ ...styles.inputDate, marginRight: 10 }}
                         key="exactTimeFrom"
                         inputRef={this.refFrom}
-                        defaultValue={string2USdate(schedule.valid.from)}
+                        defaultValue={string2USdate(schedule.valid?.from)}
                         type="date"
                         // inputComponent={TextDate}
                         onChange={e => {
@@ -1970,7 +2026,7 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                         control={
                             <Checkbox
                                 style={styles.inputRadio}
-                                checked={!!schedule.valid.to}
+                                checked={!!schedule.valid?.to}
                                 onClick={() => {
                                     const _schedule: ScheduleConfig = JSON.parse(JSON.stringify(this.state.schedule));
                                     _schedule.valid.to = _schedule.valid.to ? '' : Schedule.now2string(true);
@@ -1980,7 +2036,7 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                         }
                         label={I18n.t('sch_validTo')}
                     />
-                    {!!schedule.valid.to && (
+                    {!!schedule.valid?.to && (
                         <TextField
                             variant="standard"
                             inputRef={this.refTo}

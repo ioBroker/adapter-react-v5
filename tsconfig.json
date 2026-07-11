@@ -14,6 +14,8 @@
         "resolveJsonModule": true,
         "outDir": "./build",
         "baseUrl": "./",
+        "strict": true,
+        "strictNullChecks": true,
         "sourceRoot": "./src",
         "noImplicitAny": true,
         "skipLibCheck": true,

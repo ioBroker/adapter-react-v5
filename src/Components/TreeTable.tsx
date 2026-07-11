@@ -52,7 +52,7 @@ function getAttr(obj: Record<string, any>, attr: string | string[], lookup?: Rec
         return obj[attr[0]];
     }
 
-    const name: string = attr.shift();
+    const name: string = attr.shift() || '';
     return getAttr(obj[name], attr);
 }
 
@@ -64,7 +64,7 @@ function setAttr(obj: Record<string, any>, attr: string | string[], value: any):
     if (attr.length === 1) {
         return (obj[attr[0]] = value);
     }
-    const name: string = attr.shift();
+    const name: string = attr.shift()!;
     if (obj[name] === null || obj[name] === undefined) {
         obj[name] = {};
     }
@@ -464,7 +464,7 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
                 open={this.state.showSelectColor}
             >
                 <ColorPicker
-                    color={this.state.selectIdValue}
+                    color={this.state.selectIdValue || undefined}
                     onChange={color =>
                         this.setState({ selectIdValue: color }, () => {
                             if (this.selectCallback) {
@@ -515,7 +515,7 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
                     themeType={this.props.themeType}
                     theme={this.props.theme}
                     socket={this.props.socket}
-                    selected={this.state.selectIdValue}
+                    selected={this.state.selectIdValue || undefined}
                     onClose={() => this.setState({ showSelectId: false })}
                     onOk={(selected: string | string[] | undefined) => {
                         this.setState({ showSelectId: false, selectIdValue: null });

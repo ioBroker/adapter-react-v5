@@ -690,6 +690,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Used strict types
+
 ### 8.2.13 (2026-06-21)
 - (@GermanBluefox) Updated socket-client package to support web-socket-only mode
 

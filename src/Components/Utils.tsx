@@ -468,9 +468,9 @@ export class Utils {
      */
     static getObjectIcon(id: string | ioBroker.PartialObject, obj?: ioBroker.PartialObject): string | null {
         // If id is Object
-        if (typeof id === 'object') {
+        if (typeof id === 'object' && obj) {
             obj = id;
-            id = obj?._id;
+            id = obj!._id as string;
         }
 
         if (obj?.common?.icon) {
@@ -483,7 +483,7 @@ export class Utils {
                 return icon;
             }
 
-            const parts = id.split('.');
+            const parts = (id as string).split('.');
             if (parts[0] === 'system') {
                 icon = `adapter/${parts[2]}${icon.startsWith('/') ? '' : '/'}${icon}`;
             } else {
@@ -1286,7 +1286,11 @@ export class Utils {
      * @param themeType 'light' or 'dark'
      * @param invert If true, the dark theme has a light color in the control, or the dark theme has a light color in the control
      */
-    static getInvertedColor(color: string, themeType: ThemeType, invert?: boolean): string | undefined {
+    static getInvertedColor(
+        color: string | undefined | null,
+        themeType: ThemeType,
+        invert?: boolean,
+    ): string | undefined {
         if (!color) {
             return undefined;
         }
@@ -1882,9 +1886,9 @@ export class Utils {
             } else if (Array.isArray(states)) {
                 result = {};
                 if (obj?.common.type === 'number') {
-                    states.forEach((value, key) => (result[key] = value));
+                    states.forEach((value, key) => (result![key] = value));
                 } else if (obj?.common.type === 'string') {
-                    states.forEach(value => (result[value] = value));
+                    states.forEach(value => (result![value] = value));
                 } else if (obj?.common.type === 'boolean') {
                     result.false = states[0];
                     result.true = states[1];

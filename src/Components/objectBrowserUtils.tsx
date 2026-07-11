@@ -691,13 +691,13 @@ export function applyFilter(
         if (filters.room?.length) {
             context.room = [];
             filters.room.forEach(room => {
-                context.room = context.room.concat((objects[room] as ioBroker.EnumObject)?.common?.members || []);
+                context!.room = context!.room!.concat((objects[room] as ioBroker.EnumObject)?.common?.members || []);
             });
         }
         if (filters.func?.length) {
             context.func = [];
             filters.func.forEach(func => {
-                context.func = context.func.concat((objects[func] as ioBroker.EnumObject)?.common?.members || []);
+                context!.func = context!.func!.concat((objects[func] as ioBroker.EnumObject)?.common?.members || []);
             });
         }
     }
@@ -817,7 +817,7 @@ export function applyFilter(
             }
         }
 
-        if (!filteredOut && filters.role?.length && common) {
+        if (!filteredOut && filters.role?.length && common && context.role?.length) {
             filteredOut = !(typeof common.role === 'string' && context.role.find(role => common.role.startsWith(role)));
         }
         if (!filteredOut && context.room?.length) {
@@ -837,7 +837,7 @@ export function applyFilter(
                 if (context.custom[0] === '_') {
                     filteredOut = !!common.custom;
                 } else if (common.custom) {
-                    filteredOut = !context.custom.find(custom => common.custom[custom]);
+                    filteredOut = !context.custom.find(custom => common.custom![custom]);
                 } else {
                     filteredOut = true;
                 }
@@ -1150,7 +1150,10 @@ export function buildTree(
                             cRoot = _cRoot;
                             info.ids.push(curPath); // IDs will be added by alphabet
                         } else if (cRoot.children) {
-                            cRoot = cRoot.children.find(item => item.data.name === parts[k]);
+                            cRoot = cRoot.children.find(item => item.data.name === parts[k])!;
+                            if (!cRoot) {
+                                throw new Error('Cannot find root in children!');
+                            }
                         }
                     }
                 }
@@ -1225,8 +1228,8 @@ export function buildTree(
     }
 
     info.roomEnums.sort((a, b) => {
-        const aName: string = getName(objects[a]?.common?.name, options.lang) || a.split('.').pop();
-        const bName: string = getName(objects[b]?.common?.name, options.lang) || b.split('.').pop();
+        const aName: string = getName(objects[a]?.common?.name, options.lang) || a.split('.').pop() || '';
+        const bName: string = getName(objects[b]?.common?.name, options.lang) || b.split('.').pop() || '';
         if (aName > bName) {
             return 1;
         }
@@ -1236,8 +1239,8 @@ export function buildTree(
         return 0;
     });
     info.funcEnums.sort((a, b) => {
-        const aName: string = getName(objects[a]?.common?.name, options.lang) || a.split('.').pop();
-        const bName: string = getName(objects[b]?.common?.name, options.lang) || b.split('.').pop();
+        const aName: string = getName(objects[a]?.common?.name, options.lang) || a.split('.').pop() || '';
+        const bName: string = getName(objects[b]?.common?.name, options.lang) || b.split('.').pop() || '';
         if (aName > bName) {
             return 1;
         }
@@ -1277,7 +1280,7 @@ export function findNode(
             if (_id === _path) {
                 found = root.children[i];
                 break;
-            } else if (_id > _path) {
+            } else if (_id > (_path || '')) {
                 break;
             }
         }

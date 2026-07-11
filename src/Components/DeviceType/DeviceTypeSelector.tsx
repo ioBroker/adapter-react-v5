@@ -84,7 +84,7 @@ export function DeviceTypeSelector(props: {
             if (_typesWords[a] === _typesWords[b]) {
                 return 0;
             }
-            return _typesWords[a].localeCompare(_typesWords[b], 'de');
+            return _typesWords[a]?.localeCompare(_typesWords[b] || '', 'de') || 0;
         });
 
         extendDeviceTypeTranslation();
@@ -141,7 +141,7 @@ export function DeviceTypeSelector(props: {
                             {props.showApplications?.TYPE_OPTIONS[typeId] ? (
                                 <div style={styles.iconWrapper}>
                                     {Object.keys(props.showApplications.TYPE_OPTIONS[typeId]).map(key =>
-                                        props.showApplications.TYPE_OPTIONS[typeId][key] ? (
+                                        props.showApplications?.TYPE_OPTIONS[typeId]?.[key] ? (
                                             <Icon
                                                 key={key}
                                                 style={styles.iconStyle}

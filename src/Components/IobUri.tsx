@@ -49,7 +49,7 @@ export function iobUriParse(uri: string): IobUriParsed {
         result.type = 'file';
         uri = uri.replace('iobfile://', '');
         const parts = uri.split('/');
-        result.address = parts.shift();
+        result.address = parts.shift() || '';
         result.path = parts.join('/'); // main/img/hello.png
     } else if (uri.startsWith('http://') || uri.startsWith('https://')) {
         result.type = 'http';
@@ -98,7 +98,7 @@ export function iobUriParse(uri: string): IobUriParsed {
             result.type = 'state';
         } else {
             // it is a file
-            result.address = parts.shift();
+            result.address = parts.shift() || '';
             result.type = 'file';
             result.path = parts.join('/');
         }
@@ -159,7 +159,7 @@ export async function iobUriRead(uri: IobUri | IobUriParsed, socket: Connection)
         return (state as Record<string, any>)?.[uri.path];
     }
     if (uri.type === 'file') {
-        return await socket.readFile(uri.address, uri.path, true);
+        return await socket.readFile(uri.address, uri.path || '', true);
     }
     if (uri.type === 'http') {
         return fetch(uri.address)

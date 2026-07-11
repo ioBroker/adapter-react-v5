@@ -118,11 +118,14 @@ export class Image extends Component<ImageProps, ImageState> {
         src = src.substring(len.length);
         try {
             src = atob(src);
-            const svg: HTMLElement = getElementFromSource(src);
-            const inner = svg.innerHTML;
-            const svgProps = serializeAttrs(svg.attributes);
-
-            svg.remove();
+            const svg: HTMLElement | null = getElementFromSource(src);
+            let inner: string | undefined;
+            let svgProps: Record<string, string> | undefined;
+            if (svg) {
+                inner = svg.innerHTML;
+                svgProps = serializeAttrs(svg.attributes);
+                svg.remove();
+            }
 
             return (
                 <Box
@@ -131,7 +134,7 @@ export class Image extends Component<ImageProps, ImageState> {
                     className={this.props.className}
                     style={this.state.color ? { color: this.state.color } : undefined}
                     {...svgProps}
-                    dangerouslySetInnerHTML={{ __html: inner }}
+                    dangerouslySetInnerHTML={{ __html: inner || '' }}
                 />
             );
         } catch {

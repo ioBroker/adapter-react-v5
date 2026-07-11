@@ -1,5 +1,5 @@
 /**
- * Copyright 2020-2025, Denis Haev (bluefox) <dogafox@gmail.com>
+ * Copyright 2020-2026, Denis Haev (bluefox) <dogafox@gmail.com>
  *
  * MIT License
  *
@@ -219,7 +219,7 @@ interface Promises {
 
 export class LegacyConnection {
     // Do not define it as null, else we must check for null everywhere
-    private _socket: SocketClient;
+    private _socket!: SocketClient;
 
     private _authTimer: ReturnType<typeof setTimeout> | null | undefined;
 
@@ -1603,7 +1603,7 @@ export class LegacyConnection {
                 return;
             }
             const oldId = obj._id;
-            obj._id = obj.newId;
+            obj._id = obj.newId!;
             delete obj.newId;
 
             this.setObject(obj._id, obj)
@@ -1840,7 +1840,7 @@ export class LegacyConnection {
         /** The type of object. */
         type: ioBroker.ObjectType,
         /** The start ID. */
-        start: string,
+        start?: string,
         /** The end ID. */
         end?: string,
     ): Promise<Record<string, ioBroker.Object>> {
@@ -2293,7 +2293,7 @@ export class LegacyConnection {
         }
 
         if (!update && this._promises[`hostInfo_${host}`] instanceof Promise) {
-            return this._promises[`hostInfo_${host}`];
+            return this._promises[`hostInfo_${host}`]!;
         }
 
         if (!this.connected) {
@@ -2323,7 +2323,7 @@ export class LegacyConnection {
             });
         });
 
-        return this._promises[`hostInfo_${host}`];
+        return this._promises[`hostInfo_${host}`]!;
     }
 
     /**
@@ -2341,7 +2341,7 @@ export class LegacyConnection {
             host += `system.host.${host}`;
         }
         if (!update && this._promises[`hostInfoShort_${host}`] instanceof Promise) {
-            return this._promises[`hostInfoShort_${host}`];
+            return this._promises[`hostInfoShort_${host}`]!;
         }
 
         if (!this.connected) {
@@ -2371,7 +2371,7 @@ export class LegacyConnection {
             });
         });
 
-        return this._promises[`hostInfoShort_${host}`];
+        return this._promises[`hostInfoShort_${host}`]!;
     }
 
     /**
@@ -2450,7 +2450,7 @@ export class LegacyConnection {
         this._promises.installed = this._promises.installed || {};
 
         if (!update && this._promises.installed[host] instanceof Promise) {
-            return this._promises.installed[host];
+            return this._promises.installed[host]!;
         }
 
         if (!this.connected) {
@@ -2484,7 +2484,7 @@ export class LegacyConnection {
             });
         });
 
-        return this._promises.installed[host];
+        return this._promises.installed[host]!;
     }
 
     /**
@@ -2584,7 +2584,7 @@ export class LegacyConnection {
         update?: boolean,
     ): Promise<boolean> {
         if (!update && this._promises[`supportedFeatures_${feature}`] instanceof Promise) {
-            return this._promises[`supportedFeatures_${feature}`];
+            return this._promises[`supportedFeatures_${feature}`]!;
         }
 
         if (!this.connected) {
@@ -2597,7 +2597,7 @@ export class LegacyConnection {
             );
         });
 
-        return this._promises[`supportedFeatures_${feature}`];
+        return this._promises[`supportedFeatures_${feature}`]!;
     }
 
     /**
@@ -2889,11 +2889,11 @@ export class LegacyConnection {
         }
 
         if (!update && this._promises[`IPs_${host}`] instanceof Promise) {
-            return this._promises[`IPs_${host}`];
+            return this._promises[`IPs_${host}`]!;
         }
         this._promises[`IPs_${host}`] = this.getObject(host).then(obj => (obj?.common ? obj.common.address || [] : []));
 
-        return this._promises[`IPs_${host}`];
+        return this._promises[`IPs_${host}`]!;
     }
 
     /**
@@ -3352,7 +3352,7 @@ export class LegacyConnection {
         this._promises.installedCompact ||= {};
 
         if (!update && this._promises.installedCompact[host] instanceof Promise) {
-            return this._promises.installedCompact[host];
+            return this._promises.installedCompact[host]!;
         }
 
         if (!this.connected) {
@@ -3386,7 +3386,7 @@ export class LegacyConnection {
             });
         });
 
-        return this._promises.installedCompact[host];
+        return this._promises.installedCompact[host]!;
     }
 
     // returns very optimized information for adapters to minimize a connection load.
