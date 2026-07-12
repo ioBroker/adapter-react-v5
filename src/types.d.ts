@@ -65,7 +65,7 @@ export interface OldObject {
 export type ObjectChangeHandler = (
     id: string,
     obj: ioBroker.Object | null | undefined,
-    oldObj: OldObject,
+    oldObj?: OldObject,
 ) => void | Promise<void>;
 
 export type ThemeName = 'dark' | 'light' | 'colored' | 'blue' | 'PT' | 'DX' | 'NW' | 'HA';
