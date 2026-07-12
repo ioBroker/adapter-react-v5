@@ -549,7 +549,7 @@ export class Utils {
      */
     static isUseBright(color: string | null | undefined, defaultValue?: boolean): boolean {
         if (!color) {
-            return defaultValue === undefined ? true : defaultValue;
+            return defaultValue ?? true;
         }
         color = color.toString();
         if (color.startsWith('#')) {
@@ -560,7 +560,7 @@ export class Utils {
         let b;
 
         const rgb = color.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
-        if (rgb && rgb.length === 4) {
+        if (rgb?.length === 4) {
             r = parseInt(rgb[1], 10);
             g = parseInt(rgb[2], 10);
             b = parseInt(rgb[3], 10);
@@ -1963,7 +1963,7 @@ export class Utils {
 
     static getStyle(
         theme: IobTheme,
-        ...args: (((_theme: IobTheme) => Record<string, any>) | undefined | Record<string, any>)[]
+        ...args: (((_theme: IobTheme) => Record<string, any>) | undefined | Record<string, any> | null | false)[]
     ): Record<string, any> {
         const result: Record<string, any> = {};
 
