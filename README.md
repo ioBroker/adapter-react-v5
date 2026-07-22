@@ -690,6 +690,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Corrected tooltip if object is wrong
+
 ### 8.3.1 (2026-07-12)
 - (@GermanBluefox) Used strict types
 

@@ -3743,7 +3743,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 ? this.systemConfig?.common.defaultNewAcl.state
                 : this.systemConfig?.common.defaultNewAcl.object);
 
-        const showEdit = this.state.filter.expertMode || isNonExpertId(item.data.id);
+        const showEdit = !!item.data.obj && (this.state.filter.expertMode || isNonExpertId(item.data.id));
 
         return [
             this.state.filter.expertMode && this.props.objectEditOfAccessControl ? (
@@ -3988,7 +3988,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                     alt={id}
                 />,
             );
-        } else if (role === 'url' || obj.common.role === 'url.self' || obj.common.role === 'url.blank') {
+        } else if (role === 'url' || role === 'url.self' || role === 'url.blank') {
             // Show comment about "Hold Ctrl/⌘ key to open the link"
             valFullRx.unshift(
                 <div
@@ -6521,6 +6521,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
 
     private renderEditObjectDialog(): JSX.Element | null {
         if (!this.state.editObjectDialog || !this.props.objectBrowserEditObject) {
+            return null;
+        }
+
+        // Guard against opening the editor for a node without a real object (e.g. a virtual folder
+        // that only exists because child states share an ID prefix). Its constructor reads obj._id.
+        if (!this.objects[this.state.editObjectDialog]) {
             return null;
         }
 
