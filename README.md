@@ -690,7 +690,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.3.2 (2026-07-22)
 - (@GermanBluefox) Corrected tooltip if object is wrong
 
 ### 8.3.1 (2026-07-12)
