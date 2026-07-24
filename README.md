@@ -6,7 +6,7 @@ You can find demo on https://github.com/ioBroker/adapter-react-demo
 
 If you want to create the configuration page with ReactJS:
 
-1. Create github repo for adapter.
+1. Create GitHub repo for adapter.
 2. execute `npx create-react-app src` . It will take a while.
 3. `cd src`
 4. Modify package.json file in src directory:
