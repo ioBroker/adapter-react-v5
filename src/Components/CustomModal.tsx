@@ -110,7 +110,6 @@ export function CustomModal(props: CustomModalProps): React.JSX.Element {
             maxWidth={isSmallScreen ? false : maxWidth || 'md'}
             fullWidth={!!fullWidth}
             fullScreen={isSmallScreen}
-            disableEscapeKeyDown={false}
             onClose={onClose}
             sx={{ '& .MuiDialog-paper': isSmallScreen ? {} : styles.modalDialog }}
         >

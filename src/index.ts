@@ -138,15 +138,10 @@ export { DialogTextInput as TextInput } from './Dialogs/TextInput'; // deprecate
 export { Connection, PROGRESS, ERRORS, PERMISSION_ERROR } from './Connection';
 export { AdminConnection } from './AdminConnection';
 export { dictionary } from './dictionary';
-export {
-    LegacyConnection,
-    type ConnectOptions,
-    type CompactSystemRepositoryEntry,
-    type CompactSystemRepository,
-    type SocketClient,
-    type BinaryStateChangeHandler,
-    pattern2RegEx,
-} from './LegacyConnection';
+// `LegacyConnection` was removed in v9. The types it used to re-export now come directly
+// from `@iobroker/socket-client`, `pattern2RegEx` from the object browser utils.
+export { type ConnectOptions, type SocketClient, type BinaryStateChangeHandler } from '@iobroker/socket-client';
+export { pattern2RegEx } from './Components/objectBrowserUtils';
 
 export {
     type IobUri,

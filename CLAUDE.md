@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`@iobroker/adapter-react-v5` — a shared React component library used by ioBroker adapter UIs. Adapters consume this package to build their configuration pages with a consistent look and feel, theme system, i18n, and WebSocket connection management.
+`@iobroker/gui-components` — a shared React component library (React 19 / MUI 9) used by ioBroker adapter UIs. Adapters consume this package to build their configuration pages with a consistent look and feel, theme system, i18n, and WebSocket connection management. It is the successor of `@iobroker/adapter-react-v5` (React 18 / MUI 6), which is kept for older systems on the `adapter-react-v5` branch.
 
 ## Commands
 
@@ -20,7 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Core Modules (`src/`)
 
 - **`GenericApp.tsx`** — Base class that all ioBroker adapter UIs extend. Handles socket connection lifecycle, theme initialization, Sentry error reporting, config load/save, and the save/close button bar. This is the central integration point.
-- **`Connection.tsx` / `AdminConnection.tsx`** — Single-line re-exports from `@iobroker/socket-client`. The actual WebSocket logic lives in that package; these files exist so consumers import from adapter-react-v5.
+- **`Connection.tsx` / `AdminConnection.tsx`** — Single-line re-exports from `@iobroker/socket-client`. The actual WebSocket logic lives in that package; these files exist so consumers import from gui-components.
 - **`LegacyConnection.tsx`** — Older connection class (~2000 lines) kept for backward compatibility with adapters not yet migrated to socket-client. Contains the actual connection implementation inline.
 - **`Theme.tsx`** — MUI theme factory. Builds dark/light/colored themes with ioBroker-specific palette extensions (`IobTheme` type extends MUI's `Theme`).
 - **`i18n.ts`** — Static `I18n` class for translation string management. Translations are loaded per-language from JSON files in `src/i18n/`.
@@ -37,7 +37,7 @@ Two config files for Webpack Module Federation (ioBroker admin loads adapter UIs
 - **`src/modulefederation.admin.config.ts`** — TypeScript source, compiled to `build/` by tsc.
 - **`modulefederation.admin.config.js`** (root) — Hand-maintained CJS copy for consumers that can't import ESM. Must be kept in sync with the TS source manually.
 
-### Build Pipeline (`tasks.js`)
+### Build Pipeline (`tasks.ts`)
 
 Node script with flag-driven steps:
 - `--0-clean` — deletes `build/`
@@ -59,7 +59,7 @@ All translations are flat key-value JSON. English (`en.json`) is the source of t
 ## Key Conventions
 
 - TypeScript with `"jsx": "react"` (not `react-jsx`). Uses `tsc` directly, no bundler.
-- MUI 6 + Emotion for styling. No CSS modules or styled-components.
+- MUI 9 + Emotion for styling. No CSS modules or styled-components.
 - Components are mostly single-file `.tsx` (not directory-per-component), except `DeviceType/`, `SimpleCron/`, and `Loaders/`.
 - Icons in `src/icons/` are React components wrapping inline SVG paths — not imported SVG files.
 - The `tsconfig.build.json` extends `tsconfig.json` with `strict: false` and `checkJs: false` for less restrictive production builds.

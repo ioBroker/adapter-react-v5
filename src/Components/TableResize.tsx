@@ -23,7 +23,7 @@ interface TableResizeProps {
 }
 
 export class TableResize extends Component<TableResizeProps> {
-    private readonly resizerRefTable: React.RefObject<HTMLTableElement>;
+    private readonly resizerRefTable: React.RefObject<HTMLTableElement | null>;
 
     private resizerActiveIndex: number | null;
 

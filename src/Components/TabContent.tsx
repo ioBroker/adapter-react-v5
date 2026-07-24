@@ -1,6 +1,6 @@
 // please do not delete React, as without it other projects could not be compiled: ReferenceError: React is not defined
 import React from 'react';
-import { Grid2 } from '@mui/material';
+import { Grid } from '@mui/material';
 
 const styles: Record<string, React.CSSProperties> = {
     root: {
@@ -23,7 +23,7 @@ interface TabContentProps {
 export const TabContent = React.forwardRef<HTMLDivElement, TabContentProps>(
     function TabContentComponent(props, ref): React.JSX.Element | null {
         return (
-            <Grid2
+            <Grid
                 sx={{
                     ...styles.root,
                     ...(props?.style || undefined),
@@ -32,7 +32,7 @@ export const TabContent = React.forwardRef<HTMLDivElement, TabContentProps>(
                 ref={ref}
             >
                 {props.children}
-            </Grid2>
+            </Grid>
         );
     },
 );

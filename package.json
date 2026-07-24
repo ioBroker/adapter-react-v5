@@ -1,7 +1,7 @@
 {
-  "name": "@iobroker/adapter-react-v5",
-  "version": "8.3.2",
-  "description": "React components to develop ioBroker interfaces with react.",
+  "name": "@iobroker/gui-components",
+  "version": "9.0.0",
+  "description": "Shared React components (React 19 / MUI 9) to develop ioBroker interfaces. Successor of @iobroker/adapter-react-v5.",
   "author": {
     "name": "bluefox",
     "email": "dogafox@gmail.com"
@@ -9,22 +9,22 @@
   "scripts": {
     "prepublishOnly": "npm run build",
     "build:ts": "tsc -p tsconfig.build.json",
-    "build": "node tasks --0-clean && node tasks --2-copy && node tasks --3-patchReadme && npm run build:ts",
+    "build": "node tasks.ts --0-clean && node tasks.ts --2-copy && node tasks.ts --3-patchReadme && npm run build:ts",
     "release": "release-script --noPush --yes --lf",
     "release-patch": "release-script patch --yes --lf",
     "release-minor": "release-script minor --yes --lf",
     "release-major": "release-script major --yes --lf",
     "update-packages": "npx -y npm-check-updates --upgrade",
-    "0-clean": "node tasks --0-clean",
+    "0-clean": "node tasks.ts --0-clean",
     "1-build": "tsc -p tsconfig.build.json",
-    "2-copy": "node tasks --2-copy",
-    "3-patchReadme": "node tasks --3-patchReadme",
+    "2-copy": "node tasks.ts --2-copy",
+    "3-patchReadme": "node tasks.ts --3-patchReadme",
     "npm": "npm i",
     "lint": "eslint -c eslint.config.mjs src"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ioBroker/adapter-react-v5.git"
+    "url": "git+https://github.com/ioBroker/gui-components.git"
   },
   "publishConfig": {
     "access": "public"
@@ -41,16 +41,16 @@
     "i18n/",
     "index.css",
     "LICENSE",
-    "tasksExample.js",
+    "tasksExample.ts",
     "craco-module-federation.js",
     "modulefederation.admin.config.d.ts",
     "modulefederation.admin.config.js"
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ioBroker/adapter-react-v5/issues"
+    "url": "https://github.com/ioBroker/gui-components/issues"
   },
-  "homepage": "https://github.com/ioBroker/adapter-react-v5#readme",
+  "homepage": "https://github.com/ioBroker/gui-components#readme",
   "dependencies": {
     "@iobroker/js-controller-common": "^7.2.2",
     "@iobroker/js-controller-common-db": "^7.2.2",
@@ -68,10 +68,10 @@
     "react-inlinesvg": "^4.2.0"
   },
   "peerDependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "@mui/icons-material": "^6.5.0",
-    "@mui/material": "^6.5.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@mui/icons-material": "^9.0.0",
+    "@mui/material": "^9.0.0"
   },
   "devDependencies": {
     "@alcalzone/release-script": "^5.2.1",
@@ -80,21 +80,22 @@
     "@emotion/styled": "^11.14.1",
     "@iobroker/build-tools": "^3.0.1",
     "@iobroker/eslint-config": "^2.2.0",
-    "@mui/icons-material": "^6.5.0",
-    "@mui/material": "^6.5.0",
+    "@mui/icons-material": "^9.0.1",
+    "@mui/material": "^9.0.1",
     "@types/node": "^25.9.3",
-    "@types/react": "^18.3.28",
+    "@types/react": "^19.2.0",
     "@types/react-color": "^3.0.13",
+    "@types/react-dom": "^19.2.0",
     "ajv": "^8.20.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.3"
   },
   "overrides": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "@types/react": "^18.3.28",
-    "@types/react-dom": "^18.3.7"
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0"
   }
 }

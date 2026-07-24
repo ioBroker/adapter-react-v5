@@ -445,7 +445,7 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
                         : !!val
                 }
                 onChange={e => this.onChange(col, !!val, e.target.checked)}
-                inputProps={{ 'aria-label': 'checkbox' }}
+                slotProps={{ input: { 'aria-label': 'checkbox' } }}
             />
         );
     }
@@ -487,7 +487,11 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
                     fullWidth
                     style={styles.fieldEditWithButton}
                     value={_val}
-                    inputProps={{ style: { backgroundColor: _val, color: Utils.isUseBright(_val) ? '#FFF' : '#000' } }}
+                    slotProps={{
+                        htmlInput: {
+                            style: { backgroundColor: _val, color: Utils.isUseBright(_val) ? '#FFF' : '#000' },
+                        },
+                    }}
                     onChange={e => this.onChange(col, !!val, e.target.value)}
                 />
 
@@ -572,7 +576,7 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
                 <Checkbox
                     checked={!!val}
                     disabled
-                    inputProps={{ 'aria-label': 'checkbox' }}
+                    slotProps={{ input: { 'aria-label': 'checkbox' } }}
                 />
             );
         }

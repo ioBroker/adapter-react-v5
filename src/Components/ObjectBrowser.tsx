@@ -19,7 +19,7 @@ import {
     DialogTitle,
     Fab,
     FormControlLabel,
-    Grid2,
+    Grid,
     IconButton,
     List,
     ListItem,
@@ -93,7 +93,7 @@ import type { IobTheme } from '../types';
 import { Connection } from '../Connection';
 import { Icon } from './Icon';
 import { withWidth } from './withWidth';
-import { Utils } from './Utils'; // @iobroker/adapter-react-v5/Components/Utils
+import { Utils } from './Utils'; // @iobroker/gui-components/Components/Utils
 import { TabContainer } from './TabContainer';
 import { TabContent } from './TabContent';
 import { TabHeader } from './TabHeader';
@@ -1031,7 +1031,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         aliasesMap: {},
     };
     private localStorage: Storage = ((window as any)._localStorage as Storage) || window.localStorage;
-    private readonly tableRef: React.RefObject<HTMLDivElement>;
+    private readonly tableRef: React.RefObject<HTMLDivElement | null>;
     private pausedSubscribes: boolean = false;
     private selectFirst: string;
     /** Last navigation that was applied from `navigateTo` or reported via `onNavigateTo` (loop guard). */
@@ -2237,7 +2237,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                             edit: !!item.edit,
                             type: item.type,
                             objTypes: item.objTypes,
-                        } as CustomAdminColumnStored;
+                        };
                     })
                     .filter((item: CustomAdminColumnStored | null) => item) as CustomAdminColumnStored[];
             } else {
@@ -2390,7 +2390,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 JSON.stringify(this.state.columnsForAdmin),
             );
 
-            this.parseObjectForAdmins(columnsForAdmin, obj as ioBroker.AdapterObject);
+            this.parseObjectForAdmins(columnsForAdmin, obj);
 
             if (JSON.stringify(this.state.columnsForAdmin) !== JSON.stringify(columnsForAdmin)) {
                 newInnerState = { columnsForAdmin };
@@ -2677,7 +2677,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                     common: JSON.parse(JSON.stringify(this.objects[_id].common)) as ioBroker.EnumCommon,
                     native: this.objects[_id].native,
                     type: 'enum',
-                } as ioBroker.EnumObject;
+                };
                 if (enumItem.common) {
                     delete enumItem.common.members;
                     delete enumItem.common.custom;
@@ -5031,21 +5031,21 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         const narrowStyleWithDetails = this.props.width === 'xs' && this.state.focused === id;
 
         const colID = (
-            <Grid2
+            <Grid
                 container
                 wrap="nowrap"
                 direction="row"
                 sx={styles.cellId}
                 style={{ width: this.columnsVisibility.id, paddingLeft }}
             >
-                <Grid2
+                <Grid
                     container
-                    alignItems="center"
+                    sx={{ alignItems: 'center' }}
                 >
                     {checkbox}
                     {iconFolder}
-                </Grid2>
-                <Grid2
+                </Grid>
+                <Grid
                     style={{
                         ...styles.cellIdSpan,
                         ...(invertBackground ? this.styles.invertedBackground : undefined),
@@ -5061,14 +5061,14 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                     </Tooltip>
                     {alias}
                     {icons}
-                </Grid2>
+                </Grid>
                 <div style={{ ...styles.grow, ...(invertBackground ? this.styles.invertedBackgroundFlex : {}) }} />
-                <Grid2
+                <Grid
                     container
-                    alignItems="center"
+                    sx={{ alignItems: 'center' }}
                 >
                     {iconItem}
-                </Grid2>
+                </Grid>
                 {this.props.width !== 'xs' ? (
                     <div>
                         <IconCopy
@@ -5078,7 +5078,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                         />
                     </div>
                 ) : null}
-            </Grid2>
+            </Grid>
         );
 
         let colName =
@@ -5109,14 +5109,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             | ({
                   el: JSX.Element;
                   type:
-                      | 'filter_type'
-                      | 'filter_role'
-                      | 'filter_func'
-                      | 'filter_room'
-                      | 'quality'
-                      | 'from'
-                      | 'lc'
-                      | 'ts';
+                      'filter_type' | 'filter_role' | 'filter_func' | 'filter_room' | 'quality' | 'from' | 'lc' | 'ts';
                   onClick?: (() => void) | null | undefined;
               } | null)[]
             | null;
@@ -5576,7 +5569,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         }
 
         const row = (
-            <Grid2
+            <Grid
                 container
                 direction="row"
                 wrap="nowrap"
@@ -5631,7 +5624,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 {colCustom}
                 {colValue}
                 {colButtons}
-            </Grid2>
+            </Grid>
         );
         return { row, details: colDetails };
     }

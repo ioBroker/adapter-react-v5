@@ -414,7 +414,7 @@ interface UploadImageState {
 }
 
 export class UploadImage extends Component<UploadImageProps, UploadImageState> {
-    private readonly cropperRef: React.RefObject<ReactCropperElement>;
+    private readonly cropperRef: React.RefObject<ReactCropperElement | null>;
 
     constructor(props: UploadImageProps) {
         super(props);

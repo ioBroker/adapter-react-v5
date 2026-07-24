@@ -2,8 +2,6 @@ import type { JSX, CSSProperties } from 'react';
 import type { Theme as MuiTheme, Palette as MuiPalette } from '@mui/material/styles';
 import type { AdminConnection, Connection } from '@iobroker/socket-client';
 
-import type { LegacyConnection } from './LegacyConnection';
-
 export type Translate = (key: string, ...args: (string | number | boolean)[]) => string;
 
 export type LogMessage = {
@@ -85,7 +83,7 @@ export interface GenericAppProps {
     /** Socket.io configuration. */
     socket?: ConnectionProps;
     /** Desired connection object */
-    Connection?: LegacyConnection | Connection | AdminConnection;
+    Connection?: Connection | AdminConnection;
     /** sentry DNS */
     sentryDSN?: string;
     /** Callback if user changes the theme. Call it to trigger change */

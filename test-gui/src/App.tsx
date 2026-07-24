@@ -22,7 +22,7 @@ import { I18n } from '../../src/i18n';
 import { Theme } from '../../src/Theme';
 import type { IobTheme, ThemeName } from '../../src/types';
 import { ObjectBrowser, type ObjectBrowserFilter } from '../../src/Components/ObjectBrowser';
-import { PROGRESS } from '../../src/LegacyConnection';
+import { PROGRESS } from '../../src/Connection';
 import { AdminConnection } from '@iobroker/socket-client';
 import '../../src/index.css';
 import { Button, Dialog, DialogActions, DialogContent, IconButton, Tab, Tabs, TextField } from '@mui/material';
@@ -81,7 +81,7 @@ function InputTextDialog(props: { onClose: (text?: string) => void }): React.JSX
 export default class App extends Component<object, AppState> {
     private filters: ObjectBrowserFilter = {};
     private readonly socket: AdminConnection;
-    private readonly imgRef: React.RefObject<HTMLImageElement> = React.createRef();
+    private readonly imgRef: React.RefObject<HTMLImageElement | null> = React.createRef();
     private imageInterval: ReturnType<typeof setInterval> | null = null;
 
     constructor(props: any) {
@@ -99,7 +99,7 @@ export default class App extends Component<object, AppState> {
             uk: langUk,
             'zh-cn': langZhCn,
         };
-        const themeName = 'HA';
+        const themeName = 'dark';
         const theme = Theme(themeName);
         this.state = {
             connected: false,

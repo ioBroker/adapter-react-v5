@@ -120,7 +120,7 @@ export function DeviceTypeSelector(props: {
                 variant="standard"
                 disabled={!!props.disabled}
                 value={props.value}
-                onChange={e => props.onChange(e.target.value as Types)}
+                onChange={e => props.onChange(e.target.value)}
             >
                 {types.map(typeId => (
                     <MenuItem

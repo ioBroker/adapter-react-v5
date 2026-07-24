@@ -837,7 +837,7 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
                         value={settings.timeFrom}
                         onChange={e => {
                             const _settings = JSON.parse(JSON.stringify(this.state.intervalBetween));
-                            _settings.timeFrom = parseInt(e.target.value as string, 10);
+                            _settings.timeFrom = parseInt(e.target.value as unknown as string, 10);
                             if (_settings.timeTo === 24) {
                                 _settings.timeTo = 23;
                             }
@@ -872,7 +872,7 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
                         value={settings.timeTo}
                         onChange={e => {
                             const _settings = JSON.parse(JSON.stringify(this.state.intervalBetween));
-                            _settings.timeTo = parseInt(e.target.value as string, 10);
+                            _settings.timeTo = parseInt(e.target.value as unknown as string, 10);
                             this.setState({ intervalBetween: _settings }, () => this.recalcCron());
                         }}
                     >
@@ -945,7 +945,7 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
                         <Select
                             variant="standard"
                             value={this.state.mode}
-                            onChange={e => this.onModeChange(e.target.value as SimpleCronType)}
+                            onChange={e => this.onModeChange(e.target.value)}
                             inputProps={{ name: 'mode', id: 'mode' }}
                         >
                             <MenuItem value="once">{I18n.t('sc_once')}</MenuItem>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Grid2, Paper } from '@mui/material';
+import { Box, Paper } from '@mui/material';
 
 const styles: Record<string, React.CSSProperties> = {
     root: {
@@ -42,14 +42,18 @@ export function TabContainer(props: TabContainerProps): React.JSX.Element {
             onKeyDown={props.onKeyDown}
             tabIndex={props.tabIndex}
         >
-            <Grid2
-                container
-                direction="column"
-                wrap="nowrap"
-                sx={styles.container}
+            {/* MUI 9's Grid only supports 'row' directions, so a plain flex box replaces the former
+                column Grid container here. */}
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexWrap: 'nowrap',
+                    ...styles.container,
+                }}
             >
                 {props.children}
-            </Grid2>
+            </Box>
         </Paper>
     );
 }

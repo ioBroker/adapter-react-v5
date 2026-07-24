@@ -461,7 +461,7 @@ export function Theme(type: ThemeName, overrides?: Record<string, any>): IobThem
 
     const theme: IobTheme = createTheme(options) as IobTheme;
 
-    const palette: PaletteOptions = theme.palette as PaletteOptions;
+    const palette: PaletteOptions = theme.palette;
 
     return createTheme(theme, {
         ...(overrides || undefined),

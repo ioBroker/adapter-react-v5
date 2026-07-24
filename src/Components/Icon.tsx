@@ -137,7 +137,7 @@ export const Icon = React.forwardRef<HTMLImageElement | HTMLSpanElement, IconPro
                             <Box
                                 component="span"
                                 sx={props.sx}
-                                ref={ref as React.Ref<HTMLSpanElement>}
+                                ref={ref}
                                 title={props.title || undefined}
                                 style={{ height: 27, marginTop: -8, ...(props.styleUTF8 || props.style) }}
                                 className={props.className ? `iconOwn ${props.className}` : 'iconOwn'}
@@ -148,7 +148,7 @@ export const Icon = React.forwardRef<HTMLImageElement | HTMLSpanElement, IconPro
                     }
                     return (
                         <span
-                            ref={ref as React.Ref<HTMLSpanElement>}
+                            ref={ref}
                             title={props.title || undefined}
                             style={{ height: 27, marginTop: -8, ...(props.styleUTF8 || props.style) }}
                             className={props.className ? `iconOwn ${props.className}` : 'iconOwn'}
@@ -187,7 +187,7 @@ export const Icon = React.forwardRef<HTMLImageElement | HTMLSpanElement, IconPro
                                 className={props.className ? `iconOwn ${props.className}` : 'iconOwn'}
                                 src={`https://remote-files.iobroker.in${src}`}
                                 alt={props.alt || undefined}
-                                ref={ref as React.Ref<HTMLImageElement>}
+                                ref={ref}
                                 onError={e => props.onError?.(e)}
                             />
                         );
@@ -214,7 +214,7 @@ export const Icon = React.forwardRef<HTMLImageElement | HTMLSpanElement, IconPro
                             className={props.className ? `iconOwn ${props.className}` : 'iconOwn'}
                             src={props.src}
                             alt={props.alt || undefined}
-                            ref={ref as React.Ref<HTMLImageElement>}
+                            ref={ref}
                             onError={props.onError}
                         />
                     );

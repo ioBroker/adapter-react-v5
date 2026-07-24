@@ -285,11 +285,11 @@ interface ScheduleState {
 }
 
 export class Schedule extends Component<ScheduleProps, ScheduleState> {
-    private readonly refFrom: React.RefObject<HTMLInputElement>;
+    private readonly refFrom: React.RefObject<HTMLInputElement | null>;
 
-    private readonly refTo: React.RefObject<HTMLInputElement>;
+    private readonly refTo: React.RefObject<HTMLInputElement | null>;
 
-    private readonly refOnce: React.RefObject<HTMLInputElement>;
+    private readonly refOnce: React.RefObject<HTMLInputElement | null>;
 
     private timerOnce: ReturnType<typeof setTimeout> | null = null;
 
@@ -1264,7 +1264,7 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                                 value={schedule.period.yearMonth}
                                 onChange={e => {
                                     const _schedule: ScheduleConfig = JSON.parse(JSON.stringify(this.state.schedule));
-                                    _schedule.period.yearMonth = e.target.value as number;
+                                    _schedule.period.yearMonth = e.target.value;
                                     this.onChange(_schedule);
                                 }}
                             >

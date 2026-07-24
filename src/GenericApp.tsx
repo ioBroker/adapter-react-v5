@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2024 Denis Haev (bluefox) <dogafox@gmail.com>
+ * Copyright 2018-2026 Denis Haev (bluefox) <dogafox@gmail.com>
  *
  * MIT License
  *
@@ -240,7 +240,7 @@ export class GenericApp<
             _alert: false,
             _alertType: 'info',
             _alertMessage: '',
-        } as TState;
+        };
 
         // init translations
         const translations: Record<ioBroker.Languages, Record<string, string>> = dictionary;
@@ -331,9 +331,7 @@ export class GenericApp<
                     .then(async obj => {
                         let waitPromise;
                         const instanceObj: ioBroker.InstanceObject | null | undefined = obj as
-                            | ioBroker.InstanceObject
-                            | null
-                            | undefined;
+                            ioBroker.InstanceObject | null | undefined;
 
                         const sentryPluginEnabled = (
                             await this.socket.getState(`${this.instanceId}.plugins.sentry.enabled`)
@@ -853,7 +851,7 @@ export class GenericApp<
                 open={!0}
                 autoHideDuration={6000}
                 onClose={() => this.setState({ toast: '' })}
-                ContentProps={{ 'aria-describedby': 'message-id' }}
+                slotProps={{ content: { 'aria-describedby': 'message-id' } }}
                 message={<span id="message-id">{this.state.toast}</span>}
                 action={[
                     <IconButton

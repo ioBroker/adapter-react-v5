@@ -26,7 +26,7 @@ export function moduleFederationShared(
     const list: string[] = [
         '@emotion/react',
         '@emotion/styled',
-        '@iobroker/adapter-react-v5',
+        '@iobroker/gui-components',
         '@iobroker/json-config',
         '@iobroker/dm-gui-components',
         '@mui/icons-material',

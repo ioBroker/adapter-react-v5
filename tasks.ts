@@ -1,35 +1,38 @@
 /**
- * Copyright 2018-2024 bluefox <dogafox@gmail.com>
+ * Copyright 2018-2026 bluefox <dogafox@gmail.com>
  *
  * MIT License
  *
  */
-const { writeFileSync, readFileSync, existsSync, mkdirSync, readdirSync } = require('node:fs');
-const { copyFiles, deleteFoldersRecursive } = require('@iobroker/build-tools');
-const { dirname } = require('node:path');
+// This script is executed directly by node (>= 22.18 / >= 23.6), which strips the types at load time.
+// It therefore must stay CommonJS and use only erasable TypeScript syntax:
+// `typeof import(...)` annotations give full typings while `require()` keeps `__dirname` available.
+const { writeFileSync, readFileSync, existsSync, mkdirSync, readdirSync }: typeof import('node:fs') = require('node:fs');
+const { copyFiles, deleteFoldersRecursive }: typeof import('@iobroker/build-tools') = require('@iobroker/build-tools');
+const { dirname }: typeof import('node:path') = require('node:path');
 
-function patchFiles() {
-    const pack = require('./package.json');
+function patchFiles(): void {
+    const pack: { version: string } = require('./package.json');
     let readme = readFileSync(`${__dirname}/README.md`).toString('utf8');
     readme = readme.replace(
-        /"@iobroker\/adapter-react-v5": "\^\d\.\d\.\d",/g,
-        `"@iobroker/adapter-react-v5": "^${pack.version}",`,
+        /"@iobroker\/gui-components": "\^\d+\.\d+\.\d+",/g,
+        `"@iobroker/gui-components": "^${pack.version}",`,
     );
     writeFileSync(`${__dirname}/README.md`, readme);
 }
 
-function createIconSets(folder, destFile) {
+function createIconSets(folder: string, destFile: string): void {
     const files = readdirSync(folder).filter(file => file.endsWith('.svg'));
-    const result = {};
+    const result: Record<string, string> = {};
     for (let f = 0; f < files.length; f++) {
-        let data = readFileSync(`${folder}/${files[f]}`).toString('utf8');
+        const data = readFileSync(`${folder}/${files[f]}`).toString('utf8');
         result[files[f].replace('.svg', '')] = Buffer.from(data).toString('base64');
     }
     existsSync(dirname(destFile)) || mkdirSync(dirname(destFile), { recursive: true });
     writeFileSync(destFile, JSON.stringify(result));
 }
 
-function copyAllFiles() {
+function copyAllFiles(): void {
     try {
         !existsSync('build') && mkdirSync('build');
         copyFiles(['src/*.d.ts'], 'build');
@@ -41,7 +44,7 @@ function copyAllFiles() {
         copyFiles(['src/i18n/*.json'], 'i18n');
         copyFiles(['src/index.css'], './');
         // copyFiles(['README.md', 'LICENSE'], 'build');
-        // copyFileSync('tasksExample.js', 'build/tasks.js');
+        // copyFileSync('tasksExample.ts', 'build/tasks.ts');
         copyFiles(['src/*.css'], 'build');
         // copyFiles(['craco-module-federation.js'], 'build');
         // copyFiles(['modulefederation.admin.config.js'], 'build');
@@ -53,6 +56,7 @@ function copyAllFiles() {
         process.exit(1);
     }
 }
+
 if (process.argv.find(arg => arg === '--0-clean')) {
     deleteFoldersRecursive('build');
 } else if (process.argv.find(arg => arg === '--2-copy')) {

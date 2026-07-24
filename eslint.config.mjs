@@ -14,7 +14,7 @@ export default [
         },
     },
     {
-        ignores: ['src/assets/devices/parseNames.js', 'src/assets/rooms/parseNames.js', 'tasks.js', 'tasksExample.js'],
+        ignores: ['src/assets/devices/parseNames.js', 'src/assets/rooms/parseNames.js', 'tasks.ts', 'tasksExample.ts'],
     },
     {
         // disable temporary the rule 'jsdoc/require-param' and enable 'jsdoc/require-jsdoc'

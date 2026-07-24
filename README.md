@@ -1,82 +1,122 @@
-# Help ReactJS classes for adapter config
+# ioBroker GUI components
 
-You can find demo on https://github.com/ioBroker/adapter-react-demo
+`@iobroker/gui-components` is the shared React component library for ioBroker adapter configuration
+pages, admin tabs and web applications: theme system, i18n, socket connection handling, object and file
+browser, and a set of ready-to-use dialogs.
+
+- Requires **React 19** and **MUI 9** (both are peer dependencies)
+- Successor of `@iobroker/adapter-react-v5` (React 18 / MUI 6), which is still maintained on the
+  `adapter-react-v5` branch for older systems.
+  See [migration from 8.x to 9.x](MIGRATION_8_9.md)
+
+You can find a demo on https://github.com/ioBroker/adapter-react-demo
 
 ## Getting started
 
-If you want to create the configuration page with ReactJS:
+The GUI of an adapter is a standalone React application in the `src` directory of the adapter.
+It is built with [vite](https://vite.dev/) and the result is copied into the `admin` directory.
 
-1. Create github repo for adapter.
-2. execute `npx create-react-app src` . It will take a while.
-3. `cd src`
-4. Modify package.json file in src directory:
-    - Change `name` from `src` to `ADAPTERNAME-admin` (Of course replace `ADAPTERNAME` with yours)
-    - Add to devDependencies:
-        ```json
-        { "@iobroker/adapter-react-v5": "^7.4.10" }
-        ```
-        Versions can be higher.
-        So your `src/package.json` should look like:
+1. Create the GitHub repository for the adapter (e.g., with `npx @iobroker/create-adapter`).
+
+2. Create the GUI project in the `src` directory:
+
+```bash
+npm create vite@latest src -- --template react-ts
+```
+
+3. Modify `src/package.json`:
 
 ```json
 {
     "name": "ADAPTERNAME-admin",
     "version": "0.1.0",
     "private": true,
-    "dependencies": {
-        "@iobroker/adapter-react-v5": "^7.4.10",
-        "@iobroker/build-tools": "^1.0.0",
-        "babel-eslint": "^10.1.0",
-        "react-scripts": "^5.0.1"
-    },
-    "scripts": {
-        "start": "react-scripts start",
-        "build": "react-scripts build",
-        "test": "react-scripts test",
-        "eject": "react-scripts eject"
-    },
-    "eslintConfig": {
-        "extends": "react-app"
-    },
+    "type": "module",
     "homepage": ".",
-    "browserslist": [">0.2%", "not dead", "not ie <= 11", "not op_mini all"]
-}
-```
-
-5. Call in `src`: `npm install`
-6. Copy `tasks.js` into `src`: `cp node_modules/@iobroker/adapter-react-v5/tasks.js tasks.js`
-7. Add scripts to your `package.json` `scripts` section:
-
-```json
- {
+    "dependencies": {
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.1",
+        "@iobroker/gui-components": "^9.0.0",
+        "@mui/icons-material": "^9.0.1",
+        "@mui/material": "^9.0.1",
+        "react": "^19.2.5",
+        "react-dom": "^19.2.5"
+    },
+    "devDependencies": {
+        "@types/react": "^19.2.0",
+        "@types/react-dom": "^19.2.0",
+        "@vitejs/plugin-react": "^6.0.4",
+        "typescript": "~5.9.3",
+        "vite": "^8.1.5"
+    },
     "scripts": {
-        "0-clean": "node tasks --0-clean",
-        "1-npm": "node tasks --1-npm",
-        "2-build": "node tasks --2-build",
-        "3-copy": "node tasks --3-copy",
-        "4-patch": "node tasks --4-patch",
-        "build": "node tasks"
+        "start": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
     }
 }
 ```
 
-7. Start your dummy application `npm run start` for developing or build with `npm run build` and
-   copy files in `build` directory to `www` or to `admin`. In the admin you must rename `index.html` to `index_m.html`.
-8. You can do that with `npm` tasks: `npm run build`
+Of course, replace `ADAPTERNAME` with your adapter name. The versions can be higher, but React must
+stay at 19 and MUI at 9.
+
+4. Write the vite configuration `src/vite.config.ts`. Important are `base` (the GUI is served from a
+   subdirectory of the admin) and `build.outDir` (the build script expects the result in `src/build`):
+
+```ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+    plugins: [react()],
+    base: './',
+    build: {
+        outDir: 'build',
+    },
+    server: {
+        port: 3000,
+    },
+});
+```
+
+5. Install the packages: `cd src && npm install && cd ..`
+
+6. Copy the build script into the root of the adapter:
+
+```bash
+cp src/node_modules/@iobroker/gui-components/tasksExample.ts tasks.ts
+```
+
+The build script is TypeScript and is executed directly by node, which strips the types at load
+time. This requires **node >= 22.18** (or >= 23.6). Note that node does not resolve the extension
+for TypeScript, so the scripts below must call `node tasks.ts` and not `node tasks`.
+
+7. Add `@iobroker/build-tools` to the `devDependencies` of the **adapter** `package.json` and the
+   following scripts:
+
+```json
+{
+    "scripts": {
+        "0-clean": "node tasks.ts --0-clean",
+        "1-npm": "node tasks.ts --1-npm",
+        "2-build": "node tasks.ts --2-build",
+        "3-copy": "node tasks.ts --3-copy",
+        "4-patch": "node tasks.ts --4-patch",
+        "build": "node tasks.ts"
+    }
+}
+```
+
+8. Develop with `cd src && npm run start` (vite dev server on port 3000) or build everything with
+   `npm run build` in the adapter root. The build copies all files into the `admin` directory and
+   patches the socket.io script tag in `index.html`.
 
 ## Development
 
-1. Add `socket.io` to `public/index.html`.
-   After
+### 1. Load socket.io in `src/index.html`
 
-```html
-<link
-    rel="manifest"
-    href="%PUBLIC_URL%/manifest.json"
-/>
-```
-
-insert
+The GUI does not bundle socket.io. It is delivered by the admin instance and must be loaded before the
+application starts. Add this to the `<head>` of `src/index.html`:
 
 ```html
 <script>
@@ -93,342 +133,425 @@ insert
     script.onload = function () {
         typeof window.socketLoadedHandler === 'function' && window.socketLoadedHandler();
     };
+    // On the vite dev server (port 3000) the socket must be loaded from the admin instance (port 8081)
     script.src =
         window.location.port === '3000'
-            ? window.location.protocol +
-              '//' +
-              (query.host || window.location.hostname) +
-              ':' +
-              (query.port || 8081) +
-              '/lib/js/socket.io.js'
-            : '%PUBLIC_URL%/../../lib/js/socket.io.js';
+            ? `${window.location.protocol}//${query.host || window.location.hostname}:${query.port || 8081}/lib/js/socket.io.js`
+            : './../../lib/js/socket.io.js';
 
     document.head.appendChild(script);
 </script>
 ```
 
-3. Add to App.js constructor initialization for I18n:
+`node tasks.ts --4-patch` replaces this block in the built `index.html` with a direct include of
+`./../../lib/js/socket.io.js`.
 
-```jsx
-class App extends GenericApp {
-    constructor(props) {
-        const extendedProps = { ...props };
-        extendedProps.encryptedFields = ['pass']; // this parameter will be encrypted and decrypted automatically
-        extendedProps.translations = {
-            en: require('./i18n/en'),
-            de: require('./i18n/de'),
-            ru: require('./i18n/ru'),
-            pt: require('./i18n/pt'),
-            nl: require('./i18n/nl'),
-            fr: require('./i18n/fr'),
-            it: require('./i18n/it'),
-            es: require('./i18n/es'),
-            pl: require('./i18n/pl'),
-            uk: require('./i18n/uk'),
-            'zh-cn': require('./i18n/zh-cn'),
-        };
-        // get actual admin port
+### 2. Extend `GenericApp` in `src/src/App.tsx`
+
+`GenericApp` handles the socket connection, the theme, loading and saving of the instance
+configuration, the save/close buttons, and the Sentry initialization.
+
+```tsx
+import React from 'react';
+import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
+import {
+    GenericApp,
+    Loader,
+    I18n,
+    type GenericAppProps,
+    type GenericAppSettings,
+    type GenericAppState,
+} from '@iobroker/gui-components';
+
+import en from './i18n/en.json';
+import de from './i18n/de.json';
+import ru from './i18n/ru.json';
+import pt from './i18n/pt.json';
+import nl from './i18n/nl.json';
+import fr from './i18n/fr.json';
+import it from './i18n/it.json';
+import es from './i18n/es.json';
+import pl from './i18n/pl.json';
+import uk from './i18n/uk.json';
+import zhCn from './i18n/zh-cn.json';
+
+interface AppState extends GenericAppState {
+    // your own state
+}
+
+export default class App extends GenericApp<GenericAppProps, AppState> {
+    constructor(props: GenericAppProps) {
+        const extendedProps: GenericAppSettings = { ...props };
+        // these fields will be encrypted and decrypted automatically
+        extendedProps.encryptedFields = ['pass'];
+        extendedProps.translations = { en, de, ru, pt, nl, fr, it, es, pl, uk, 'zh-cn': zhCn };
+        // get the actual admin port
         extendedProps.socket = { port: parseInt(window.location.port, 10) };
 
-        // Only if close, save buttons are not required at the bottom (e.g. if admin tab)
+        // only if the save/close buttons at the bottom are not required (e.g., for an admin tab)
         // extendedProps.bottomButtons = false;
 
-        // only for debug purposes
+        // only for debug purposes: the vite dev server runs on 3000, the admin on 8081
         if (extendedProps.socket.port === 3000) {
             extendedProps.socket.port = 8081;
         }
 
-        // allow to manage GenericApp the sentry initialization or do not set the sentryDSN if no sentry available
+        // let GenericApp manage the Sentry initialization. Do not set it if no Sentry is available
         extendedProps.sentryDSN = 'https://yyy@sentry.iobroker.net/xx';
 
-        super(extendedProps);
+        super(props, extendedProps);
     }
-    // ...
+
+    onConnectionReady(): void {
+        // called after the socket is connected and the configuration is loaded
+    }
+
+    render(): React.JSX.Element {
+        if (!this.state.loaded) {
+            return (
+                <StyledEngineProvider injectFirst>
+                    <ThemeProvider theme={this.state.theme}>
+                        <Loader themeType={this.state.themeType} />
+                    </ThemeProvider>
+                </StyledEngineProvider>
+            );
+        }
+
+        return (
+            <StyledEngineProvider injectFirst>
+                <ThemeProvider theme={this.state.theme}>
+                    <div
+                        className="App"
+                        style={{
+                            background: this.state.theme.palette.background.default,
+                            color: this.state.theme.palette.text.primary,
+                        }}
+                    >
+                        <div>
+                            {I18n.t('Port')}:
+                            <input
+                                value={this.state.native.port || ''}
+                                onChange={e => this.updateNativeValue('port', e.target.value)}
+                            />
+                        </div>
+                        {/* renders the error, toast, alert dialogs and the save/close buttons */}
+                        {this.renderHelperDialogs()}
+                    </div>
+                </ThemeProvider>
+            </StyledEngineProvider>
+        );
+    }
 }
 ```
 
-4. Replace `index.js` with the following code to support themes:
+### 3. Entry point `src/src/index.tsx`
 
-```jsx
+```tsx
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import * as serviceWorker from './serviceWorker';
 
 import './index.css';
 import App from './App';
 import { version } from '../package.json';
 
-console.log(`iobroker.scenes@${version}`);
+console.log(`iobroker.ADAPTERNAME@${version}`);
 
 const container = document.getElementById('root');
-const root = createRoot(container);
-root.render(<App />);
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: http://bit.ly/CRA-PWA
-serviceWorker.unregister();
+if (container) {
+    createRoot(container).render(<App />);
+}
 ```
 
-5. Add to App.js encoding and decoding of values:
+### 4. Encrypt and decrypt values
 
-```jsx
-class App extends GenericApp {
+Fields listed in `encryptedFields` are encrypted and decrypted automatically. If you need more control,
+override the hooks:
+
+```tsx
+class App extends GenericApp<GenericAppProps, AppState> {
     // ...
-    onPrepareLoad(settings) {
-        settings.pass = this.decode(settings.pass);
+    onPrepareLoad(settings: Record<string, any>, encryptedNative?: string[]): void {
+        settings.pass = this.decrypt(settings.pass);
     }
-    onPrepareSave(settings) {
-        settings.pass = this.encode(settings.pass);
+
+    onPrepareSave(settings: Record<string, any>): boolean {
+        settings.pass = this.encrypt(settings.pass);
+        return true;
     }
 }
 ```
 
-6. The optional step is to validate the data to be saved:
+### 5. Validate the data before saving (optional)
 
-```jsx
-onPrepareSave(settings) {
-     super.onPrepareSave(settings);
-     if (DATA_INVALID) {
-         return false; // configuration will not be saved
-     }
-     return true;
+```tsx
+onPrepareSave(settings: Record<string, any>): boolean {
+    super.onPrepareSave(settings);
+    if (DATA_INVALID) {
+        return false; // the configuration will not be saved
+    }
+    return true;
 }
 ```
 
 ## Components
 
-### Connection.tsx
+All components, dialogs, icons, and types are exported from the package root:
 
-This is a non-React class to provide the communication for socket connection with the server.
+```ts
+import { GenericApp, ObjectBrowser, DialogSelectID, I18n, Utils } from '@iobroker/gui-components';
+```
 
-### GenericApp.tsx
+### Core modules
 
-### i18n.ts
-
-### Theme.tsx
+| Module                           | Description                                                                                      |
+| -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `GenericApp`                     | Base class of every adapter GUI: connection, theme, config load/save, save/close buttons, Sentry |
+| `Connection` / `AdminConnection` | Re-export of the socket classes from `@iobroker/socket-client`                                   |
+| `I18n`                           | Static translation class (`I18n.t`, `I18n.setLanguage`, `I18n.getLanguage`)                      |
+| `Theme`                          | MUI theme factory that produces the ioBroker themes (`IobTheme`)                                 |
+| `Router`                         | Simple hash-based router                                                                         |
+| `Utils`                          | Helper functions for names, icons, colors, clipboard, ...                                        |
 
 ### Dialogs
 
-Some dialogs are predefined and could be used out of the box.
+Some dialogs are predefined and can be used out of the box. In all dialogs, the OK button is first (on
+the left) and the cancel button is last (on the right).
 
-#### Confirm.tsx
+| Dialog              | Deprecated alias    | Description                           |
+| ------------------- | ------------------- | ------------------------------------- |
+| `DialogConfirm`     | `Confirm`           | Yes/no question, can be suppressed    |
+| `DialogError`       | `Error`             | Error message                         |
+| `DialogMessage`     | `Message`           | Information message                   |
+| `DialogTextInput`   | `TextInput`         | Ask for a text                        |
+| `DialogSelectID`    | `SelectID`          | Object ID selector                    |
+| `DialogSelectFile`  | `SelectFile`        | File selector                         |
+| `DialogCron`        | `Cron`              | CRON editor (wizard, simple, complex) |
+| `DialogSimpleCron`  | `SimpleCronDialog`  | Only the simple CRON editor           |
+| `DialogComplexCron` | `ComplexCronDialog` | Only the complex CRON editor          |
+
+#### DialogConfirm
 
 <!-- TODO: Provide screenshot here -->
 
-Usage:
-
-```jsx
+```tsx
 import React from 'react';
-import { I18n, Confirm as ConfirmDialog } from '@iobroker/adapter-react-v5';
+import { Button } from '@mui/material';
+import { I18n, DialogConfirm } from '@iobroker/gui-components';
 
-class ExportImportDialog extends React.Component {
-    constructor(props) {
-        super(props);
+export default function ExportImportDialog(): React.JSX.Element {
+    const [confirmDialog, setConfirmDialog] = React.useState(false);
 
-        this.state = {
-            confirmDialog: false,
-        };
-    }
-
-    renderConfirmDialog() {
-        if (!this.state.confirmDialog) {
-            return null;
-        }
-        return (
-            <ConfirmDialog
-                title={I18n.t('Scene will be overwritten.')}
-                text={I18n.t('All data will be lost. Confirm?')}
-                ok={I18n.t('Yes')}
-                cancel={I18n.t('Cancel')}
-                suppressQuestionMinutes={5}
-                dialogName="myConfirmDialogThatCouldBeSuppressed"
-                suppressText={I18n.t('Suppress question for next %s minutes', 5)}
-                onClose={isYes => {
-                    this.setState({ confirmDialog: false });
-                }}
-            />
-        );
-    }
-    render() {
-        return (
-            <div>
-                <Button onClick={() => this.setState({ confirmDialog: true })}>Click</Button>
-                {this.renderConfirmDialog()}
-            </div>
-        );
-    }
-}
-
-export default ExportImportDialog;
-```
-
-#### Error.tsx
-
-<!-- TODO: Provide screenshot here -->
-
-#### Message.tsx
-
-<!-- TODO: Provide screenshot here -->
-
-```jsx
-renderMessage() {
-   if (this.state.showMessage) {
-      return <Message
-         text={this.state.showMessage}
-         onClose={() => this.setState({showMessage: false})}
-      />;
-   } else {
-      return null;
-   }
-}
-```
-
-#### SelectID.tsx
-
-![Logo](img/selectID.png)
-
-```jsx
-import { SelectID as DialogSelectID } from '@iobroker/adapter-react-v5';
-
-class MyComponent extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            showSelectId: false,
-        };
-    }
-
-    renderSelectIdDialog() {
-        if (this.state.showSelectId) {
-            return (
-                <DialogSelectID
-                    key="tableSelect"
-                    imagePrefix="../.."
-                    dialogName={this.props.adapterName}
-                    themeType={this.props.themeType}
-                    socket={this.props.socket}
-                    statesOnly={true}
-                    selected={this.state.selectIdValue}
-                    onClose={() => this.setState({ showSelectId: false })}
-                    onOk={(selected, name) => {
-                        this.setState({ showSelectId: false, selectIdValue: selected });
+    return (
+        <div>
+            <Button onClick={() => setConfirmDialog(true)}>Click</Button>
+            {confirmDialog ? (
+                <DialogConfirm
+                    title={I18n.t('Scene will be overwritten.')}
+                    text={I18n.t('All data will be lost. Confirm?')}
+                    ok={I18n.t('Yes')}
+                    cancel={I18n.t('Cancel')}
+                    suppressQuestionMinutes={5}
+                    // `dialogName` is required if `suppressQuestionMinutes` is used
+                    dialogName="myConfirmDialogThatCouldBeSuppressed"
+                    suppressText={I18n.t('Suppress question for next %s minutes', 5)}
+                    onClose={(isYes: boolean) => {
+                        setConfirmDialog(false);
+                        if (isYes) {
+                            // do something
+                        }
                     }}
                 />
-            );
-        } else {
-            return null;
-        }
-    }
-    render() {
-        return renderSelectIdDialog();
-    }
+            ) : null}
+        </div>
+    );
 }
 ```
 
-#### Cron
-
-Include `"react-text-mask": "^5.4.3",` in package.json.
+#### DialogError
 
 <!-- TODO: Provide screenshot here -->
 
-```jsx
-function renderCron() {
-    if (!showCron) {
-        return null;
-    } else {
+```tsx
+{
+    this.state.errorText ? (
+        <DialogError
+            text={this.state.errorText}
+            onClose={() => this.setState({ errorText: '' })}
+        />
+    ) : null;
+}
+```
+
+#### DialogMessage
+
+<!-- TODO: Provide screenshot here -->
+
+```tsx
+{
+    this.state.showMessage ? (
+        <DialogMessage
+            text={this.state.showMessage}
+            onClose={() => this.setState({ showMessage: '' })}
+        />
+    ) : null;
+}
+```
+
+#### DialogSelectID
+
+<!-- TODO: Provide screenshot here -->
+
+```tsx
+import React, { Component } from 'react';
+import { DialogSelectID, type IobTheme } from '@iobroker/gui-components';
+import type { AdminConnection } from '@iobroker/socket-client';
+
+interface MyComponentProps {
+    socket: AdminConnection;
+    theme: IobTheme;
+    themeType: 'dark' | 'light';
+    adapterName: string;
+}
+
+class MyComponent extends Component<MyComponentProps, { showSelectId: boolean; selectIdValue: string }> {
+    renderSelectIdDialog(): React.JSX.Element | null {
+        if (!this.state.showSelectId) {
+            return null;
+        }
         return (
-            <DialogCron
-                key="dialogCron1"
-                cron={this.state.cronValue || '* * * * *'}
-                onClose={() => this.setState({ showCron: false })}
-                onOk={cronValue => {
-                    this.setState({ cronValue });
-                }}
+            <DialogSelectID
+                imagePrefix="../.."
+                dialogName={this.props.adapterName}
+                // `theme` is mandatory, without it the dialog will crash
+                theme={this.props.theme}
+                themeType={this.props.themeType}
+                socket={this.props.socket}
+                types={['state']}
+                selected={this.state.selectIdValue}
+                onClose={() => this.setState({ showSelectId: false })}
+                onOk={(selected, _name) => this.setState({ showSelectId: false, selectIdValue: selected as string })}
             />
         );
+    }
+
+    render(): React.JSX.Element | null {
+        return this.renderSelectIdDialog();
     }
 }
 ```
 
-### Components
+#### DialogCron
 
-#### Utils.tsx
+<!-- TODO: Provide screenshot here -->
+
+```tsx
+function renderCron(): React.JSX.Element | null {
+    if (!showCron) {
+        return null;
+    }
+    return (
+        <DialogCron
+            cron={this.state.cronValue || '* * * * *'}
+            // `theme` is mandatory
+            theme={this.props.theme}
+            // noWizard, simple or complex can limit the available editors
+            onClose={() => this.setState({ showCron: false })}
+            onOk={(cronValue: string) => this.setState({ cronValue })}
+        />
+    );
+}
+```
+
+### Component examples
+
+#### Utils
 
 ##### getObjectNameFromObj
 
-`getObjectNameFromObj(obj, settings, options, isDesc)`
+`getObjectNameFromObj(obj, settings, options, isDesc, noTrim)`
 
-Get object name from a single object.
+Get the name from a single object.
 
-Usage: `Utils.getObjectNameFromObj(this.objects[id], null, {language: I18n.getLanguage()})`
+Usage: `Utils.getObjectNameFromObj(this.objects[id], null, { language: I18n.getLanguage() })`
 
 ##### getObjectIcon
 
 `getObjectIcon(id, obj)`
 
-Get icon from the object.
+Get the icon from the object.
 
-Usage:
-
-```jsx
+```tsx
 const icon = Utils.getObjectIcon(id, this.objects[id]);
-return <img src={icon} />;
+return (
+    <img
+        src={icon}
+        alt=""
+    />
+);
 ```
 
 ##### isUseBright
 
 `isUseBright(color, defaultValue)`
 
-Usage: `
+Returns `true` if a bright (white) text must be used on the given background color.
 
-#### Loader.tsx
+Usage: `const textColor = Utils.isUseBright(backgroundColor) ? '#FFF' : '#000';`
 
-![Logo](img/loader.png)
+#### Loader
 
-```jsx
-render() {
-     if (!this.state.loaded) {
-         return <MuiThemeProvider theme={this.state.theme}>
-             <Loader theme={this.state.themeType}/>
-         </MuiThemeProvider>;
-     }
-     // render loaded data
-}
+<!-- TODO: Provide screenshot here -->
 
-```
+The loader detects the vendor (`window.vendorPrefix`) and shows the corresponding animation.
 
-#### Logo.tsx
-
-![Logo](img/logo.png)
-
-```jsx
-render() {
-   return <form className={this.props.classes.tab}>
-      <Logo
-       instance={this.props.instance}
-       common={this.props.common}
-       native={this.props.native}
-       onError={text => this.setState({errorText: text})}
-       onLoad={this.props.onLoad}
-      />
-      ...
-   </form>;
+```tsx
+render(): React.JSX.Element {
+    if (!this.state.loaded) {
+        return (
+            <StyledEngineProvider injectFirst>
+                <ThemeProvider theme={this.state.theme}>
+                    <Loader themeType={this.state.themeType} />
+                </ThemeProvider>
+            </StyledEngineProvider>
+        );
+    }
+    // render the loaded data
 }
 ```
 
-#### Router.tsx
+#### Logo
 
-#### ObjectBrowser.js
+<!-- TODO: Provide screenshot here -->
 
-It is better to use `Dialog/SelectID`, but if you want:
+Shows the adapter logo and the import/export buttons for the configuration.
 
-![Logo](img/objectBrowser.png)
+```tsx
+render(): React.JSX.Element {
+    return (
+        <form style={styles.tab}>
+            <Logo
+                instance={this.props.instance}
+                common={this.props.common}
+                native={this.props.native}
+                onError={(text: string) => this.setState({ errorText: text })}
+                onLoad={this.props.onLoad}
+            />
+            ...
+        </form>
+    );
+}
+```
 
-```jsx
+#### ObjectBrowser
+
+It is better to use `DialogSelectID`, but if you want:
+
+<!-- TODO: Provide screenshot here -->
+
+```tsx
 <ObjectBrowser
     foldersFirst={this.props.foldersFirst}
-    imagePrefix={this.props.imagePrefix || this.props.prefix} // prefix is for back compatibility
+    imagePrefix={this.props.imagePrefix}
     defaultFilters={this.filters}
     dialogName={this.dialogName}
     showExpertButton={this.props.showExpertButton !== undefined ? this.props.showExpertButton : true}
@@ -460,21 +583,25 @@ It is better to use `Dialog/SelectID`, but if you want:
 />
 ```
 
-#### TreeTable.ts
+#### TreeTable
 
-![Logo](img/tableTree.png)
+<!-- TODO: Provide screenshot here -->
 
-```jsx
+```tsx
 // STYLES
-const styles = {
+const styles: Record<string, React.CSSProperties> = {
     tableDiv: {
         width: '100%',
         overflow: 'hidden',
         height: 'calc(100% - 48px)',
     },
 };
-class MyComponent extends Component {
-    constructor(props) {
+
+class MyComponent extends Component<MyComponentProps, MyComponentState> {
+    // the `Column` type is not exported, the structure is described below
+    private readonly columns: Record<string, any>[];
+
+    constructor(props: MyComponentProps) {
         super(props);
 
         this.state = {
@@ -535,13 +662,16 @@ class MyComponent extends Component {
             },
         ];
     }
-    // renderTable
-    render() {
+
+    render(): React.JSX.Element {
         return (
-            <div className={this.props.classes.tableDiv}>
+            <div style={styles.tableDiv}>
                 <TreeTable
                     columns={this.columns}
                     data={this.state.data}
+                    // `theme` and `adapterName` are mandatory
+                    theme={this.props.theme}
+                    adapterName={this.props.adapterName}
                     onUpdate={(newData, oldData) => {
                         const data = JSON.parse(JSON.stringify(this.state.data));
 
@@ -549,24 +679,23 @@ class MyComponent extends Component {
                         if (newData === true) {
                             // find unique ID
                             let i = 1;
-                            let id = 'line_' + i;
+                            let id = `line_${i}`;
 
-                            // eslint-disable-next-line
                             while (this.state.data.find(item => item.id === id)) {
                                 i++;
-                                id = 'line_' + i;
+                                id = `line_${i}`;
                             }
 
                             data.push({
                                 id,
-                                name: I18n.t('New resource') + '_' + i,
+                                name: `${I18n.t('New resource')}_${i}`,
                                 color: '',
                                 icon: '',
                                 unit: '',
                                 price: 0,
                             });
                         } else {
-                            // existing line was modifed
+                            // an existing line was modified
                             const pos = this.state.data.indexOf(oldData);
                             if (pos !== -1) {
                                 Object.keys(newData).forEach(attr => (data[pos][attr] = newData[attr]));
@@ -576,7 +705,6 @@ class MyComponent extends Component {
                         this.setState({ data });
                     }}
                     onDelete={oldData => {
-                        console.log('Delete: ' + JSON.stringify(oldData));
                         const pos = this.state.data.indexOf(oldData);
                         if (pos !== -1) {
                             const data = JSON.parse(JSON.stringify(this.state.data));
@@ -595,59 +723,96 @@ class MyComponent extends Component {
 
 <!-- TODO: Provide screenshot here -->
 
-Toast is not a part of `adapter-react` but it is an example how to use toast in application:
+Toast is not a part of this package, but this is an example of how to use a toast in the application.
+`GenericApp` already provides one via `this.showToast('text')`.
 
-```jsx
-import { Component } from 'react';
-import { Snackbar } from '@mui/material';
+```tsx
+import React, { Component } from 'react';
+import { IconButton, Snackbar } from '@mui/material';
+import { Close as IconClose } from '@mui/icons-material';
 
-class MyComponent extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            // ....
-            toast: '',
-        };
-    }
-
-    // ...
-    renderToast() {
+class MyComponent extends Component<MyComponentProps, { toast: string }> {
+    renderToast(): React.JSX.Element | null {
         if (!this.state.toast) {
             return null;
         }
         return (
             <Snackbar
-                anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'left',
-                }}
-                open={true}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                open
                 autoHideDuration={6000}
                 onClose={() => this.setState({ toast: '' })}
-                ContentProps={{ 'aria-describedby': 'message-id' }}
+                // MUI 9: `ContentProps` was replaced by `slotProps`
+                slotProps={{ content: { 'aria-describedby': 'message-id' } }}
                 message={<span id="message-id">{this.state.toast}</span>}
-                action={[
+                action={
                     <IconButton
                         key="close"
                         aria-label="Close"
                         color="inherit"
-                        className={this.props.classes.close}
                         onClick={() => this.setState({ toast: '' })}
                     >
                         <IconClose />
-                    </IconButton>,
-                ]}
+                    </IconButton>
+                }
             />
         );
     }
 
-    render() {
+    render(): React.JSX.Element {
         return <div>{this.renderToast()}</div>;
     }
 }
 ```
 
-## List of adapters that use adapter-react
+### Further components
+
+| Component                                 | Description                                                                |
+| ----------------------------------------- | -------------------------------------------------------------------------- |
+| `ColorPicker`                             | Color selector with a custom palette                                       |
+| `CustomModal`                             | Simple modal dialog with OK/Cancel                                         |
+| `DeviceTypeSelector` / `DeviceTypeIcon`   | Selector and icons for the device types of `@iobroker/type-detector`       |
+| `FileBrowser`                             | Browser for the files of the ioBroker file system                          |
+| `FileViewer`                              | Viewer/editor for a single file                                            |
+| `IconPicker` / `IconSelector`             | Selection of an icon (base64 or from the icon sets)                        |
+| `Icon` / `Image`                          | Renders an icon or an image from any source (base64, URL, UTF-8 character) |
+| `InfoBox`                                 | Colored box for hints, warnings, and errors                                |
+| `Loader`, `LoaderPT`, `LoaderMV`, ...     | Vendor-specific loading animations                                         |
+| `Logo`                                    | Adapter logo with import/export of the configuration                       |
+| `SaveCloseButtons`                        | Save and close buttons (used by `GenericApp`)                              |
+| `Schedule`                                | Editor for the ioBroker schedule format                                    |
+| `SelectWithIcon`                          | Select box with icons (e.g., for rooms and functions)                      |
+| `SimpleCron` / `ComplexCron`              | Inline CRON editors                                                        |
+| `TabContainer`, `TabHeader`, `TabContent` | Layout components for tabs in the adapter configuration                    |
+| `TableResize`                             | Table with resizable columns                                               |
+| `TextWithIcon`                            | Text with the icon of the object in front                                  |
+| `ToggleThemeMenu`                         | Menu to switch between the themes                                          |
+| `UploadImage`                             | Upload with drag-and-drop and cropper                                      |
+| `iobUriParse` / `iobUriRead`              | Helpers to parse and read `iob://` URIs                                    |
+
+### Module federation
+
+The ioBroker admin loads the adapter GUIs as micro-frontends. The list of the packages that must be
+shared is delivered with this package:
+
+```js
+const { moduleFederationShared } = require('@iobroker/gui-components/modulefederation.admin.config');
+```
+
+## Test GUI
+
+The `test-gui` directory contains a vite application to develop and test the components visually.
+It imports directly from `../../src`, so changes are visible immediately:
+
+```bash
+cd test-gui
+npm install
+npm start
+```
+
+It expects a running ioBroker admin on `127.0.0.1:8081`.
+
+## List of adapters that use this library
 
 - Admin
 - Backitup
@@ -680,6 +845,7 @@ The icons may not be reused in other projects without the proper flaticon licens
 
 You can find the migration instructions:
 
+- [from adapter-react-v5@8.x to gui-components@9.x](MIGRATION_8_9.md)
 - [from adapter-react-v5@6.x to adapter-react-v5@7.x](MIGRATION_6_7.md)
 - [from adapter-react-v5@5.x to adapter-react-v5@6.x](MIGRATION_5_6.md)
 - [from adapter-react to adapter-react-v5@5.x](MIGRATION_4_5.md)
@@ -690,84 +856,118 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) BREAKING: Package renamed from `@iobroker/adapter-react-v5` to `@iobroker/gui-components`
+- (@GermanBluefox) BREAKING: React19 + MUI9
+- (@GermanBluefox) BREAKING: Removed `LegacyConnection`. Use `Connection`/`AdminConnection` instead
+- (@GermanBluefox) Updated README and added the migration guide `MIGRATION_8_9.md`
+
 ### 8.3.2 (2026-07-22)
+
 - (@GermanBluefox) Corrected tooltip if object is wrong
 
 ### 8.3.1 (2026-07-12)
+
 - (@GermanBluefox) Used strict types
 
 ### 8.2.13 (2026-06-21)
+
 - (@GermanBluefox) Updated socket-client package to support web-socket-only mode
 
 ### 8.2.12 (2026-06-20)
+
 - (@GermanBluefox) Corrected InfoBox color
 
 ### 8.2.11 (2026-06-19)
+
 - (@GermanBluefox) Correcting background of state if overloaded
 - (@GermanBluefox) Moved translations for json-config to another package
 
 ### 8.2.10 (2026-06-16)
+
 - (@GermanBluefox) Corrected the folder creation
 
 ### 8.2.9 (2026-06-12)
+
 - (@GermanBluefox) Updated socket-client package to support reverse proxy
 
 ### 8.2.8 (2026-06-11)
+
 - (@GermanBluefox) Added object and file navigation
 
 ### 8.2.7 (2026-05-29)
+
 - (@GermanBluefox) Updated loader
 
 ### 8.2.6 (2026-05-25)
+
 - (@GermanBluefox) Updated loader
 
 ### 8.2.4 (2026-05-15)
+
 - (@GermanBluefox) allowed to define the theme by query parameter `?theme=dark` or `?theme=light` or `?theme=auto`
 
 ### 8.2.2 (2026-04-21)
+
 - (@GermanBluefox) Force using React 18
 
 ### 8.2.0 (2026-04-17)
+
 - (@GermanBluefox) Added support for a new post-message about the theme change
 - (@GermanBluefox) Updated packages
 
 ### 8.1.8 (2026-04-11)
+
 - (@GermanBluefox) Fixed some minor bugs
 
 ### 8.1.6 (2026-03-24)
+
 - (@GermanBluefox) Added translations
 
 ### 8.1.4 (2026-03-21)
+
 - (@GermanBluefox) Optimisations of the translation engine
 
 ### 8.1.3 (2026-03-09)
+
 - (@GermanBluefox) Added export of the types icons
 
 ### 8.1.2 (2026-03-05)
+
 - (@GermanBluefox) Updated packages
 
 ### 8.1.1 (2026-03-02)
+
 - (@GermanBluefox) Force react 18
 
 ### 8.0.21 (2026-02-10)
+
 - (@GermanBluefox) Added translations
 
 ### 8.0.20 (2026-02-09)
+
 - (@GermanBluefox) Small typing fixes
 
 ### 8.0.17 (2026-01-27)
+
 - (@GermanBluefox) Added percentage icon
 
 ### 8.0.16 (2025-12-16)
+
 - (@GermanBluefox) Updated packages and used standard GitHub actions
 
 ### 8.0.13 (2025-11-13)
+
 - (@GermanBluefox) Changed theme for NW
 
 ### 8.0.12 (2025-11-09)
+
 - (@GermanBluefox) Fixing ref for Icon and TabContent components
 
 ### 8.0.9 (2025-11-02)
+
 - (@GermanBluefox) Added possibility to import objects from text
 - (@GermanBluefox) Object browser was split into a few files
 

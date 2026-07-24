@@ -156,7 +156,7 @@ export class Utils {
             if (textObj && typeof textObj === 'object') {
                 text = (options.language && textObj[options.language]) || textObj.en || textObj.de || textObj.ru || '';
             } else {
-                text = textObj as string;
+                text = textObj;
             }
             text = (text || '').toString().replace(/[_.]/g, ' ');
 
