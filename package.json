@@ -1,6 +1,6 @@
 {
   "name": "@iobroker/gui-components",
-  "version": "9.0.0",
+  "version": "10.0.0",
   "description": "Shared React components (React 19 / MUI 9) to develop ioBroker interfaces. Successor of @iobroker/adapter-react-v5.",
   "author": {
     "name": "bluefox",
