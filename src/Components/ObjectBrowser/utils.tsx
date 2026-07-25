@@ -15,8 +15,8 @@ import {
     Close as IconClose,
     Wifi as IconConnection,
 } from '@mui/icons-material';
-import type { ThemeType } from '../types';
-import { Utils } from './Utils';
+import type { ThemeType } from '../../types';
+import { Utils } from '../Utils';
 import type {
     FormatValueOptions,
     InputSelectItem,
@@ -27,7 +27,7 @@ import type {
     AdapterColumn,
     ObjectBrowserFilter,
     TreeItemData,
-} from './objectBrowser.types';
+} from './types';
 
 export const ICON_SIZE = 24;
 export const ROW_HEIGHT = 32;

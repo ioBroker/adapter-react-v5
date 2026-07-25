@@ -73,7 +73,7 @@ export {
     type ObjectBrowserColumn,
     type ObjectBrowserProps,
     type ObjectBrowserNavigation,
-} from './Components/objectBrowser.types';
+} from './Components/ObjectBrowser/types';
 
 export { InfoBox } from './Components/InfoBox';
 export { Router } from './Components/Router';
@@ -141,7 +141,7 @@ export { dictionary } from './dictionary';
 // `LegacyConnection` was removed in v9. The types it used to re-export now come directly
 // from `@iobroker/socket-client`, `pattern2RegEx` from the object browser utils.
 export { type ConnectOptions, type SocketClient, type BinaryStateChangeHandler } from '@iobroker/socket-client';
-export { pattern2RegEx } from './Components/objectBrowserUtils';
+export { pattern2RegEx } from './Components/ObjectBrowser/utils';
 
 export {
     type IobUri,

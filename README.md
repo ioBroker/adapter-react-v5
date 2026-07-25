@@ -856,6 +856,11 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Split the object browser into the directory `Components/ObjectBrowser` (no API changes)
+
 ### 10.0.2 (2026-07-25)
 
 - (@GermanBluefox) BREAKING: Package renamed from `@iobroker/adapter-react-v5` to `@iobroker/gui-components`

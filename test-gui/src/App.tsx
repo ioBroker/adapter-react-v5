@@ -24,10 +24,18 @@ import langZhCn from '../../src/i18n/zh-cn.json';
 import { I18n } from '../../src/i18n';
 import { Theme } from '../../src/Theme';
 import type { IobTheme, ThemeName } from '../../src/types';
-import { ObjectBrowser, type ObjectBrowserFilter } from '../../src/Components/ObjectBrowser';
 import { PROGRESS } from '../../src/Connection';
 import '../../src/index.css';
-import { Icon, IconExpert, LoaderHA, ToggleThemeMenu, FileBrowser, FileViewer } from '../../src';
+import {
+    Icon,
+    IconExpert,
+    LoaderHA,
+    ToggleThemeMenu,
+    FileBrowser,
+    FileViewer,
+    ObjectBrowser,
+    type ObjectBrowserFilter,
+} from '../../src';
 
 interface AppState {
     connected: boolean;

@@ -1,9 +1,8 @@
 import type React from 'react';
-import type { IobTheme, ThemeName, ThemeType, Translate } from '../types';
-import type { Connection } from '../Connection';
-import type { Router } from './Router';
-import type { ObjectBrowserClass } from './ObjectBrowser';
-import type { AdapterColumn, ObjectBrowserCustomFilter } from './objectBrowserUtils';
+import type { IobTheme, ThemeName, ThemeType, Translate } from '../../types';
+import type { Connection } from '../../Connection';
+import type { Router } from '../Router';
+import type { ObjectBrowserClass } from './ObjectBrowserClass';
 
 type ObjectEventType = 'new' | 'changed' | 'deleted';
 

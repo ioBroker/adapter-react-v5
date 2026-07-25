@@ -18,7 +18,7 @@ import {
     type ObjectBrowserFilter,
     type ObjectBrowserColumn,
     type ObjectBrowserCustomFilter,
-} from '../Components/objectBrowser.types';
+} from '../Components/ObjectBrowser/types';
 import type { IobTheme } from '../types';
 
 export interface SelectIDFilters {
