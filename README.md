@@ -7,7 +7,7 @@ browser, and a set of ready-to-use dialogs.
 - Requires **React 19** and **MUI 9** (both are peer dependencies)
 - Successor of `@iobroker/adapter-react-v5` (React 18 / MUI 6), which is still maintained on the
   `adapter-react-v5` branch for older systems.
-  See [migration from 8.x to 9.x](MIGRATION_8_9.md)
+  See [migration from 8.x to 10.x](MIGRATION_8_10.md)
 
 You can find a demo on https://github.com/ioBroker/adapter-react-demo
 
@@ -845,7 +845,7 @@ The icons may not be reused in other projects without the proper flaticon licens
 
 You can find the migration instructions:
 
-- [from adapter-react-v5@8.x to gui-components@9.x](MIGRATION_8_9.md)
+- [from adapter-react-v5@8.x to gui-components@10.x](MIGRATION_8_10.md)
 - [from adapter-react-v5@6.x to adapter-react-v5@7.x](MIGRATION_6_7.md)
 - [from adapter-react-v5@5.x to adapter-react-v5@6.x](MIGRATION_5_6.md)
 - [from adapter-react to adapter-react-v5@5.x](MIGRATION_4_5.md)

@@ -1,6 +1,6 @@
-# Migration from adapter-react-v5@8.x to gui-components@9.x
+# Migration from adapter-react-v5@8.x to gui-components@10.x
 
-Version 9 is the first release under the new package name `@iobroker/gui-components`.
+Version 10 is the first release under the new package name `@iobroker/gui-components`.
 Together with the rename, the peer dependencies were lifted to **React 19** and **MUI 9**, and the
 long-deprecated `LegacyConnection` was removed.
 
@@ -19,7 +19,7 @@ package name is enough.
 ```json
 {
     "dependencies": {
-        "@iobroker/gui-components": "^9.0.0"
+        "@iobroker/gui-components": "^10.0.0"
     }
 }
 ```
@@ -49,8 +49,8 @@ The GitHub repository moved too: https://github.com/ioBroker/gui-components
 
 The peer dependencies changed:
 
-| Package               | 8.x       | 9.x       |
-| --------------------- | --------- | --------- |
+| Package               | 8.x       | 10.x      |
+| --------------------- | --------- |-----------|
 | `react`               | `^18.3.1` | `^19.0.0` |
 | `react-dom`           | `^18.3.1` | `^19.0.0` |
 | `@mui/material`       | `^6.5.0`  | `^9.0.0`  |
@@ -198,8 +198,8 @@ extendedProps.Connection = AdminConnection;
 The symbols that used to come from `LegacyConnection.tsx` are still exported by this package, only from
 another source:
 
-| Export                                   | 8.x                    | 9.x                                          |
-| ---------------------------------------- | ---------------------- | -------------------------------------------- |
+| Export                                   | 8.x                    | 10.x                                         |
+| ---------------------------------------- | ---------------------- |----------------------------------------------|
 | `PROGRESS`, `ERRORS`, `PERMISSION_ERROR` | `LegacyConnection.tsx` | `Connection.tsx` (`@iobroker/socket-client`) |
 | `ConnectOptions`, `SocketClient`         | `LegacyConnection.tsx` | re-export of `@iobroker/socket-client`       |
 | `BinaryStateChangeHandler`               | `LegacyConnection.tsx` | re-export of `@iobroker/socket-client`       |
