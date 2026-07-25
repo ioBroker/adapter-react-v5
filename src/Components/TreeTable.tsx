@@ -34,7 +34,7 @@ import type { Connection } from '../Connection';
 
 import { DialogSelectID } from '../Dialogs/SelectID';
 import { Utils } from './Utils';
-import type { IobTheme } from '../types';
+import type { IobTheme, ThemeType } from '../types';
 
 function getAttr(obj: Record<string, any>, attr: string | string[], lookup?: Record<string, string>): any {
     if (typeof attr === 'string') {
@@ -237,7 +237,7 @@ interface TreeTableProps {
     onDelete?: (oldData: Record<string, any>) => void;
     /** hide add button */
     noAdd?: boolean;
-    themeType?: string;
+    themeType?: ThemeType;
     glowOnChange?: boolean;
     /** only if an oid type is used */
     socket?: Connection;

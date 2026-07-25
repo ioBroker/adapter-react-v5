@@ -89,12 +89,27 @@ export const styles: Record<string, any> = {
     transparent_100: {
         opacity: 1,
     },
-    headerRow: {
+    // The header is a part of the scrolling container, so it scrolls horizontally together with the
+    // rows and no synchronisation is required. `top: 0` pins it only vertically.
+    headerRow: (theme: IobTheme): React.CSSProperties => ({
         paddingLeft: 8,
         height: 38,
         whiteSpace: 'nowrap',
         userSelect: 'none',
-    },
+        position: 'sticky',
+        top: 0,
+        zIndex: 2,
+        // the header uses the same layout rules as the rows, so both compute identical widths
+        display: 'flex',
+        flexWrap: 'nowrap',
+        // the rows can be wider than the visible area
+        width: 'fit-content',
+        minWidth: '100%',
+        // the rows are `border-box` (MUI), the padding must be inside of the width here too,
+        // otherwise the growing column would be wider in the header than in the rows
+        boxSizing: 'border-box',
+        backgroundColor: theme.palette.background.paper,
+    }),
     buttonClearFilter: {
         position: 'relative',
         float: 'right',
@@ -109,12 +124,14 @@ export const styles: Record<string, any> = {
         opacity: 0.7,
     },
 
+    // The header is rendered inside this container (see `headerRow`), so it uses the full height
     tableDiv: {
         paddingTop: 0,
         paddingLeft: 0,
         width: 'calc(100% - 8px)',
-        height: 'calc(100% - 38px)',
+        height: '100%',
         overflow: 'auto',
+        position: 'relative',
     },
     tableRow: (theme: IobTheme): SxProps => ({
         pl: 1,
@@ -123,7 +140,15 @@ export const styles: Record<string, any> = {
         verticalAlign: 'top',
         userSelect: 'none',
         position: 'relative',
-        width: '100%',
+        // The row is as wide as the sum of the columns, exactly like the header. If that is wider
+        // than the container, the container scrolls horizontally and takes the header with it.
+        // Without `flexShrink: 0` the cells would be squeezed and would not match the header anymore.
+        width: 'fit-content',
+        minWidth: '100%',
+        '& > *': {
+            flexShrink: 0,
+            boxSizing: 'border-box',
+        },
         '&:hover': {
             background: `${
                 theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light
@@ -243,7 +268,6 @@ export const styles: Record<string, any> = {
         display: 'inline-block',
         verticalAlign: 'top',
         fontSize: 14,
-        ml: '5px',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         position: 'relative',
@@ -489,6 +513,8 @@ export const styles: Record<string, any> = {
     headerCell: {
         display: 'inline-block',
         verticalAlign: 'top',
+        flexShrink: 0,
+        boxSizing: 'border-box',
     },
     headerCellValue: {
         paddingTop: 4,

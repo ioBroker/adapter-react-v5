@@ -168,10 +168,9 @@ export default class App extends Component<object, AppState> {
                 t={I18n.t}
                 lang="en"
                 imagePrefix={`${window.location.protocol}//${window.location.hostname}:8081`}
-                themeName="dark"
-                themeType="dark"
+                themeName={this.state.themeName}
+                themeType={this.state.theme.palette.mode}
                 theme={this.state.theme}
-                enableStateValueEdit
                 objectBrowserInsertJsonObjects={InputTextDialog}
                 onFilterChanged={(filterConfig: ObjectBrowserFilter) => {
                     this.filters = filterConfig;
@@ -186,9 +185,8 @@ export default class App extends Component<object, AppState> {
         );
     }
 
-    // eslint-disable-next-line class-methods-use-this
     renderLoaderHA(): React.JSX.Element {
-        return <LoaderHA themeType="dark" />;
+        return <LoaderHA themeType={this.state.theme.palette.mode} />;
     }
 
     renderIcon(): React.JSX.Element {
@@ -227,8 +225,8 @@ export default class App extends Component<object, AppState> {
                     allowView
                     showViewTypeButton
                     imagePrefix={`${window.location.protocol}//${window.location.hostname}:8081/adapter/`}
-                    themeName="dark"
-                    themeType="dark"
+                    themeName={this.state.themeName}
+                    themeType={this.state.theme.palette.mode}
                     theme={this.state.theme}
                     FileViewer={FileViewer}
                     ready={this.state.connected}
@@ -241,7 +239,15 @@ export default class App extends Component<object, AppState> {
         return (
             <StyledEngineProvider injectFirst>
                 <ThemeProvider theme={this.state.theme}>
-                    <div style={{ width: '100%', height: '100%' }}>
+                    <div
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            // the components are rendered on the background of the admin, so simulate it here
+                            backgroundColor: this.state.theme.palette.mode === 'dark' ? '#000' : '#FFF',
+                            color: this.state.theme.palette.text.primary,
+                        }}
+                    >
                         <Tabs
                             style={{
                                 width: '100%',

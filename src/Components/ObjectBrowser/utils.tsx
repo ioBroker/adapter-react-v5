@@ -15,7 +15,7 @@ import {
     Close as IconClose,
     Wifi as IconConnection,
 } from '@mui/icons-material';
-import type { ThemeType } from '../../types';
+import type { IobTheme, ThemeType, Width } from '../../types';
 import { Utils } from '../Utils';
 import type {
     FormatValueOptions,
@@ -85,6 +85,55 @@ export const styles: Record<string, any> = {
         fontSize: 14,
     },
 };
+
+/**
+ * Name of the CSS variable that holds the width of a column.
+ * All widths of the table are defined once on the scroll container, so the header and all rows
+ * are always aligned and the resizer can change a width without re-rendering the rows.
+ */
+export function colVar(name: string): string {
+    // custom columns are named like `_adapter_path.to.value` and dots are not allowed in CSS variables
+    return `--ob-w-${name.replace(/[^\w-]/g, '_')}`;
+}
+
+/** CSS value that reads the width of a column from the CSS variable of the table */
+export function colWidth(name: string): string {
+    return `var(${colVar(name)})`;
+}
+
+/**
+ * Width class for the given width of the container. The same breakpoints as in MUI are used, but
+ * they are applied to the container of the object browser and not to the window.
+ */
+export function widthFromContainer(containerWidth: number, theme: IobTheme): Width {
+    const values = theme.breakpoints.values;
+    if (containerWidth >= values.xl) {
+        return 'xl';
+    }
+    if (containerWidth >= values.lg) {
+        return 'lg';
+    }
+    if (containerWidth >= values.md) {
+        return 'md';
+    }
+    if (containerWidth >= values.sm) {
+        return 'sm';
+    }
+    return 'xs';
+}
+
+/** Name of the CSS variable that says if a column takes the remaining place */
+export function growVar(name: string): string {
+    return `--ob-grow-${name.replace(/[^\w-]/g, '_')}`;
+}
+
+/**
+ * CSS value for `flexGrow` of a column. Exactly one column (`id` or `name`) takes the remaining
+ * width of the table, all others keep their width.
+ */
+export function colGrow(name: string): string {
+    return `var(${growVar(name)}, 0)`;
+}
 
 export function ButtonIcon(props?: { style?: React.CSSProperties }): JSX.Element {
     return (

@@ -109,12 +109,18 @@ const styles: Record<string, any> = {
         overflow: 'hidden',
         height: '100%',
         position: 'relative',
+        // toolbar, path and the file list are stacked, the list takes the remaining height
+        display: 'flex',
+        flexDirection: 'column',
     },
     filesDiv: {
         width: 'calc(100% - 8px)',
         overflowX: 'hidden',
         overflowY: 'auto',
         padding: 8,
+        // takes the remaining height, `minHeight` allows it to shrink in the flex column
+        flex: '1 1 auto',
+        minHeight: 0,
     },
     filesDivHint: {
         position: 'absolute',
@@ -124,16 +130,12 @@ const styles: Record<string, any> = {
         fontStyle: 'italic',
         fontSize: 12,
     },
-    filesDivTable: {
-        height: 'calc(100% - 56px)',
-    },
+    filesDivTable: {},
     filesDivTile: {
-        height: `calc(100% - ${48 * 2 + 8}px)`,
         display: 'flex',
         alignContent: 'flex-start',
         alignItems: 'stretch',
         flexWrap: 'wrap',
-        flex: `0 0 ${TILE_WIDTH}px`,
     },
 
     itemTile: (theme: IobTheme): any => ({
@@ -177,7 +179,8 @@ const styles: Record<string, any> = {
         top: 22,
         left: 18,
         zIndex: 1,
-        color: theme.palette.mode === 'dark' ? '#FFF' : '#FFF',
+        // the arrow is drawn on the folder icon (secondary.main)
+        color: theme.palette.secondary.contrastText,
     }),
     itemSizeTile: {
         width: '100%',
@@ -833,6 +836,16 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
         this.mounted = false;
         this.browseList = null;
         this.browseListRunning = false;
+
+        // the timers must not fire after the component was destroyed
+        if (this.setOpacityTimer) {
+            clearTimeout(this.setOpacityTimer);
+            this.setOpacityTimer = null;
+        }
+        if (this.cacheFoldersTimeout) {
+            clearTimeout(this.cacheFoldersTimeout);
+            this.cacheFoldersTimeout = null;
+        }
         Object.values(this._tempTimeout).forEach(timer => {
             if (timer) {
                 clearTimeout(timer);
@@ -2696,13 +2709,6 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
                     style={{
                         ...styles.filesDiv,
                         ...styles[this.state.viewType === 'Tile' ? 'filesDivTile' : 'filesDivTable'],
-                        height: this.props.showToolbar
-                            ? this.state.viewType === 'Tile'
-                                ? `calc(100% - ${48 + 8}px)`
-                                : 'calc(100% - 56px)'
-                            : this.state.viewType === 'Tile'
-                              ? `calc(100% - ${48 * 2 + 8}px)`
-                              : 'calc(100% - 8px)',
                     }}
                     onClick={e => {
                         if (this.state.viewType !== TABLE) {

@@ -241,6 +241,12 @@ export const SCREEN_WIDTHS: ScreenWidth = {
     },
 };
 
+/** Minimal width of the columns that take the remaining place */
+export const MIN_COLUMN_WIDTHS: Record<string, number> = {
+    id: 240,
+    name: 100,
+};
+
 /** Empty filter */
 export const DEFAULT_FILTER: ObjectBrowserFilter = {
     id: '',

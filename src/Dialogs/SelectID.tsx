@@ -19,7 +19,7 @@ import {
     type ObjectBrowserColumn,
     type ObjectBrowserCustomFilter,
 } from '../Components/ObjectBrowser/types';
-import type { IobTheme } from '../types';
+import type { IobTheme, ThemeName, ThemeType } from '../types';
 
 export interface SelectIDFilters {
     id?: string;
@@ -59,9 +59,9 @@ interface DialogSelectIDProps {
     /** Can't objects be edited? (default: true) */
     notEditable?: boolean;
     /** Theme name. */
-    themeName?: string;
+    themeName?: ThemeName;
     /** Theme type: dark or light */
-    themeType?: string;
+    themeType?: ThemeType;
     /** The theme object */
     theme: IobTheme;
     /** The date format for the date columns */
@@ -268,8 +268,8 @@ export class DialogSelectID extends Component<DialogSelectIDProps, DialogSelectI
                         multiSelect={this.props.multiSelect}
                         notEditable={this.props.notEditable === undefined ? true : this.props.notEditable}
                         // name={this.state.name}
-                        themeName={this.props.themeName}
-                        themeType={this.props.themeType}
+                        themeName={this.props.themeName || this.props.theme.name}
+                        themeType={this.props.themeType || this.props.theme.palette.mode}
                         theme={this.props.theme}
                         customFilter={this.props.customFilter}
                         allowNonObjects={this.props.allowNonObjects}
@@ -316,7 +316,6 @@ export class DialogSelectID extends Component<DialogSelectIDProps, DialogSelectI
                             }
                         }}
                         filterFunc={this.filterFunc}
-                        title=""
                         onAllLoaded={() => this.setState({ allLoaded: true })}
                     />
                 </DialogContent>

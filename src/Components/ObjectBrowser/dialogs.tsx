@@ -802,7 +802,7 @@ export function renderEditObjectDialog(that: ObjectBrowserClass): JSX.Element | 
                 }
                 that.setState({ editObjectDialog: '', editObjectAlias: false });
             }}
-            width={that.props.width}
+            width={that.width}
         />
     );
 }
@@ -947,7 +947,7 @@ export function renderEditValueDialog(that: ObjectBrowserClass): JSX.Element | n
                     that.onUpdate(res);
                 }
             }}
-            width={that.props.width}
+            width={that.width}
         />
     );
 }

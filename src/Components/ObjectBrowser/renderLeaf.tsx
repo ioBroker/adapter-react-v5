@@ -24,6 +24,8 @@ import { IconOpen } from '../../icons/IconOpen';
 import { Icon } from '../Icon';
 import {
     ButtonIcon,
+    colGrow,
+    colWidth,
     binarySearch,
     findEnumsForObjectAsIds,
     findFunctionsForObject,
@@ -996,7 +998,7 @@ export function renderLeaf(
         }
     }
 
-    const narrowStyleWithDetails = that.props.width === 'xs' && that.state.focused === id;
+    const narrowStyleWithDetails = that.width === 'xs' && that.state.focused === id;
 
     const colID = (
         <Grid
@@ -1004,11 +1006,12 @@ export function renderLeaf(
             wrap="nowrap"
             direction="row"
             sx={styles.cellId}
-            style={{ width: that.columnsVisibility.id, paddingLeft }}
+            style={{ width: colWidth('id'), flexGrow: colGrow('id'), paddingLeft }}
         >
             <Grid
                 container
-                sx={{ alignItems: 'center' }}
+                // the icons must not be squeezed by a long name
+                sx={{ alignItems: 'center', flexShrink: 0 }}
             >
                 {checkbox}
                 {iconFolder}
@@ -1016,6 +1019,9 @@ export function renderLeaf(
             <Grid
                 style={{
                     ...styles.cellIdSpan,
+                    // only the name may shrink (it is cut with an ellipsis), and for that a flex item
+                    // needs `minWidth: 0`, otherwise its content defines the minimal width
+                    minWidth: 0,
                     ...(invertBackground ? that.styles.invertedBackground : undefined),
                     color: checkColor,
                     fontWeight: bold ? 'bold' : undefined,
@@ -1033,12 +1039,12 @@ export function renderLeaf(
             <div style={{ ...styles.grow, ...(invertBackground ? that.styles.invertedBackgroundFlex : {}) }} />
             <Grid
                 container
-                sx={{ alignItems: 'center' }}
+                sx={{ alignItems: 'center', flexShrink: 0 }}
             >
                 {iconItem}
             </Grid>
-            {that.props.width !== 'xs' ? (
-                <div>
+            {that.width !== 'xs' ? (
+                <div style={{ flexShrink: 0 }}>
                     <IconCopy
                         className={narrowStyleWithDetails ? '' : 'copyButton'}
                         style={styles.cellCopyButton}
@@ -1056,8 +1062,11 @@ export function renderLeaf(
                 sx={{
                     ...styles.cellName,
                     ...(useDesc ? styles.cellNameWithDesc : undefined),
-                    width: that.props.width !== 'xs' ? that.columnsVisibility.name : undefined,
-                    ml: narrowStyleWithDetails ? 0 : '5px',
+                    width: that.width !== 'xs' ? colWidth('name') : undefined,
+                    flexGrow: that.width !== 'xs' ? colGrow('name') : undefined,
+                    // padding and not margin: a margin is added to the width of the column and all
+                    // following columns would not match the header anymore
+                    pl: narrowStyleWithDetails ? 0 : '5px',
                 }}
             >
                 {name}
@@ -1089,7 +1098,7 @@ export function renderLeaf(
                               key="type"
                               style={{
                                   ...styles.cellType,
-                                  width: that.props.width !== 'xs' ? that.columnsVisibility.type : undefined,
+                                  width: that.width !== 'xs' ? colWidth('type') : undefined,
                               }}
                           >
                               {typeImg}
@@ -1107,7 +1116,7 @@ export function renderLeaf(
                               key="role"
                               style={{
                                   ...styles.cellRole,
-                                  width: that.props.width !== 'xs' ? that.columnsVisibility.role : '100%',
+                                  width: that.width !== 'xs' ? colWidth('role') : '100%',
                                   cursor:
                                       that.state.filter.expertMode && enumEditable && that.props.objectBrowserEditRole
                                           ? 'text'
@@ -1143,7 +1152,7 @@ export function renderLeaf(
                               style={{
                                   ...styles.cellRoom,
                                   ...(item.data.per ? styles.cellEnumParent : {}),
-                                  width: that.props.width !== 'xs' ? that.columnsVisibility.room : '100%',
+                                  width: that.width !== 'xs' ? colWidth('room') : '100%',
                                   cursor: enumEditable ? 'text' : 'default',
                               }}
                               onClick={
@@ -1190,7 +1199,7 @@ export function renderLeaf(
                               style={{
                                   ...styles.cellFunc,
                                   ...(item.data.pef ? styles.cellEnumParent : {}),
-                                  width: that.props.width !== 'xs' ? that.columnsVisibility.func : '100%',
+                                  width: that.width !== 'xs' ? colWidth('func') : '100%',
                                   cursor: enumEditable ? 'text' : 'default',
                               }}
                               onClick={
@@ -1240,7 +1249,7 @@ export function renderLeaf(
                               key="from"
                               style={{
                                   ...styles.cellRole,
-                                  width: that.props.width !== 'xs' ? that.columnsVisibility.changedFrom : undefined,
+                                  width: that.width !== 'xs' ? colWidth('changedFrom') : undefined,
                               }}
                               title={newValueTitle.join('\n')}
                           >
@@ -1257,7 +1266,7 @@ export function renderLeaf(
                               key="q"
                               style={{
                                   ...styles.cellRole,
-                                  width: that.props.width !== 'xs' ? that.columnsVisibility.qualityCode : undefined,
+                                  width: that.width !== 'xs' ? colWidth('qualityCode') : undefined,
                               }}
                               title={q || ''}
                           >
@@ -1275,7 +1284,7 @@ export function renderLeaf(
                               key="ts"
                               style={{
                                   ...styles.cellRole,
-                                  width: that.props.width !== 'xs' ? that.columnsVisibility.timestamp : undefined,
+                                  width: that.width !== 'xs' ? colWidth('timestamp') : undefined,
                               }}
                           >
                               {checkVisibleObjectType && that.states[id]?.ts
@@ -1299,7 +1308,7 @@ export function renderLeaf(
                               key="lc"
                               style={{
                                   ...styles.cellRole,
-                                  width: that.props.width !== 'xs' ? that.columnsVisibility.lastChange : undefined,
+                                  width: that.width !== 'xs' ? colWidth('lastChange') : undefined,
                               }}
                           >
                               {checkVisibleObjectType && that.states[id]?.lc
@@ -1323,10 +1332,7 @@ export function renderLeaf(
             <div
                 style={{
                     ...styles.cellAdapter,
-                    width:
-                        that.props.width !== 'xs'
-                            ? (that.columnsVisibility as Record<string, number>)[it.id]
-                            : undefined,
+                    width: that.width !== 'xs' ? colWidth(it.id) : undefined,
                 }}
                 key={it.id}
                 title={`${it.adapter} => ${it.pathText}`}
@@ -1345,7 +1351,7 @@ export function renderLeaf(
             <div
                 style={{
                     ...styles.cellValue,
-                    width: that.props.width !== 'xs' ? that.columnsVisibility.val : 'calc(100% - 100px)',
+                    width: that.width !== 'xs' ? colWidth('val') : 'calc(100% - 100px)',
                     cursor: valueEditable
                         ? common?.type === 'file'
                             ? 'zoom-in'
@@ -1408,7 +1414,7 @@ export function renderLeaf(
             <div
                 style={{
                     ...styles.cellButtons,
-                    width: that.props.width !== 'xs' ? that.columnsVisibility.buttons : undefined,
+                    width: that.width !== 'xs' ? colWidth('buttons') : undefined,
                 }}
             >
                 {renderColumnButtons(that, id, item)}
@@ -1416,7 +1422,7 @@ export function renderLeaf(
         ) : null;
 
     let colDetails: JSX.Element | null = null;
-    if (that.props.width === 'xs' && that.state.focused === id) {
+    if (that.width === 'xs' && that.state.focused === id) {
         colMiddle = colMiddle.filter(a => a);
         let renderedMiddle: (JSX.Element | null)[] | null;
         if (!colMiddle.length) {
@@ -1455,6 +1461,8 @@ export function renderLeaf(
             <Paper
                 style={{
                     width: '100%',
+                    // the padding must be inside of the width, else the row is wider than the table
+                    boxSizing: 'border-box',
                     display: 'flex',
                     flexDirection: 'column',
                     padding: 10,

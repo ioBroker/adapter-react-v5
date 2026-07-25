@@ -1,5 +1,5 @@
 import type React from 'react';
-import type { IobTheme, ThemeName, ThemeType, Translate } from '../../types';
+import type { IobTheme, ThemeName, ThemeType, Translate, Width } from '../../types';
 import type { Connection } from '../../Connection';
 import type { Router } from '../Router';
 import type { ObjectBrowserClass } from './ObjectBrowserClass';
@@ -347,8 +347,13 @@ export interface ObjectBrowserProps {
     imagePrefix?: string;
     themeName: ThemeName;
     themeType: ThemeType;
-    /** will be filled by withWidth */
-    width?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    /** Style of the root element of the object browser */
+    style?: React.CSSProperties;
+    /**
+     * Overwrites the width class that the object browser measures itself from its container.
+     * Normally it should not be used.
+     */
+    width?: Width;
     theme: IobTheme;
     t: Translate;
     lang: ioBroker.Languages;
@@ -375,7 +380,7 @@ export interface ObjectBrowserProps {
     /** modal add object */
     modalNewObject?: (oBrowser: ObjectBrowserClass) => React.JSX.Element;
     /** modal Edit Of Access Control */
-    modalEditOfAccessControl: (oBrowser: ObjectBrowserClass, data: TreeItemData) => React.JSX.Element;
+    modalEditOfAccessControl?: (oBrowser: ObjectBrowserClass, data: TreeItemData) => React.JSX.Element;
     onObjectDelete?: (id: string, hasChildren: boolean, objectExists: boolean, childrenCount: number) => void;
 
     /**
@@ -391,7 +396,7 @@ export interface ObjectBrowserProps {
      *   `{common: {role: ['switch']}` - show only states with roles starting from switch
      *   `{common: {role: ['switch', 'button']}` - show only states with roles starting from `switch` and `button`
      */
-    customFilter: ObjectBrowserCustomFilter;
+    customFilter?: ObjectBrowserCustomFilter;
     objectBrowserValue?: React.FC<ObjectBrowserValueProps>;
     objectBrowserEditObject?: React.FC<ObjectBrowserEditObjectProps>;
     /** on edit alias */
@@ -423,6 +428,8 @@ export interface ObjectBrowserProps {
 }
 
 export interface ObjectBrowserState {
+    /** Width class of the container of the object browser (not of the window!) */
+    containerWidth: Width;
     loaded: boolean;
     foldersFirst: boolean;
     selected: string[];
@@ -434,7 +441,6 @@ export interface ObjectBrowserState {
     expandAllVisible: boolean;
     expanded: string[];
     toast: string;
-    scrollBarWidth: number;
     customDialog: null | string[];
     customDialogAll?: boolean;
     editObjectDialog: string;

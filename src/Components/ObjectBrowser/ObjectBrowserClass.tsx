@@ -15,7 +15,6 @@ import { Box, CircularProgress } from '@mui/material';
 
 // own
 import { Connection } from '../../Connection';
-import { withWidth } from '../withWidth';
 import { Utils } from '../Utils'; // @iobroker/gui-components/Components/Utils
 import { TabContainer } from '../TabContainer';
 import { TabContent } from '../TabContent';
@@ -28,10 +27,14 @@ import {
     formatValue,
     generateFile,
     getName,
+    colVar,
+    widthFromContainer,
+    growVar,
     getSelectIdIconFromObjects,
     setCustomValue,
     prepareSparkData,
 } from './utils';
+import type { Width } from '../../types';
 import type {
     ObjectBrowserProps,
     AdapterColumn,
@@ -50,7 +53,15 @@ import * as dialogs from './dialogs';
 import * as toolbar from './toolbar';
 import * as leaf from './renderLeaf';
 import * as contextMenu from './contextMenu';
-import { DEFAULT_DATE_FORMAT, DEFAULT_FILTER, ITEM_LEVEL, SCREEN_WIDTHS, type ScreenWidthOne } from './constants';
+import {
+    DEFAULT_DATE_FORMAT,
+    DEFAULT_FILTER,
+    ITEM_LEVEL,
+    MIN_COLUMN_WIDTHS,
+    SCREEN_WIDTHS,
+    type ScreenWidth,
+    type ScreenWidthOne,
+} from './constants';
 
 export { getSelectIdIconFromObjects, type ObjectBrowserFilter };
 
@@ -84,7 +95,17 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         aliasesMap: {},
     };
     localStorage: Storage = ((window as any)._localStorage as Storage) || window.localStorage;
+    /**
+     * Own copy of the screen widths. The widths, that the user stored for THIS dialog, must not leak
+     * into the other instances of the object browser (the constant is a module singleton).
+     */
+    private readonly screenWidths: ScreenWidth = JSON.parse(JSON.stringify(SCREEN_WIDTHS)) as ScreenWidth;
     private readonly tableRef: React.RefObject<HTMLDivElement | null>;
+    /** Watches the width of the table container to detect the width class */
+    private resizeObserver: ResizeObserver | null = null;
+    private observedContainer: HTMLDivElement | null = null;
+    /** Width class for which the columns were calculated the last time */
+    private lastCalculatedWidth: Width | null = null;
     private pausedSubscribes: boolean = false;
     private selectFirst: string;
     /** Last navigation that was applied from `navigateTo` or reported via `onNavigateTo` (loop guard). */
@@ -97,7 +118,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     private unsubscribeTimer: ReturnType<typeof setTimeout> | null = null;
     private statesUpdateTimer: ReturnType<typeof setTimeout> | null = null;
     private objectsUpdateTimer: ReturnType<typeof setTimeout> | null = null;
-    readonly visibleCols: ObjectBrowserPossibleColumns[];
+    /** Columns that are visible in the auto mode. Depends on the width of the container */
+    visibleCols: ObjectBrowserPossibleColumns[];
     readonly texts: Record<string, string>;
     readonly possibleCols: ObjectBrowserPossibleColumns[];
     readonly imagePrefix: string;
@@ -116,7 +138,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     };
     readonly levelPadding: number;
     private customWidth: boolean = false;
-    private resizeTimeout: ReturnType<typeof setTimeout> | null = null;
     private resizerNextName: string | null = null;
     private resizerActiveName: string | null = null;
     private resizerCurrentWidths: Record<string, number> = {};
@@ -136,7 +157,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     columnsVisibility: {
         id?: number | string;
         name?: number | string;
-        nameHeader?: number | string;
         type?: number;
         role?: number;
         room?: number;
@@ -263,7 +283,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                   'true';
         this.tableRef = createRef();
 
-        this.visibleCols = props.columns || SCREEN_WIDTHS[props.width || 'lg'].fields;
+        this.visibleCols = props.columns || this.screenWidths[props.width || 'lg'].fields;
         // remove type column if only one type must be selected
         if (props.types && props.types.length === 1) {
             const pos = this.visibleCols.indexOf('type');
@@ -272,7 +292,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             }
         }
 
-        this.possibleCols = SCREEN_WIDTHS.xl.fields;
+        this.possibleCols = this.screenWidths.xl.fields;
 
         let customDialog = null;
 
@@ -352,13 +372,13 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             expanded,
             filter,
             filterKey: 0,
+            containerWidth: props.width || 'lg',
             focused: this.localStorage.getItem(`${props.dialogName || 'App'}.focused`) || '',
             foldersFirst,
             linesEnabled: this.localStorage.getItem(`${props.dialogName || 'App'}.lines`) === 'true',
             loaded: false,
             noStatesByExportImport: false,
             roleDialog: null,
-            scrollBarWidth: 16,
             selected,
             selectedNonObject: this.localStorage.getItem(`${props.dialogName || 'App'}.selectedNonObject`) || '',
             showAliasEditor: '',
@@ -442,15 +462,16 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         if (resizerCurrentWidthsStr) {
             try {
                 const resizerCurrentWidths = JSON.parse(resizerCurrentWidthsStr);
-                const width = this.props.width || 'lg';
-                this.storedWidths = JSON.parse(JSON.stringify(SCREEN_WIDTHS[width]));
+                const width = this.width || 'lg';
+                this.storedWidths = JSON.parse(JSON.stringify(this.screenWidths[width]));
                 Object.keys(resizerCurrentWidths).forEach(id => {
                     if (id === 'id') {
-                        SCREEN_WIDTHS[width].idWidth = resizerCurrentWidths.id;
+                        this.screenWidths[width].idWidth = resizerCurrentWidths.id;
                     } else if (id === 'nameHeader') {
-                        SCREEN_WIDTHS[width].widths.name = resizerCurrentWidths[id];
-                    } else if ((SCREEN_WIDTHS[width].widths as Record<string, number>)[id] !== undefined) {
-                        (SCREEN_WIDTHS[width].widths as Record<string, number>)[id] = resizerCurrentWidths[id];
+                        // widths stored by an older version, where the header had an own width
+                        this.screenWidths[width].widths.name = resizerCurrentWidths[id];
+                    } else if ((this.screenWidths[width].widths as Record<string, number>)[id] !== undefined) {
+                        (this.screenWidths[width].widths as Record<string, number>)[id] = resizerCurrentWidths[id];
                     }
                 });
 
@@ -754,6 +775,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         window.addEventListener('keydown', this.onKeyPress, true);
         window.addEventListener('keyup', this.onKeyPress, true);
 
+        this.observeContainerWidth();
+
         // Inform dialog that all objects are loaded
         if (this.props.onAllLoaded) {
             setTimeout(() => {
@@ -783,6 +806,24 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         window.removeEventListener('contextmenu', this.onContextMenu, true);
         window.removeEventListener('keydown', this.onKeyPress, true);
         window.removeEventListener('keyup', this.onKeyPress, true);
+
+        this.resizeObserver?.disconnect();
+        this.resizeObserver = null;
+        this.observedContainer = null;
+
+        // the timers must not fire after the component was destroyed
+        if (this.unsubscribeTimer) {
+            clearTimeout(this.unsubscribeTimer);
+            this.unsubscribeTimer = null;
+        }
+        if (this.statesUpdateTimer) {
+            clearTimeout(this.statesUpdateTimer);
+            this.statesUpdateTimer = null;
+        }
+        if (this.objectsUpdateTimer) {
+            clearTimeout(this.objectsUpdateTimer);
+            this.objectsUpdateTimer = null;
+        }
 
         if (this.props.objectsWorker) {
             this.props.objectsWorker.unregisterHandler(this.onObjectChangeFromWorker, true);
@@ -2148,13 +2189,25 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         });
 
         this.adapterColumns = [];
-        const WIDTHS = SCREEN_WIDTHS[this.props.width || 'lg'].widths;
+
+        // In the auto mode the visible columns depend on the width of the container
+        if (!this.props.columns) {
+            this.visibleCols = [...this.screenWidths[this.width].fields];
+            // remove type column if only one type must be selected
+            if (this.props.types && this.props.types.length === 1) {
+                const pos = this.visibleCols.indexOf('type');
+                if (pos !== -1) {
+                    this.visibleCols.splice(pos, 1);
+                }
+            }
+        }
+
+        const WIDTHS = this.screenWidths[this.width].widths;
 
         if (columnsAuto) {
             this.columnsVisibility = {
-                id: SCREEN_WIDTHS[this.props.width || 'lg'].idWidth,
+                id: this.screenWidths[this.width || 'lg'].idWidth,
                 name: this.visibleCols.includes('name') ? WIDTHS.name || 0 : 0,
-                nameHeader: this.visibleCols.includes('name') ? WIDTHS.name || 0 : 0,
                 type: this.visibleCols.includes('type') ? WIDTHS.type || 0 : 0,
                 role: this.visibleCols.includes('role') ? WIDTHS.role || 0 : 0,
                 room: this.visibleCols.includes('room') ? WIDTHS.room || 0 : 0,
@@ -2184,7 +2237,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 widthSum += this.columnsVisibility.val || 0;
                 widthSum += this.columnsVisibility.buttons || 0;
                 this.columnsVisibility.name = `calc(100% - ${widthSum + 5}px)`;
-                this.columnsVisibility.nameHeader = `calc(100% - ${widthSum + 5 + this.state.scrollBarWidth}px)`;
             } else if (!this.customWidth) {
                 // Calculate the width of ID
                 let widthSum = 0; // id is always visible
@@ -2204,23 +2256,23 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 this.columnsVisibility.id = `calc(100% - ${widthSum + 5}px)`;
             }
         } else {
-            const width = this.props.width || 'lg';
+            const width = this.width || 'lg';
             this.columnsVisibility = {
-                id: columnsWidths.id || SCREEN_WIDTHS[width].idWidth,
+                id: columnsWidths.id || this.screenWidths[width].idWidth,
                 name: columns.includes('name')
-                    ? columnsWidths.name || WIDTHS.name || SCREEN_WIDTHS[width].widths.name || 0
+                    ? columnsWidths.name || WIDTHS.name || this.screenWidths[width].widths.name || 0
                     : 0,
                 type: columns.includes('type')
-                    ? columnsWidths.type || WIDTHS.type || SCREEN_WIDTHS[width].widths.type || 0
+                    ? columnsWidths.type || WIDTHS.type || this.screenWidths[width].widths.type || 0
                     : 0,
                 role: columns.includes('role')
-                    ? columnsWidths.role || WIDTHS.role || SCREEN_WIDTHS[width].widths.role || 0
+                    ? columnsWidths.role || WIDTHS.role || this.screenWidths[width].widths.role || 0
                     : 0,
                 room: columns.includes('room')
-                    ? columnsWidths.room || WIDTHS.room || SCREEN_WIDTHS[width].widths.room || 0
+                    ? columnsWidths.room || WIDTHS.room || this.screenWidths[width].widths.room || 0
                     : 0,
                 func: columns.includes('func')
-                    ? columnsWidths.func || WIDTHS.func || SCREEN_WIDTHS[width].widths.func || 0
+                    ? columnsWidths.func || WIDTHS.func || this.screenWidths[width].widths.func || 0
                     : 0,
             };
             let widthSum: number = this.columnsVisibility.id as number; // id is always visible
@@ -2259,8 +2311,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                                 (this.columnsVisibility as Record<string, number>)[id] =
                                     columnsWidths[item.id] ||
                                     column.width ||
-                                    SCREEN_WIDTHS[width].widths.func ||
-                                    SCREEN_WIDTHS.xl.widths.func ||
+                                    this.screenWidths[width].widths.func ||
+                                    this.screenWidths.xl.widths.func ||
                                     0;
                                 widthSum += (this.columnsVisibility as Record<string, number>)[id];
                             } else {
@@ -2271,13 +2323,13 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             }
             this.adapterColumns.sort((a, b) => (a.id > b.id ? -1 : a.id < b.id ? 1 : 0));
             this.columnsVisibility.val = columns.includes('val')
-                ? columnsWidths.val || WIDTHS.val || SCREEN_WIDTHS.xl.widths.val
+                ? columnsWidths.val || WIDTHS.val || this.screenWidths.xl.widths.val
                 : 0;
 
             // do not show buttons if not desired
             if (!this.props.columns || this.props.columns.includes('buttons')) {
                 this.columnsVisibility.buttons = columns.includes('buttons')
-                    ? columnsWidths.buttons || WIDTHS.buttons || SCREEN_WIDTHS.xl.widths.buttons
+                    ? columnsWidths.buttons || WIDTHS.buttons || this.screenWidths.xl.widths.buttons
                     : 0;
                 widthSum += this.columnsVisibility.buttons || 0;
             }
@@ -2285,7 +2337,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             if (this.columnsVisibility.name && !columnsWidths.name) {
                 widthSum += this.columnsVisibility.val || 0;
                 this.columnsVisibility.name = `calc(100% - ${widthSum}px)`;
-                this.columnsVisibility.nameHeader = `calc(100% - ${widthSum + 5 + this.state.scrollBarWidth}px)`;
             } else {
                 const newWidth = Object.keys(this.columnsVisibility).reduce((accumulator: number, name: string) => {
                     // do not summarize strings
@@ -2301,6 +2352,69 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 this.columnsVisibility.id = `calc(100% - ${newWidth}px)`;
             }
         }
+    }
+
+    /**
+     * The width class of the object browser. It is measured from the container and not from the
+     * window, so the browser shows the right columns if it is used in a narrow panel or dialog too.
+     * `props.width` overwrites the measured value.
+     */
+    get width(): Width {
+        return this.props.width || this.state.containerWidth;
+    }
+
+    /** Watch the width of the table container to detect the width class (see `width`) */
+    observeContainerWidth(): void {
+        const container = this.tableRef.current;
+        if (!container || this.observedContainer === container) {
+            return;
+        }
+        this.resizeObserver?.disconnect();
+        this.observedContainer = container;
+        this.resizeObserver = new ResizeObserver(entries => this.setContainerWidth(entries[0].contentRect.width));
+        this.resizeObserver.observe(container);
+        // measure immediately, so the first render after mounting shows the right columns
+        this.setContainerWidth(container.clientWidth);
+    }
+
+    /** Store the width class of the container if it changed */
+    setContainerWidth(containerWidth: number): void {
+        const width = widthFromContainer(containerWidth, this.props.theme);
+        if (width !== this.state.containerWidth) {
+            // the columns are recalculated in `render`, as soon as the width class changed
+            this.setState({ containerWidth: width });
+        }
+    }
+
+    /**
+     * All column widths as CSS variables of the table container. The header and every row read the
+     * widths from here (see `colWidth`), so they can never get out of sync, and the resizer can
+     * change a width by writing one variable instead of re-rendering all rows.
+     */
+    getColumnWidthVariables(): React.CSSProperties {
+        const variables: Record<string, string> = {};
+        Object.keys(this.columnsVisibility).forEach(name => {
+            const width = (this.columnsVisibility as Record<string, number | string | undefined>)[name];
+            if (typeof width === 'string') {
+                // `calc(100% - 500px)`: this column takes the remaining place. A percentage cannot be
+                // used here, because the width of the row depends on the columns and would be
+                // circular - the column grows instead and keeps its minimal width if the place is
+                // not sufficient (then the table scrolls horizontally).
+                // `100%` (mobile view) must not reserve any place, `calc(100% - 500px)` keeps a minimum
+                variables[colVar(name)] = width === '100%' ? '0px' : `${MIN_COLUMN_WIDTHS[name] || 100}px`;
+                variables[growVar(name)] = '1';
+            } else {
+                variables[colVar(name)] = `${width || 0}px`;
+                variables[growVar(name)] = '0';
+            }
+        });
+        return variables;
+    }
+
+    /** Set the width of one column without re-rendering the rows */
+    setColumnWidth(name: string, width: number): void {
+        (this.columnsVisibility as Record<string, number | string>)[name] = width;
+        this.tableRef.current?.style.setProperty(colVar(name), `${width}px`);
     }
 
     resizerMouseMove = (e: MouseEvent): void => {
@@ -2324,28 +2438,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 this.resizerCurrentWidths[this.resizerActiveName] = width;
                 this.resizerCurrentWidths[this.resizerNextName] = widthNext;
 
-                this.resizerActiveDiv.style.width = `${width}px`;
-                if (this.resizerNextDiv) {
-                    this.resizerNextDiv.style.width = `${widthNext}px`;
-                }
+                // Only two CSS variables are written - the header and all rows follow immediately,
+                // without a re-render of the table
+                this.setColumnWidth(this.resizerActiveName, width);
+                this.setColumnWidth(this.resizerNextName, widthNext);
 
-                (this.columnsVisibility as Record<string, number | string>)[this.resizerActiveName] = width;
-                (this.columnsVisibility as Record<string, number | string>)[this.resizerNextName] = widthNext;
-                if (this.resizerNextName === 'nameHeader') {
-                    this.columnsVisibility.name = widthNext - this.state.scrollBarWidth;
-                    this.resizerCurrentWidths.name = widthNext - this.state.scrollBarWidth;
-                } else if (this.resizerActiveName === 'nameHeader') {
-                    this.columnsVisibility.name = width - this.state.scrollBarWidth;
-                    this.resizerCurrentWidths.name = width - this.state.scrollBarWidth;
-                }
                 this.customWidth = true;
-                if (this.resizeTimeout) {
-                    clearTimeout(this.resizeTimeout);
-                }
-                this.resizeTimeout = setTimeout(() => {
-                    this.resizeTimeout = null;
-                    this.forceUpdate();
-                }, 200);
             }
         }
     };
@@ -2361,7 +2459,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     };
 
     resizerMouseDown = (e: React.MouseEvent<HTMLDivElement>): void => {
-        this.storedWidths ||= JSON.parse(JSON.stringify(SCREEN_WIDTHS[this.props.width || 'lg'])) as ScreenWidthOne;
+        this.storedWidths ||= JSON.parse(JSON.stringify(this.screenWidths[this.width || 'lg'])) as ScreenWidthOne;
 
         this.resizerCurrentWidths ||= {};
         this.resizerActiveDiv = (e.target as HTMLDivElement).parentNode as HTMLDivElement;
@@ -2421,7 +2519,13 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         if (event.code === 'ArrowUp' || event.code === 'ArrowDown') {
             event.preventDefault();
             const ids: string[] = [];
-            this.tableRef.current?.childNodes.forEach((node: any) => ids.push((node as HTMLDivElement).id));
+            // the first child is the header, it has no ID
+            this.tableRef.current?.childNodes.forEach((node: any) => {
+                const nodeId = (node as HTMLDivElement).id;
+                if (nodeId) {
+                    ids.push(nodeId);
+                }
+            });
             const idx = ids.indexOf(selectedId);
             const newIdx = event.code === 'ArrowDown' ? idx + 1 : idx - 1;
             const newId = ids[newIdx] || selectedId;
@@ -2478,7 +2582,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
 
     resizerReset = (): void => {
         this.customWidth = false;
-        SCREEN_WIDTHS[this.props.width || 'lg'] = JSON.parse(JSON.stringify(this.storedWidths));
+        this.screenWidths[this.width || 'lg'] = JSON.parse(JSON.stringify(this.storedWidths));
         this.calculateColumnsVisibility();
         this.localStorage.removeItem(`${this.props.dialogName || 'App'}.table`);
         this.forceUpdate();
@@ -2602,13 +2706,11 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
      * Called when component is updated.
      */
     componentDidUpdate(prevProps: ObjectBrowserProps): void {
-        if (this.tableRef.current) {
-            const scrollBarWidth = this.tableRef.current.offsetWidth - this.tableRef.current.clientWidth;
-            if (this.state.scrollBarWidth !== scrollBarWidth) {
-                setTimeout(() => this.setState({ scrollBarWidth }), 100);
-            } else if (this.selectFirst) {
-                this.scrollToItem(this.selectFirst);
-            }
+        // the table is rendered only after the objects are loaded
+        this.observeContainerWidth();
+
+        if (this.tableRef.current && this.selectFirst) {
+            this.scrollToItem(this.selectFirst);
         }
         this.reconcileNavigation(prevProps);
     }
@@ -2739,10 +2841,20 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         if (!this.state.loaded) {
             return <CircularProgress key={`${this.props.dialogName}_c`} />;
         }
+
+        // the container was resized into another width class => other columns are visible
+        if (this.lastCalculatedWidth !== this.width) {
+            this.lastCalculatedWidth = this.width;
+            this.calculateColumnsVisibility();
+        }
+
         const items = this.root ? this.renderItem(this.root, undefined) : null;
 
         return (
-            <TabContainer key={this.props.dialogName}>
+            <TabContainer
+                key={this.props.dialogName}
+                styles={{ root: this.props.style }}
+            >
                 <style>
                     {`
 @keyframes newValueAnimation-light {
@@ -2781,12 +2893,14 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 </style>
                 <TabHeader>{this.getToolbar()}</TabHeader>
                 <TabContent>
-                    {toolbar.renderHeader(this)}
+                    {/* The header is a part of the scrolling container and sticks to its top, so it is
+                        always aligned with the rows and does not need to be synchronized with them. */}
                     <Box
-                        style={styles.tableDiv}
+                        style={{ ...styles.tableDiv, ...this.getColumnWidthVariables() }}
                         ref={this.tableRef}
                         onKeyDown={event => this.navigateKeyPress(event)}
                     >
+                        {toolbar.renderHeader(this)}
                         {items}
                     </Box>
                 </TabContent>
@@ -2816,4 +2930,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     }
 }
 
-export const ObjectBrowser = withWidth()(ObjectBrowserClass);
+// The width class is measured from the container (see `ObjectBrowserClass.width`), so this component
+// does not need the `withWidth` HOC (which measures the window) anymore.
+export const ObjectBrowser = ObjectBrowserClass;

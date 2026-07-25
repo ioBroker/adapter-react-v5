@@ -19,12 +19,21 @@ import {
     ContentPaste,
     UploadFile,
 } from '@mui/icons-material';
+import { Utils } from '../Utils';
 import { IconExpert } from '../../icons/IconExpert';
 import { IconClosed } from '../../icons/IconClosed';
 import { IconOpen } from '../../icons/IconOpen';
 import { IconClearFilter } from '../../icons/IconClearFilter';
 import { Icon } from '../Icon';
-import { CustomFilterInput, CustomFilterSelect, getName, getSelectIdIconFromObjects, getVisibleItems } from './utils';
+import {
+    colGrow,
+    colWidth,
+    CustomFilterInput,
+    CustomFilterSelect,
+    getName,
+    getSelectIdIconFromObjects,
+    getVisibleItems,
+} from './utils';
 import { type InputSelectItem } from './types';
 import { styles } from './styles';
 import { ITEM_IMAGES } from './constants';
@@ -228,7 +237,7 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                         </IconButton>
                     </Tooltip>
                 )}
-                {!that.props.disableColumnSelector && that.props.width !== 'xs' && (
+                {!that.props.disableColumnSelector && that.width !== 'xs' && (
                     <Tooltip
                         title={that.props.t('ra_Configure')}
                         slotProps={{ popper: { sx: styles.tooltip } }}
@@ -243,7 +252,7 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                         </IconButton>
                     </Tooltip>
                 )}
-                {that.props.width !== 'xs' && that.state.expandAllVisible && (
+                {that.width !== 'xs' && that.state.expandAllVisible && (
                     <Tooltip
                         title={that.props.t('ra_Expand all nodes')}
                         slotProps={{ popper: { sx: styles.tooltip } }}
@@ -269,7 +278,7 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                         <IconClosed />
                     </IconButton>
                 </Tooltip>
-                {that.props.width !== 'xs' && (
+                {that.width !== 'xs' && (
                     <Tooltip
                         title={that.props.t('ra_Expand one step node')}
                         slotProps={{ popper: { sx: styles.tooltip } }}
@@ -297,7 +306,7 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                         </IconButton>
                     </Tooltip>
                 )}
-                {that.props.width !== 'xs' && (
+                {that.width !== 'xs' && (
                     <Tooltip
                         title={that.props.t('ra_Collapse one step node')}
                         slotProps={{ popper: { sx: styles.tooltip } }}
@@ -433,7 +442,7 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                     </Tooltip>
                 )}
             </div>
-            {!!that.props.objectBrowserEditObject && that.props.width !== 'xs' && (
+            {!!that.props.objectBrowserEditObject && that.width !== 'xs' && (
                 <div style={{ display: 'flex', whiteSpace: 'nowrap' }}>
                     {`${that.props.t('ra_Objects')}: ${Object.keys(that.info.objects).length}, ${that.props.t(
                         'ra_States',
@@ -508,18 +517,18 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
         );
     }
 
-    if (that.props.width === 'xs') {
+    if (that.width === 'xs') {
         return (
-            <div style={styles.headerRow}>
+            <div style={Utils.getStyle(that.props.theme, styles.headerRow)}>
                 <div style={{ ...styles.headerCell, width: '100%' }}>{getFilterInput(that, 'id')}</div>
             </div>
         );
     }
 
     return (
-        <div style={styles.headerRow}>
+        <div style={Utils.getStyle(that.props.theme, styles.headerRow)}>
             <div
-                style={{ ...styles.headerCell, width: that.columnsVisibility.id, position: 'relative' }}
+                style={{ ...styles.headerCell, width: colWidth('id'), flexGrow: colGrow('id'), position: 'relative' }}
                 data-min={240}
                 data-name="id"
             >
@@ -528,9 +537,14 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
             </div>
             {that.columnsVisibility.name ? (
                 <div
-                    style={{ ...styles.headerCell, width: that.columnsVisibility.nameHeader, position: 'relative' }}
+                    style={{
+                        ...styles.headerCell,
+                        width: colWidth('name'),
+                        flexGrow: colGrow('name'),
+                        position: 'relative',
+                    }}
                     data-min={100}
-                    data-name="nameHeader"
+                    data-name="name"
                 >
                     {getFilterInput(that, 'name')}
                     {renderHandleRight(that)}
@@ -542,7 +556,7 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
                         <div
                             style={{
                                 ...styles.headerCell,
-                                width: that.columnsVisibility.type,
+                                width: colWidth('type'),
                                 position: 'relative',
                             }}
                             data-min={100}
@@ -556,7 +570,7 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
                         <div
                             style={{
                                 ...styles.headerCell,
-                                width: that.columnsVisibility.role,
+                                width: colWidth('role'),
                                 position: 'relative',
                             }}
                             data-min={100}
@@ -570,7 +584,7 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
                         <div
                             style={{
                                 ...styles.headerCell,
-                                width: that.columnsVisibility.room,
+                                width: colWidth('room'),
                                 position: 'relative',
                             }}
                             data-min={100}
@@ -584,7 +598,7 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
                         <div
                             style={{
                                 ...styles.headerCell,
-                                width: that.columnsVisibility.func,
+                                width: colWidth('func'),
                                 position: 'relative',
                             }}
                             data-min={100}
@@ -602,7 +616,7 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
                         style={{
                             ...styles.headerCell,
                             ...styles.headerCellValue,
-                            width: that.columnsVisibility.changedFrom,
+                            width: colWidth('changedFrom'),
                             position: 'relative',
                         }}
                         data-min={100}
@@ -615,7 +629,7 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
                         style={{
                             ...styles.headerCell,
                             ...styles.headerCellValue,
-                            width: that.columnsVisibility.qualityCode,
+                            width: colWidth('qualityCode'),
                             position: 'relative',
                         }}
                         data-min={100}
@@ -628,7 +642,7 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
                         style={{
                             ...styles.headerCell,
                             ...styles.headerCellValue,
-                            width: that.columnsVisibility.timestamp,
+                            width: colWidth('timestamp'),
                             position: 'relative',
                         }}
                         data-min={100}
@@ -641,7 +655,7 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
                         style={{
                             ...styles.headerCell,
                             ...styles.headerCellValue,
-                            width: that.columnsVisibility.lastChange,
+                            width: colWidth('lastChange'),
                             position: 'relative',
                         }}
                         data-min={100}
@@ -672,7 +686,7 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
                     style={{
                         ...styles.headerCell,
                         ...styles.headerCellValue,
-                        width: that.columnsVisibility.val,
+                        width: colWidth('val'),
                         position: 'relative',
                     }}
                     data-min={120}
@@ -685,7 +699,7 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
             {that.columnsVisibility.buttons ? (
                 <div
                     title={that.texts.filter_custom}
-                    style={{ ...styles.headerCell, width: that.columnsVisibility.buttons }}
+                    style={{ ...styles.headerCell, width: colWidth('buttons') }}
                 >
                     {' '}
                     {getFilterSelectCustoms(that)}
