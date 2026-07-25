@@ -1,7 +1,9 @@
-import type { CSSProperties, MouseEvent } from 'react';
+import type { CSSProperties, MouseEventHandler } from 'react';
 
 export interface IconPropsSVG {
-    onClick?: (e: MouseEvent) => void;
+    // The props are spread onto an `<svg>` element, so the handler must be compatible with
+    // `IconBaseProps` of `react-icons` (SVGElement and not the generic Element)
+    onClick?: MouseEventHandler<SVGElement>;
     /** Class name */
     className?: string;
     /** Style for image */

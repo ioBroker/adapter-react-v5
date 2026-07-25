@@ -50,7 +50,7 @@ The GitHub repository moved too: https://github.com/ioBroker/gui-components
 The peer dependencies changed:
 
 | Package               | 8.x       | 10.x      |
-| --------------------- | --------- |-----------|
+| --------------------- | --------- | --------- |
 | `react`               | `^18.3.1` | `^19.0.0` |
 | `react-dom`           | `^18.3.1` | `^19.0.0` |
 | `@mui/material`       | `^6.5.0`  | `^9.0.0`  |
@@ -199,7 +199,7 @@ The symbols that used to come from `LegacyConnection.tsx` are still exported by 
 another source:
 
 | Export                                   | 8.x                    | 10.x                                         |
-| ---------------------------------------- | ---------------------- |----------------------------------------------|
+| ---------------------------------------- | ---------------------- | -------------------------------------------- |
 | `PROGRESS`, `ERRORS`, `PERMISSION_ERROR` | `LegacyConnection.tsx` | `Connection.tsx` (`@iobroker/socket-client`) |
 | `ConnectOptions`, `SocketClient`         | `LegacyConnection.tsx` | re-export of `@iobroker/socket-client`       |
 | `BinaryStateChangeHandler`               | `LegacyConnection.tsx` | re-export of `@iobroker/socket-client`       |
@@ -220,7 +220,37 @@ import type { AdminConnection } from '@iobroker/gui-components';
 type CompactSystemRepository = Awaited<ReturnType<AdminConnection['getCompactSystemRepositories']>>;
 ```
 
-## 5. Checklist
+## 5. TypeScript 6
+
+The package is built with TypeScript 6. That is not a requirement for the consumers, but if you update
+too, `moduleResolution: "node"` (`node10`) is deprecated and reports an error:
+
+```
+error TS5107: Option 'moduleResolution=node10' is deprecated and will stop functioning in TypeScript 7.0
+```
+
+For a GUI that is bundled by vite or webpack, use `bundler`:
+
+```json
+{
+    "compilerOptions": {
+        "module": "esnext",
+        "moduleResolution": "bundler"
+    }
+}
+```
+
+With `bundler` (and with `node16`/`nodenext`) TypeScript respects the `exports` field of the packages,
+so deep imports into the internals of a package do not work anymore, e.g.:
+
+```ts
+// before
+import type { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
+// after
+import type { SimplePaletteColorOptions } from '@mui/material/styles';
+```
+
+## 6. Checklist
 
 - [ ] Replace `@iobroker/adapter-react-v5` with `@iobroker/gui-components` in `package.json` and all imports
 - [ ] Update React to 19, MUI to 9, `@types/react(-dom)` to 19 (and `overrides`, if needed)
@@ -229,4 +259,5 @@ type CompactSystemRepository = Awaited<ReturnType<AdminConnection['getCompactSys
 - [ ] `inputProps` / `InputProps` / `ContentProps` => `slotProps`
 - [ ] `React.RefObject<T>` => `React.RefObject<T | null>`
 - [ ] Replace `LegacyConnection` by `Connection` / `AdminConnection`
+- [ ] With TypeScript 6: `moduleResolution` => `bundler`, no deep imports into packages
 - [ ] `npm run lint` and a full build to catch the rest

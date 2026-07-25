@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 Denis Haev (bluefox) <dogafox@gmail.com>
+ * Copyright 2022-2026 Denis Haev (bluefox) <dogafox@gmail.com>
  *
  * MIT License
  *
@@ -49,7 +49,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 interface DialogSelectFileProps {
-    /** where to store settings in localStorage * @property {string} [title] The dialog title; default: Please select object ID... (translated) */
+    /** where to store settings in localStorage */
     dialogName?: string;
     /** The dialog title; default: Please select object ID... (translated) */
     title?: string;

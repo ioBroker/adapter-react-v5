@@ -856,12 +856,14 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+
 ### **WORK IN PROGRESS**
 
 - (@GermanBluefox) BREAKING: Package renamed from `@iobroker/adapter-react-v5` to `@iobroker/gui-components`
 - (@GermanBluefox) BREAKING: React19 + MUI9
 - (@GermanBluefox) BREAKING: Removed `LegacyConnection`. Use `Connection`/`AdminConnection` instead
-- (@GermanBluefox) Updated README and added the migration guide `MIGRATION_8_9.md`
+- (@GermanBluefox) Used TypeScript 6
+- (@GermanBluefox) Updated README and added the migration guide `MIGRATION_8_10.md`
 
 ### 8.3.2 (2026-07-22)
 

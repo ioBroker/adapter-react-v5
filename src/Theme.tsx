@@ -1,9 +1,13 @@
 import { type CSSProperties } from 'react';
-import { createTheme, alpha, type PaletteOptions as PaletteOptionsMui } from '@mui/material/styles';
+import {
+    createTheme,
+    alpha,
+    type PaletteOptions as PaletteOptionsMui,
+    type SimplePaletteColorOptions,
+    type ThemeOptions as ThemeOptionsMui,
+} from '@mui/material/styles';
 import { orange, grey } from '@mui/material/colors';
 
-import type { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
-import type { ThemeOptions as ThemeOptionsMui } from '@mui/material/styles/createTheme';
 import type { IobTheme, ThemeName, ThemeType } from './types';
 
 const step = (16 - 5) / 23 / 100;

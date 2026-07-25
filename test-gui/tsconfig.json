@@ -10,13 +10,16 @@
         "forceConsistentCasingInFileNames": true,
         "noFallthroughCasesInSwitch": true,
         "module": "ESNext",
-        "moduleResolution": "Node",
+        "moduleResolution": "bundler",
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true,
+        // the app imports the sources of the library directly from `../src`
+        "rootDir": "..",
         "jsx": "react-jsx",
         "types": ["@iobroker/types", "vite/client"]
     },
-    "include": ["src/index.tsx"],
+    // `../src/globals.d.ts` declares the additional properties of `window` used by the library
+    "include": ["src/index.tsx", "../src/globals.d.ts"],
     "exclude": ["node_modules", "build"]
 }

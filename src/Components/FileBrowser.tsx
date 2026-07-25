@@ -462,8 +462,6 @@ export interface FileBrowserNavigation {
 }
 
 export interface FileBrowserProps {
-    /** The key to identify this component. */
-    key?: string;
     /** Additional styling for this component. */
     style?: React.CSSProperties;
     /** The CSS class name. */
@@ -2697,7 +2695,14 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
                 <div
                     style={{
                         ...styles.filesDiv,
-                        ...styles[`filesDiv${this.state.viewType}`],
+                        ...styles[this.state.viewType === 'Tile' ? 'filesDivTile' : 'filesDivTable'],
+                        height: this.props.showToolbar
+                            ? this.state.viewType === 'Tile'
+                                ? `calc(100% - ${48 + 8}px)`
+                                : 'calc(100% - 56px)'
+                            : this.state.viewType === 'Tile'
+                              ? `calc(100% - ${48 * 2 + 8}px)`
+                              : 'calc(100% - 8px)',
                     }}
                     onClick={e => {
                         if (this.state.viewType !== TABLE) {

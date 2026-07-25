@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
+import { Button, Dialog, DialogActions, DialogContent, IconButton, Tab, Tabs, TextField } from '@mui/material';
 
 declare module '@mui/material/Button' {
     interface ButtonPropsColorOverrides {
         grey: true;
     }
 }
+
+import { AdminConnection } from '@iobroker/socket-client';
 
 import langEn from '../../src/i18n/en.json';
 import langDe from '../../src/i18n/de.json';
@@ -23,15 +26,13 @@ import { Theme } from '../../src/Theme';
 import type { IobTheme, ThemeName } from '../../src/types';
 import { ObjectBrowser, type ObjectBrowserFilter } from '../../src/Components/ObjectBrowser';
 import { PROGRESS } from '../../src/Connection';
-import { AdminConnection } from '@iobroker/socket-client';
 import '../../src/index.css';
-import { Button, Dialog, DialogActions, DialogContent, IconButton, Tab, Tabs, TextField } from '@mui/material';
-import { Icon, IconExpert, LoaderHA, ToggleThemeMenu } from '../../src';
+import { Icon, IconExpert, LoaderHA, ToggleThemeMenu, FileBrowser, FileViewer } from '../../src';
 
 interface AppState {
     connected: boolean;
     loaded: boolean;
-    tab: 'ObjectBrowser' | 'LoaderHA' | 'Icon';
+    tab: 'ObjectBrowser' | 'LoaderHA' | 'Icon' | 'FileBrowser';
     theme: IobTheme;
     themeName: ThemeName;
     expertMode: boolean;
@@ -200,6 +201,34 @@ export default class App extends Component<object, AppState> {
         );
     }
 
+    renderFileBrowser(): React.JSX.Element | null {
+        return (
+            <div style={{ width: '100%', height: 'calc(100% - 48px)', overflow: 'hidden' }}>
+                <FileBrowser
+                    showToolbar
+                    socket={this.socket}
+                    isFloatComma
+                    dateFormat="DD.MM.YYYY"
+                    t={I18n.t}
+                    lang="en"
+                    expertMode={this.state.expertMode}
+                    allowUpload
+                    allowDownload
+                    allowCreateFolder
+                    allowDelete
+                    allowView
+                    showViewTypeButton
+                    imagePrefix={`${window.location.protocol}//${window.location.hostname}:8081/adapter/`}
+                    themeName="dark"
+                    themeType="dark"
+                    theme={this.state.theme}
+                    FileViewer={FileViewer}
+                    ready={this.state.connected}
+                />
+            </div>
+        );
+    }
+
     render(): React.JSX.Element {
         return (
             <StyledEngineProvider injectFirst>
@@ -228,6 +257,10 @@ export default class App extends Component<object, AppState> {
                             <Tab
                                 label="Object Browser"
                                 value="ObjectBrowser"
+                            />
+                            <Tab
+                                label="File Browser"
+                                value="FileBrowser"
                             />
                             <Tab
                                 label="Loader HA"
@@ -265,6 +298,7 @@ export default class App extends Component<object, AppState> {
                         {this.state.loaded && this.state.tab === 'ObjectBrowser' && this.renderObjectBrowser()}
                         {this.state.loaded && this.state.tab === 'LoaderHA' && this.renderLoaderHA()}
                         {this.state.loaded && this.state.tab === 'Icon' && this.renderIcon()}
+                        {this.state.loaded && this.state.tab === 'FileBrowser' && this.renderFileBrowser()}
                     </div>
                 </ThemeProvider>
             </StyledEngineProvider>

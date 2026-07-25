@@ -2,8 +2,8 @@
     "name": "test-gui",
     "version": "2.1.2",
     "private": true,
+    "comment": "react, react-dom and their type definitions are used from the root project to avoid duplicated types",
     "dependencies": {
-        "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^6.0.4",
         "vite": "^8.1.5",
         "vite-tsconfig-paths": "^6.1.1"
