@@ -856,7 +856,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### 10.0.0 (2026-07-24)
+### **WORK IN PROGRESS**
 
 - (@GermanBluefox) BREAKING: Package renamed from `@iobroker/adapter-react-v5` to `@iobroker/gui-components`
 - (@GermanBluefox) BREAKING: React19 + MUI9
