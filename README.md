@@ -856,6 +856,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Better typing for the `ObjectBrowser` component
+
 ### 10.0.3 (2026-07-25)
 
 - (@GermanBluefox) Split the object browser into the directory `Components/ObjectBrowser` (no API changes)

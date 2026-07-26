@@ -370,8 +370,10 @@ export interface ObjectBrowserProps {
     onAllLoaded?: () => void;
 
     // components
-    objectCustomDialog?: React.FC<ObjectCustomDialogProps>;
-    objectMoveRenameDialog?: React.FC<ObjectMoveRenameDialogProps>;
+    // These are only ever instantiated via `createElement`, so both class and function components
+    // are valid here - hence `ComponentType` and not the narrower `FC`.
+    objectCustomDialog?: React.ComponentType<ObjectCustomDialogProps>;
+    objectMoveRenameDialog?: React.ComponentType<ObjectMoveRenameDialogProps>;
     objectAddBoolean?: boolean; // optional toolbar button
     objectEditBoolean?: boolean; // optional toolbar button
     objectStatesView?: boolean; // optional toolbar button
@@ -397,15 +399,15 @@ export interface ObjectBrowserProps {
      *   `{common: {role: ['switch', 'button']}` - show only states with roles starting from `switch` and `button`
      */
     customFilter?: ObjectBrowserCustomFilter;
-    objectBrowserValue?: React.FC<ObjectBrowserValueProps>;
-    objectBrowserEditObject?: React.FC<ObjectBrowserEditObjectProps>;
+    objectBrowserValue?: React.ComponentType<ObjectBrowserValueProps>;
+    objectBrowserEditObject?: React.ComponentType<ObjectBrowserEditObjectProps>;
     /** on edit alias */
-    objectBrowserAliasEditor?: React.FC<ObjectAliasEditorProps>;
+    objectBrowserAliasEditor?: React.ComponentType<ObjectAliasEditorProps>;
     /** on Edit role */
-    objectBrowserEditRole?: React.FC<ObjectBrowserEditRoleProps>;
+    objectBrowserEditRole?: React.ComponentType<ObjectBrowserEditRoleProps>;
     /** on view file state */
-    objectBrowserViewFile?: React.FC<ObjectViewFileDialogProps>;
-    objectBrowserInsertJsonObjects?: React.FC<InsertJsonObjectsDialogProps>;
+    objectBrowserViewFile?: React.ComponentType<ObjectViewFileDialogProps>;
+    objectBrowserInsertJsonObjects?: React.ComponentType<InsertJsonObjectsDialogProps>;
     router?: typeof Router;
     types?: ioBroker.ObjectType[];
     /** Possible columns: ['name', 'type', 'role', 'room', 'func', 'val', 'buttons'] */
@@ -421,7 +423,7 @@ export interface ObjectBrowserProps {
      */
     filterFunc?: (obj: ioBroker.Object) => boolean;
     /** Used for enums dragging */
-    DragWrapper?: React.FC<DragWrapperProps>;
+    DragWrapper?: React.ComponentType<DragWrapperProps>;
     /** let DragWrapper know about objects to get the icons */
     setObjectsReference?: (objects: Record<string, ioBroker.Object>) => void;
     dragEnabled?: boolean;
