@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2024 Denis Haev (bluefox) <dogafox@gmail.com>
+ * Copyright 2018-2026 Denis Haev (bluefox) <dogafox@gmail.com>
  *
  * MIT License
  *
@@ -10,6 +10,8 @@ declare global {
         sysLang: ioBroker.Languages;
         i18nShow: (filter: string | RegExp) => void;
         i18nDisableWarning: (disable: boolean) => void;
+        /** List of all languages with their translations. */
+        i18nTranslations: I18nDictionary;
     }
 }
 
@@ -25,18 +27,19 @@ type I18nDictionary = {
 
 type I18nWordsWithPrefix = I18nDictionary & { prefix?: string };
 
+// The dictionary and the current language live on `window` instead of in static class fields:
+// module federation can hand a remote its own copy of this module, and only a global keeps every
+// copy working on the same data. Both must exist before the first `extendTranslations` call, so
+// they are initialized here at module scope - that runs before any consumer can reach the class.
+window.i18nTranslations ||= {};
+window.sysLang ||= 'en';
+
 /**
  * Translation string management.
  */
 export class I18n {
-    /** List of all languages with their translations. */
-    static translations: I18nDictionary = {};
-
     /** List of unknown translations during development. */
     static unknownTranslations: string[] = [];
-
-    /** The currently displayed language. */
-    static lang: ioBroker.Languages = window.sysLang || 'en';
 
     static _disableWarning: boolean = false;
 
@@ -47,7 +50,7 @@ export class I18n {
      */
     static setLanguage(lang: ioBroker.Languages): void {
         if (lang) {
-            I18n.lang = lang;
+            window.sysLang = lang;
         }
     }
 
@@ -99,8 +102,8 @@ export class I18n {
                 if (words.en && words.de && words.ru) {
                     Object.keys(words).forEach(key => {
                         const _lang = key as ioBroker.Languages;
-                        I18n.translations[_lang] ||= {};
-                        Object.assign(I18n.translations[_lang], words[_lang]);
+                        window.i18nTranslations[_lang] ||= {};
+                        Object.assign(window.i18nTranslations[_lang], words[_lang]);
                     });
                 } else {
                     // It could be vice versa: words.word1 = {en: 'translated word1', de: 'übersetztes Wort2'}
@@ -108,7 +111,8 @@ export class I18n {
                         const _word: I18nWordDictionary = (words as I18nWordsDictionary)[word];
                         Object.keys(_word).forEach(key => {
                             const _lang = key as ioBroker.Languages;
-                            const languageDictionary: I18nOneLanguageDictionary | undefined = I18n.translations[_lang];
+                            const languageDictionary: I18nOneLanguageDictionary | undefined =
+                                window.i18nTranslations[_lang];
                             if (!languageDictionary) {
                                 console.warn(`Used unknown language: ${_lang}`);
                             } else if (!languageDictionary[word]) {
@@ -123,11 +127,11 @@ export class I18n {
                 }
             } else {
                 // translations for one language
-                if (!I18n.translations[lang]) {
+                if (!window.i18nTranslations[lang]) {
                     console.warn(`Used unknown language: ${lang}`);
                 }
-                I18n.translations[lang] ||= {};
-                const languageDictionary = I18n.translations[lang];
+                window.i18nTranslations[lang] ||= {};
+                const languageDictionary = window.i18nTranslations[lang];
                 Object.keys(words).forEach(word => {
                     if (!languageDictionary[word]) {
                         languageDictionary[word] = (words as I18nOneLanguageDictionary)[word];
@@ -146,11 +150,12 @@ export class I18n {
     /**
      * Sets all translations (in all languages).
      *
+     * @deprecated Use {@link extendTranslations}
      * @param translations The translations to add.
      */
     static setTranslations(translations: I18nDictionary): void {
         if (translations) {
-            I18n.translations = translations;
+            I18n.extendTranslations(translations);
         }
     }
 
@@ -160,7 +165,7 @@ export class I18n {
      * @returns The current language.
      */
     static getLanguage(): ioBroker.Languages {
-        return I18n.lang;
+        return window.sysLang;
     }
 
     /**
@@ -170,7 +175,7 @@ export class I18n {
      * @param args Optional arguments which will replace the first (second, third, ...) occurrences of %s
      */
     static t(word: string, ...args: any[]): string {
-        const translation = I18n.translations[I18n.lang];
+        const translation = window.i18nTranslations[window.sysLang];
         if (translation) {
             const w = translation[word];
             if (w) {
@@ -181,8 +186,8 @@ export class I18n {
                     !I18n._disableWarning && console.log(`Translate: ${word}`);
                 }
                 // fallback to english
-                if (I18n.lang !== 'en' && I18n.translations.en) {
-                    const wordEn = I18n.translations.en[word];
+                if (window.sysLang !== 'en' && window.i18nTranslations.en) {
+                    const wordEn = window.i18nTranslations.en[word];
                     if (wordEn) {
                         word = wordEn;
                     }
@@ -238,13 +243,3 @@ export class I18n {
 // install global handlers
 window.i18nShow = I18n.i18nShow;
 window.i18nDisableWarning = I18n.disableWarning;
-
-/*
-I18n.translations = {
-    'en': require('./i18n/en'),
-    'ru': require('./i18n/ru'),
-    'de': require('./i18n/de'),
-};
-I18n.fallbacks = true;
-I18n.t = function () {};
-*/

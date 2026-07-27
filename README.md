@@ -856,6 +856,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) I18n was improved
+
 ### 10.0.4 (2026-07-26)
 
 - (@GermanBluefox) Better typing for the `ObjectBrowser` component
