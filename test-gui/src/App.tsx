@@ -36,11 +36,15 @@ import {
     ObjectBrowser,
     type ObjectBrowserFilter,
 } from '../../src';
+import ThemeDemo from './ThemeDemo';
+
+/** Themes that can be cycled through with the theme button */
+const THEMES: ThemeName[] = ['light', 'dark', 'modernLight', 'modernDark'];
 
 interface AppState {
     connected: boolean;
     loaded: boolean;
-    tab: 'ObjectBrowser' | 'LoaderHA' | 'Icon' | 'FileBrowser';
+    tab: 'ObjectBrowser' | 'LoaderHA' | 'Icon' | 'FileBrowser' | 'ThemeDemo';
     theme: IobTheme;
     themeName: ThemeName;
     expertMode: boolean;
@@ -235,6 +239,14 @@ export default class App extends Component<object, AppState> {
         );
     }
 
+    renderThemeDemo(): React.JSX.Element {
+        return (
+            <div style={{ width: '100%', height: 'calc(100% - 48px)', overflow: 'hidden' }}>
+                <ThemeDemo theme={this.state.theme} />
+            </div>
+        );
+    }
+
     render(): React.JSX.Element {
         return (
             <StyledEngineProvider injectFirst>
@@ -284,14 +296,21 @@ export default class App extends Component<object, AppState> {
                                 label="Icon"
                                 value="Icon"
                             />
-                            <div style={{ flexGrow: 1 }} />
+                            <Tab
+                                label="Theme demo"
+                                value="ThemeDemo"
+                            />
+                            <div style={{ flexGrow: 1, alignSelf: 'center', textAlign: 'right', paddingRight: 8 }}>
+                                {this.state.themeName}
+                            </div>
                             <ToggleThemeMenu
                                 style={{
                                     color: this.state.theme.palette.background.default,
                                 }}
                                 themeName={this.state.themeName}
                                 toggleTheme={() => {
-                                    const newThemeName: ThemeName = this.state.themeName === 'dark' ? 'light' : 'dark';
+                                    const pos = THEMES.indexOf(this.state.themeName);
+                                    const newThemeName: ThemeName = THEMES[(pos + 1) % THEMES.length];
                                     const newTheme = Theme(newThemeName);
                                     this.setState({ themeName: newThemeName, theme: newTheme });
                                 }}
@@ -308,7 +327,10 @@ export default class App extends Component<object, AppState> {
                                 <IconExpert />
                             </IconButton>
                         </Tabs>
-                        {!this.state.loaded && <div style={{ color: 'white' }}>Loading...</div>}
+                        {this.state.tab === 'ThemeDemo' && this.renderThemeDemo()}
+                        {!this.state.loaded && this.state.tab !== 'ThemeDemo' && (
+                            <div style={{ color: 'white' }}>Loading...</div>
+                        )}
                         {this.state.loaded && this.state.tab === 'ObjectBrowser' && this.renderObjectBrowser()}
                         {this.state.loaded && this.state.tab === 'LoaderHA' && this.renderLoaderHA()}
                         {this.state.loaded && this.state.tab === 'Icon' && this.renderIcon()}

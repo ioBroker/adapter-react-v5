@@ -9,6 +9,7 @@ import {
 import { orange, grey } from '@mui/material/colors';
 
 import type { IobTheme, ThemeName, ThemeType } from './types';
+import { getModernTheme } from './ThemeModern';
 
 const step = (16 - 5) / 23 / 100;
 
@@ -143,7 +144,7 @@ function getElevations(color: string, overlay: string): Record<string, CSSProper
 //     },
 // });
 
-interface PaletteOptions extends PaletteOptionsMui {
+export interface PaletteOptions extends PaletteOptionsMui {
     mode: ThemeType;
     expert: string;
     nonAck?: string;
@@ -167,7 +168,7 @@ interface PaletteOptions extends PaletteOptionsMui {
     };
 }
 
-interface ThemeOptions extends ThemeOptionsMui {
+export interface ThemeOptions extends ThemeOptionsMui {
     name: ThemeName;
     palette?: PaletteOptions;
     toolbar?: CSSProperties;
@@ -184,7 +185,11 @@ export function Theme(type: ThemeName, overrides?: Record<string, any>): IobThem
     let options: ThemeOptions;
     let localOverrides: Record<string, any>;
 
-    if (type === 'dark') {
+    if (type === 'modernDark' || type === 'modernLight') {
+        const modern = getModernTheme(type, type === 'modernDark' ? 'dark' : 'light');
+        options = modern.options;
+        localOverrides = modern.components;
+    } else if (type === 'dark') {
         localOverrides = {
             MuiAppBar: {
                 colorDefault: {
@@ -444,11 +449,11 @@ export function Theme(type: ThemeName, overrides?: Record<string, any>): IobThem
         };
     }
 
-    options.toolbar = {
+    options.toolbar ||= {
         height: 48,
     };
 
-    options.saveToolbar = {
+    options.saveToolbar ||= {
         background: (options.palette?.primary as SimplePaletteColorOptions)?.main,
         button: {
             borderRadius: 3,
@@ -472,7 +477,10 @@ export function Theme(type: ThemeName, overrides?: Record<string, any>): IobThem
         components: {
             ...localOverrides,
             MuiButton: {
+                // do not lose the button overrides of the theme itself (e.g. of the "modern*" themes)
+                ...(localOverrides.MuiButton || undefined),
                 variants: [
+                    ...(localOverrides.MuiButton?.variants || []),
                     {
                         props: { variant: 'contained', color: 'grey' },
                         style: {

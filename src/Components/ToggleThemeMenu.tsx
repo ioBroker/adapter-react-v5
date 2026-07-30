@@ -40,12 +40,13 @@ export function ToggleThemeMenu({
                     onClick={() => toggleTheme()}
                     size={size || 'medium'}
                 >
-                    {themeName === 'dark' && <Brightness4Icon className={className} />}
+                    {(themeName === 'dark' || themeName === 'modernDark') && <Brightness4Icon className={className} />}
                     {themeName === 'blue' && <Brightness5Icon className={className} />}
                     {themeName === 'colored' && <Brightness6Icon className={className} />}
-                    {themeName !== 'dark' && themeName !== 'blue' && themeName !== 'colored' && (
-                        <Brightness7Icon className={className} />
-                    )}
+                    {themeName !== 'dark' &&
+                        themeName !== 'modernDark' &&
+                        themeName !== 'blue' &&
+                        themeName !== 'colored' && <Brightness7Icon className={className} />}
                 </IconButton>
             </Tooltip>
         </div>

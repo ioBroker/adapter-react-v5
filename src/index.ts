@@ -1,4 +1,5 @@
 export { Theme } from './Theme';
+export { getModernTheme, MODERN_DARK, MODERN_LIGHT, type ModernTokens } from './ThemeModern';
 export { GenericApp } from './GenericApp';
 export { I18n } from './i18n';
 export { printPrompt } from './Prompt';

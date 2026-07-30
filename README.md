@@ -856,6 +856,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Added modern themes
+
 ### 10.0.5 (2026-07-27)
 
 - (@GermanBluefox) I18n was improved

@@ -12,6 +12,8 @@ import { I18n } from '../i18n';
 import type { IobTheme, ThemeName, ThemeType } from '../types';
 
 const NAMESPACE = 'material';
+/** All themes that are rendered with a dark background */
+const DARK_THEMES: ThemeName[] = ['dark', 'blue', 'modernDark'];
 const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const QUALITY_BITS: Record<ioBroker.STATE_QUALITY[keyof ioBroker.STATE_QUALITY], string> = {
@@ -123,7 +125,7 @@ export class Utils {
             settings = null;
         }
 
-        options = options || {};
+        options ||= {};
         if (!options.language) {
             options.language =
                 (objects['system.config'] &&
@@ -193,7 +195,7 @@ export class Utils {
             settings = null;
         }
 
-        options = options || {};
+        options ||= {};
 
         if ((settings as { name: ioBroker.StringOrTranslated })?.name) {
             const name = (settings as { name: ioBroker.StringOrTranslated }).name;
@@ -400,9 +402,9 @@ export class Utils {
         options: { user?: string; language?: ioBroker.Languages },
     ): boolean {
         if (obj) {
-            obj.common = obj.common || ({} as ioBroker.StateCommon);
-            obj.common.custom = obj.common.custom || {};
-            obj.common.custom[NAMESPACE] = obj.common.custom[NAMESPACE] || {};
+            obj.common ||= {} as ioBroker.StateCommon;
+            obj.common.custom ||= {};
+            obj.common.custom[NAMESPACE] ||= {};
             obj.common.custom[NAMESPACE][options.user || 'admin'] = settings;
             const s = obj.common.custom[NAMESPACE][options.user || 'admin'];
             if (s.useCommon) {
@@ -1556,8 +1558,8 @@ export class Utils {
             return 'light';
         }
 
-        themeName = themeName || Utils.getThemeName();
-        return themeName === 'dark' || themeName === 'blue' ? 'dark' : 'light';
+        themeName ||= Utils.getThemeName();
+        return DARK_THEMES.includes(themeName) ? 'dark' : 'light';
     }
 
     /**
@@ -1571,7 +1573,7 @@ export class Utils {
         ((window as any)._localStorage || window.localStorage).setItem('App.themeName', themeName);
         ((window as any)._localStorage || window.localStorage).setItem(
             'App.theme',
-            themeName === 'dark' || themeName === 'blue' ? 'dark' : 'light',
+            DARK_THEMES.includes(themeName) ? 'dark' : 'light',
         );
     }
 
@@ -1588,8 +1590,7 @@ export class Utils {
         ) {
             return (window as any).vendorPrefix as ThemeName;
         }
-        themeName =
-            themeName || ((window as any)._localStorage || window.localStorage).getItem('App.themeName') || 'light';
+        themeName ||= ((window as any)._localStorage || window.localStorage).getItem('App.themeName') || 'light';
 
         // dark => blue => colored => light => dark
         const themes = Utils.getThemeNames();
@@ -1619,7 +1620,8 @@ export class Utils {
             return [(window as any).vendorPrefix as ThemeName];
         }
 
-        return ['light', 'dark'];
+        // this is also the order in which `toggleTheme` cycles through them
+        return ['light', 'dark', 'modernLight', 'modernDark'];
     }
 
     /**
