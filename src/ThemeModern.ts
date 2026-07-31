@@ -209,27 +209,14 @@ export function getModernTheme(
     };
 
     const components: Record<string, any> = {
+        // Only takes effect in GUIs that actually render `<CssBaseline />` - the admin does not.
+        // The scrollbars used to be defined here too and were therefore dead in most GUIs; they now
+        // live in the `ScrollbarStyles` component, which works without CssBaseline.
         MuiCssBaseline: {
             styleOverrides: {
                 body: {
                     backgroundColor: t.background,
                     color: t.textPrimary,
-                    scrollbarColor: `${t.border} transparent`,
-                },
-                '*::-webkit-scrollbar': {
-                    width: 10,
-                    height: 10,
-                },
-                '*::-webkit-scrollbar-track': {
-                    backgroundColor: 'transparent',
-                },
-                '*::-webkit-scrollbar-thumb': {
-                    backgroundColor: t.border,
-                    borderRadius: 8,
-                    border: `2px solid ${t.background}`,
-                },
-                '*::-webkit-scrollbar-thumb:hover': {
-                    backgroundColor: t.textDisabled,
                 },
             },
         },
