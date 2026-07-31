@@ -856,6 +856,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Updated packages
+
 ### 10.0.6 (2026-07-30)
 
 - (@GermanBluefox) Added modern themes

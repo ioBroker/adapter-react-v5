@@ -1,101 +1,101 @@
 {
-  "name": "@iobroker/gui-components",
-  "version": "10.0.6",
-  "description": "Shared React components (React 19 / MUI 9) to develop ioBroker interfaces. Successor of @iobroker/adapter-react-v5.",
-  "author": {
-    "name": "bluefox",
-    "email": "dogafox@gmail.com"
-  },
-  "scripts": {
-    "prepublishOnly": "npm run build",
-    "build:ts": "tsc -p tsconfig.build.json",
-    "build": "node tasks.ts --0-clean && node tasks.ts --2-copy && node tasks.ts --3-patchReadme && npm run build:ts",
-    "release": "release-script --noPush --yes --lf",
-    "release-patch": "release-script patch --yes --lf",
-    "release-minor": "release-script minor --yes --lf",
-    "release-major": "release-script major --yes --lf",
-    "update-packages": "npx -y npm-check-updates --upgrade",
-    "0-clean": "node tasks.ts --0-clean",
-    "1-build": "tsc -p tsconfig.build.json",
-    "2-copy": "node tasks.ts --2-copy",
-    "3-patchReadme": "node tasks.ts --3-patchReadme",
-    "npm": "npm i",
-    "lint": "eslint -c eslint.config.mjs src"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ioBroker/adapter-react-v5.git"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "main": "./build/index.js",
-  "types": "./build/index.d.ts",
-  "keywords": [
-    "iobroker",
-    "adapter",
-    "iot"
-  ],
-  "files": [
-    "build/",
-    "i18n/",
-    "index.css",
-    "LICENSE",
-    "tasksExample.ts",
-    "craco-module-federation.js",
-    "modulefederation.admin.config.d.ts",
-    "modulefederation.admin.config.js"
-  ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/ioBroker/adapter-react-v5/issues"
-  },
-  "homepage": "https://github.com/ioBroker/adapter-react-v5#readme",
-  "dependencies": {
-    "@iobroker/js-controller-common": "^7.2.2",
-    "@iobroker/js-controller-common-db": "^7.2.2",
-    "@iobroker/socket-client": "^5.2.1",
-    "@iobroker/type-detector": "^5.0.15",
-    "@iobroker/types": "^7.2.2",
-    "@sentry/browser": "^10.68.0",
-    "cronstrue": "^3.24.0",
-    "file-selector": "^4.0.2",
-    "react-color": "^2.19.3",
-    "react-colorful": "^5.8.0",
-    "react-cropper": "^2.3.3",
-    "react-dropzone": "^19.1.1",
-    "react-icons": "^5.7.0",
-    "react-inlinesvg": "^4.5.0"
-  },
-  "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "@mui/icons-material": "^9.0.0",
-    "@mui/material": "^9.0.0"
-  },
-  "devDependencies": {
-    "@alcalzone/release-script": "^5.2.1",
-    "@alcalzone/release-script-plugin-license": "^5.2.0",
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@iobroker/build-tools": "^3.0.1",
-    "@iobroker/eslint-config": "^2.3.4",
-    "@mui/icons-material": "^9.2.0",
-    "@mui/material": "^9.2.0",
-    "@types/node": "^26.1.1",
-    "@types/react": "^19.2.17",
-    "@types/react-color": "^3.0.13",
-    "@types/react-dom": "^19.2.3",
-    "ajv": "^8.20.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "ts-node": "^10.9.2",
-    "typescript": "~6.0.3"
-  },
-  "overrides": {
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3"
-  }
+    "name": "@iobroker/gui-components",
+    "version": "10.0.6",
+    "description": "Shared React components (React 19 / MUI 9) to develop ioBroker interfaces. Successor of @iobroker/adapter-react-v5.",
+    "author": {
+        "name": "bluefox",
+        "email": "dogafox@gmail.com"
+    },
+    "scripts": {
+        "prepublishOnly": "npm run build",
+        "build:ts": "tsc -p tsconfig.build.json",
+        "build": "node tasks.ts --0-clean && node tasks.ts --2-copy && node tasks.ts --3-patchReadme && npm run build:ts",
+        "release": "release-script --noPush --yes --lf",
+        "release-patch": "release-script patch --yes --lf",
+        "release-minor": "release-script minor --yes --lf",
+        "release-major": "release-script major --yes --lf",
+        "update-packages": "npx -y npm-check-updates --upgrade",
+        "0-clean": "node tasks.ts --0-clean",
+        "1-build": "tsc -p tsconfig.build.json",
+        "2-copy": "node tasks.ts --2-copy",
+        "3-patchReadme": "node tasks.ts --3-patchReadme",
+        "npm": "npm i",
+        "lint": "eslint -c eslint.config.mjs src"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ioBroker/adapter-react-v5.git"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "main": "./build/index.js",
+    "types": "./build/index.d.ts",
+    "keywords": [
+        "iobroker",
+        "adapter",
+        "iot"
+    ],
+    "files": [
+        "build/",
+        "i18n/",
+        "index.css",
+        "LICENSE",
+        "tasksExample.ts",
+        "craco-module-federation.js",
+        "modulefederation.admin.config.d.ts",
+        "modulefederation.admin.config.js"
+    ],
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/ioBroker/adapter-react-v5/issues"
+    },
+    "homepage": "https://github.com/ioBroker/adapter-react-v5#readme",
+    "dependencies": {
+        "@iobroker/js-controller-common": "^7.2.2",
+        "@iobroker/js-controller-common-db": "^7.2.2",
+        "@iobroker/socket-client": "^5.2.1",
+        "@iobroker/type-detector": "^5.0.15",
+        "@iobroker/types": "^7.2.2",
+        "@sentry/browser": "^10.69.0",
+        "cronstrue": "^3.24.0",
+        "file-selector": "^4.0.2",
+        "react-color": "^2.19.3",
+        "react-colorful": "^5.8.0",
+        "react-cropper": "^2.3.3",
+        "react-dropzone": "^19.1.1",
+        "react-icons": "^5.7.0",
+        "react-inlinesvg": "^4.5.0"
+    },
+    "peerDependencies": {
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "@mui/icons-material": "^9.0.0",
+        "@mui/material": "^9.0.0"
+    },
+    "devDependencies": {
+        "@alcalzone/release-script": "^5.2.1",
+        "@alcalzone/release-script-plugin-license": "^5.2.0",
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.1",
+        "@iobroker/build-tools": "^3.0.1",
+        "@iobroker/eslint-config": "^2.3.4",
+        "@mui/icons-material": "^9.2.0",
+        "@mui/material": "^9.2.0",
+        "@types/node": "^26.1.2",
+        "@types/react": "^19.2.18",
+        "@types/react-color": "^3.0.13",
+        "@types/react-dom": "^19.2.4",
+        "ajv": "^8.20.0",
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8",
+        "ts-node": "^10.9.2",
+        "typescript": "~6.0.3"
+    },
+    "overrides": {
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8",
+        "@types/react": "^19.2.18",
+        "@types/react-dom": "^19.2.4"
+    }
 }

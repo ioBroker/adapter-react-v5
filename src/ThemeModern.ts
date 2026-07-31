@@ -99,6 +99,8 @@ export const MODERN_LIGHT: ModernTokens = {
 };
 
 const FONT_FAMILY = '"Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+/** Height of the app bar. Used for `MuiToolbar` and for `mixins.toolbar` - the two must not drift apart */
+const TOOLBAR_HEIGHT = 52;
 
 /**
  * Build the 25 MUI shadows. The default MUI shadows are too heavy for this design,
@@ -134,6 +136,16 @@ export function getModernTheme(
     const options: ThemeOptions = {
         name,
         shape: { borderRadius: 10 },
+        // The app bar is lower than in the MUI default. `mixins.toolbar` has to say so too: consumers
+        // (e.g. the admin) take the top margin of their content from it, and with MUI's 64px they
+        // would leave a gap below the bar.
+        mixins: {
+            toolbar: {
+                minHeight: TOOLBAR_HEIGHT,
+                '@media (min-width:0px) and (orientation: landscape)': { minHeight: TOOLBAR_HEIGHT },
+                '@media (min-width:600px)': { minHeight: TOOLBAR_HEIGHT },
+            },
+        },
         shadows: buildShadows(type),
         typography: {
             fontFamily: FONT_FAMILY,
@@ -286,7 +298,9 @@ export function getModernTheme(
                     backgroundColor: t.paper,
                     backgroundImage: 'none',
                     color: t.textPrimary,
-                    borderBottom: `1px solid ${t.border}`,
+                    // Drawn inside instead of as a border: a real border would add a pixel to the bar
+                    // height, and the content below positions itself by `mixins.toolbar`.
+                    boxShadow: `inset 0 -1px 0 ${t.border}`,
                 },
                 colorDefault: {
                     backgroundColor: t.paper,
@@ -300,8 +314,8 @@ export function getModernTheme(
         MuiToolbar: {
             styleOverrides: {
                 root: {
-                    minHeight: 52,
-                    '@media (min-width: 600px)': { minHeight: 52 },
+                    minHeight: TOOLBAR_HEIGHT,
+                    '@media (min-width: 600px)': { minHeight: TOOLBAR_HEIGHT },
                 },
             },
         },
