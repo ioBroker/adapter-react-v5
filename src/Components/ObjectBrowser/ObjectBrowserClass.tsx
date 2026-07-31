@@ -11,7 +11,7 @@
 /* eslint-disable react/no-unused-class-component-methods -- the members are used by the sibling modules of this directory */
 import React, { Component, createRef, type JSX } from 'react';
 
-import { Box, CircularProgress } from '@mui/material';
+import { Box, LinearProgress } from '@mui/material';
 
 // own
 import { Connection } from '../../Connection';
@@ -2839,7 +2839,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         }
 
         if (!this.state.loaded) {
-            return <CircularProgress key={`${this.props.dialogName}_c`} />;
+            return <LinearProgress key={`${this.props.dialogName}_c`} />;
         }
 
         // the container was resized into another width class => other columns are visible

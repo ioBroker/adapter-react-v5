@@ -14,7 +14,6 @@ import {
     Menu,
     MenuItem,
     Tooltip,
-    CircularProgress,
     Toolbar,
     IconButton,
     Fab,
@@ -1798,24 +1797,18 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
             return totalResult;
         }
 
+        // A bar instead of a circle. The number of outstanding entries no longer fits into the middle
+        // of a spinner, so it stands next to the bar.
         return (
-            <div style={{ position: 'relative' }}>
-                <CircularProgress
-                    key={folderId}
+            <div
+                key={folderId}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}
+            >
+                <LinearProgress
                     color="secondary"
-                    size={24}
+                    style={{ flexGrow: 1 }}
                 />
-                <div
-                    style={{
-                        position: 'absolute',
-                        zIndex: 2,
-                        top: 4,
-                        width: 24,
-                        textAlign: 'center',
-                    }}
-                >
-                    {this.state.queueLength}
-                </div>
+                <div style={{ minWidth: 24, textAlign: 'right' }}>{this.state.queueLength}</div>
             </div>
         );
     }

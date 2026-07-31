@@ -856,7 +856,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### 10.0.8 (2026-07-31)
+### **WORK IN PROGRESS**
 
 - (@GermanBluefox) Added support of styled scrollbars
 
