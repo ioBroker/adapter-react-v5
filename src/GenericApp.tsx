@@ -598,16 +598,10 @@ export class GenericApp<
     toggleTheme(newThemeName?: ThemeName): void {
         const themeName = this.state.themeName;
 
-        // dark => blue => colored => light => dark
-        newThemeName =
-            newThemeName ||
-            (themeName === 'dark'
-                ? 'light'
-                : themeName === 'blue'
-                  ? 'light'
-                  : themeName === 'colored'
-                    ? 'light'
-                    : 'dark');
+        // `Utils.toggleTheme` cycles through `Utils.getThemeNames()` and thus also through the
+        // modern themes. The chain that used to be here knew only dark, blue and colored and threw
+        // the user out of every other theme - and it already wrote the name itself.
+        newThemeName ||= Utils.toggleTheme(themeName);
 
         if (newThemeName !== themeName) {
             Utils.setThemeName(newThemeName);

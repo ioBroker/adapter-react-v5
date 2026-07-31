@@ -197,7 +197,7 @@ export function getModernTheme(
             nonAck: t.nonAck,
         },
         toolbar: {
-            height: 52,
+            height: TOOLBAR_HEIGHT,
         },
         saveToolbar: {
             background: t.primary,

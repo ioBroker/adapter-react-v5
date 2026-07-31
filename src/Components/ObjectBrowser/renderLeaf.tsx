@@ -814,8 +814,10 @@ export function renderLeaf(
     let checkColor = common?.color;
     let invertBackground;
     if (checkColor && !that.state.selected.includes(id)) {
-        const background =
-            that.props.themeName === 'dark' ? '#1f1f1f' : that.props.themeName === 'blue' ? '#222a2e' : '#FFFFFF';
+        // Only a rough reference value for the distance check, so the type is enough. Asking for the
+        // name meant that every theme beyond "dark" and "blue" - "modernDark" among them - was
+        // compared against white and the contrast was judged wrongly.
+        const background = that.props.themeType === 'dark' ? '#1f1f1f' : '#FFFFFF';
         const distance = Utils.colorDistance(checkColor, background);
         // console.log(`Distance: ${checkColor} - ${background} = ${distance}`);
         if (distance < 1000) {
