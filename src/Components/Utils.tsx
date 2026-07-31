@@ -1537,14 +1537,14 @@ export class Utils {
         }
 
         if (themeName === 'auto') {
-            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'modernDark' : 'modernLight';
         }
 
         themeName ||= ((window as any)._localStorage || window.localStorage).getItem('App.themeName');
         if (themeName && themeName !== 'auto') {
             return themeName;
         }
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'modernDark' : 'modernLight';
     }
 
     /**
