@@ -32,8 +32,8 @@ import {
     growVar,
     getSelectIdIconFromObjects,
     setCustomValue,
-    prepareSparkData,
 } from './utils';
+import { HistoryChart } from './HistoryChart';
 import type { Width } from '../../types';
 import type {
     ObjectBrowserProps,
@@ -65,13 +65,6 @@ import {
 
 export { getSelectIdIconFromObjects, type ObjectBrowserFilter };
 
-declare global {
-    interface Window {
-        sparkline: {
-            sparkline: (el: HTMLDivElement, data: number[]) => JSX.Element;
-        };
-    }
-}
 declare module '@mui/material/Button' {
     interface ButtonPropsColorOverrides {
         grey: true;
@@ -1894,65 +1887,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         return leaf.renderColumnButtons(this, id, item);
     }
 
-    readHistory(id: string): void {
-        /* interface GetHistoryOptions {
-            instance?: string;
-            start?: number;
-            end?: number;
-            step?: number;
-            count?: number;
-            from?: boolean;
-            ack?: boolean;
-            q?: boolean;
-            addID?: boolean;
-            limit?: number;
-            ignoreNull?: boolean;
-            sessionId?: any;
-            aggregate?: 'minmax' | 'min' | 'max' | 'average' | 'total' | 'count' | 'none';
-        } */
-        if (
-            window.sparkline &&
-            this.defaultHistory &&
-            this.objects[id]?.common?.custom &&
-            this.objects[id].common.custom[this.defaultHistory]
-        ) {
-            const now = new Date();
-            now.setHours(now.getHours() - 24);
-            now.setMinutes(0);
-            now.setSeconds(0);
-            now.setMilliseconds(0);
-            const nowMs = now.getTime();
-
-            this.props.socket
-                .getHistory(id, {
-                    instance: this.defaultHistory,
-                    start: nowMs,
-                    end: Date.now(),
-                    step: 3600000,
-                    from: false,
-                    ack: false,
-                    q: false,
-                    addId: false,
-                    aggregate: 'minmax',
-                })
-                .then(values => {
-                    const sparks: HTMLDivElement[] = window.document.getElementsByClassName(
-                        'sparkline',
-                    ) as any as HTMLDivElement[];
-
-                    for (let s = 0; s < sparks.length; s++) {
-                        if (sparks[s].dataset.id === id) {
-                            const v = prepareSparkData(values, nowMs);
-
-                            window.sparkline.sparkline(sparks[s], v);
-                            break;
-                        }
-                    }
-                })
-                .catch(e => console.warn(`Cannot read history: ${e}`));
-        }
-    }
-
     getTooltipInfo(id: string, cb?: () => void): void {
         const obj = this.objects[id];
         const state = this.states[id];
@@ -2030,15 +1964,26 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 </div>,
             );
         } else if (this.defaultHistory && obj?.common?.custom?.[this.defaultHistory]) {
+            const isNumber = typeof state?.val === 'number';
+            const isBoolean = obj.common.type === 'boolean' || typeof state?.val === 'boolean';
             valFullRx.push(
-                <svg
-                    key="sparkline"
-                    className="sparkline"
-                    data-id={id}
-                    style={{ fill: '#3d85de' }}
-                    width="200"
-                    height="30"
-                    strokeWidth="3"
+                <HistoryChart
+                    key="chart"
+                    socket={this.props.socket}
+                    id={id}
+                    instance={this.defaultHistory}
+                    t={this.props.t}
+                    isBoolean={isBoolean}
+                    isFloatComma={
+                        this.props.isFloatComma === undefined
+                            ? (this.systemConfig?.common.isFloatComma ?? true)
+                            : this.props.isFloatComma
+                    }
+                    current={
+                        isNumber || isBoolean
+                            ? { ts: state.ts, val: typeof state.val === 'boolean' ? +state.val : (state.val as number) }
+                            : null
+                    }
                 />,
             );
         }

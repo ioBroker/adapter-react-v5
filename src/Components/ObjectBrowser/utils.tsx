@@ -1658,42 +1658,6 @@ export function getValueStyle(options: GetValueStyleOptions): { color: string } 
     return { color };
 }
 
-export function prepareSparkData(values: ioBroker.GetHistoryResult, from: number): number[] {
-    // set one point every hour
-    let time = from;
-    let i = 1;
-    const v = [];
-
-    while (i < values.length && time < from + 25 * 3600000) {
-        // find the interval
-        while (values[i - 1].ts < time && time <= values[i].ts && i < values.length) {
-            i++;
-        }
-        if (i === 1 && values[i - 1].ts >= time) {
-            // assume the value was always null
-            v.push(0);
-        } else if (i < values.length) {
-            if (typeof values[i].val === 'boolean' || typeof values[i - 1].val === 'boolean') {
-                v.push(values[i].val ? 1 : 0);
-            } else {
-                // remove nulls
-                values[i - 1].val ||= 0;
-                values[i].val ||= 0;
-                // interpolate
-                const nm1: number = values[i - 1].val as number;
-                const n: number = values[i].val as number;
-                const val = nm1 + ((n - nm1) * (time - values[i - 1].ts)) / (values[i].ts - values[i - 1].ts);
-
-                v.push(val);
-            }
-        }
-
-        time += 3600000;
-    }
-
-    return v;
-}
-
 export function getCustomValue(obj: ioBroker.Object, it: AdapterColumn): string | number | boolean | null {
     if (obj?._id?.startsWith(`${it.adapter}.`) && it.path.length > 1) {
         const p = it.path;

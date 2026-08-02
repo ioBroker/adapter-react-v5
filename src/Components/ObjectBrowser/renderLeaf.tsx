@@ -477,7 +477,7 @@ export function renderColumnValue(
                 popper: { sx: styles.cellValueTooltipBox },
                 tooltip: { sx: styles.cellValueTooltip },
             }}
-            onOpen={() => that.getTooltipInfo(id, () => that.readHistory(id))}
+            onOpen={() => that.getTooltipInfo(id)}
             onClose={() => that.state.tooltipInfo?.id === id && that.setState({ tooltipInfo: null })}
         >
             <Box

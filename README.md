@@ -856,6 +856,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Replaced the spark line
+
 ### 10.0.11 (2026-07-31)
 
 - (@GermanBluefox) Added support of styled scrollbars
