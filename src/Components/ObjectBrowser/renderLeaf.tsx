@@ -1348,8 +1348,12 @@ export function renderLeaf(
             ? renderColumnValue(that, id, item, narrowStyleWithDetails)
             : null;
 
-    let colValue =
-        (narrowStyleWithDetails && columnValue) || that.columnsVisibility.val ? (
+    // A state that was never written has no value at all, so `renderColumnValue` returns null.
+    // In the narrow layout that used to remove the whole cell - and with it the only way to tap
+    // the value and open the editor. Keep the (empty) cell for editable states.
+    const showValueCell = that.columnsVisibility.val || (narrowStyleWithDetails && (!!columnValue || valueEditable));
+
+    let colValue = showValueCell ? (
             <div
                 style={{
                     ...styles.cellValue,

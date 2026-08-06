@@ -856,6 +856,11 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Allowed to tap empty value to edit the value in the `TreeTable` component (mobile view)
+- (@GermanBluefox) Updated packages
+
 ### 10.0.12 (2026-08-02)
 
 - (@GermanBluefox) Replaced the spark line
