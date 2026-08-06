@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.0.12",
+        "@iobroker/gui-components": "^10.0.13",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -856,7 +856,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.0.13 (2026-08-06)
 
 - (@GermanBluefox) Allowed to tap empty value to edit the value in the `TreeTable` component (mobile view)
 - (@GermanBluefox) Updated packages
