@@ -1354,66 +1354,66 @@ export function renderLeaf(
     const showValueCell = that.columnsVisibility.val || (narrowStyleWithDetails && (!!columnValue || valueEditable));
 
     let colValue = showValueCell ? (
-            <div
-                style={{
-                    ...styles.cellValue,
-                    width: that.width !== 'xs' ? colWidth('val') : 'calc(100% - 100px)',
-                    cursor: valueEditable
-                        ? common?.type === 'file'
-                            ? 'zoom-in'
-                            : item.data.button
-                              ? 'grab'
-                              : 'text'
-                        : 'default',
-                }}
-                onClick={e => {
-                    if (valueEditable) {
-                        if (!obj || !that.states) {
-                            // return;
-                        } else if (common?.type === 'file') {
-                            that.setState({ viewFileDialog: id });
-                        } else if (item.data.url && e.ctrlKey) {
-                            if (that.states[id]?.val && typeof that.states[id].val === 'string') {
-                                if (common?.role === 'url.self') {
-                                    window.location.href = that.states[id].val;
-                                } else {
-                                    const opened = window.open(that.states[id].val, '_blank');
-                                    opened?.focus();
-                                }
+        <div
+            style={{
+                ...styles.cellValue,
+                width: that.width !== 'xs' ? colWidth('val') : 'calc(100% - 100px)',
+                cursor: valueEditable
+                    ? common?.type === 'file'
+                        ? 'zoom-in'
+                        : item.data.button
+                          ? 'grab'
+                          : 'text'
+                    : 'default',
+            }}
+            onClick={e => {
+                if (valueEditable) {
+                    if (!obj || !that.states) {
+                        // return;
+                    } else if (common?.type === 'file') {
+                        that.setState({ viewFileDialog: id });
+                    } else if (item.data.url && e.ctrlKey) {
+                        if (that.states[id]?.val && typeof that.states[id].val === 'string') {
+                            if (common?.role === 'url.self') {
+                                window.location.href = that.states[id].val;
+                            } else {
+                                const opened = window.open(that.states[id].val, '_blank');
+                                opened?.focus();
                             }
-                        } else if (!that.state.filter.expertMode && item.data.button) {
-                            // in non-expert mode control button directly
-                            that.props.socket
-                                .setState(id, true)
-                                .catch(e => window.alert(`Cannot write state "${id}": ${e}`));
-                        } else if (!that.state.filter.expertMode && item.data.switch) {
-                            // in non-expert mode control switch directly
-                            that.props.socket
-                                .setState(id, !that.states[id].val)
-                                .catch(e => window.alert(`Cannot write state "${id}": ${e}`));
-                        } else {
-                            that.edit = {
-                                val: that.states[id] ? that.states[id].val : '',
-                                q: that.states[id] ? that.states[id].q || 0 : 0,
-                                ack: false,
-                                id,
-                            };
-                            that.setState({ updateOpened: true });
                         }
-                    } else if (common?.role === 'url' || (common?.role === 'url.blank' && e.ctrlKey)) {
-                        if (that.states[id]?.val && typeof that.states[id].val === 'string') {
-                            window.open(that.states[id].val, '_blank');
-                        }
-                    } else if (common?.role === 'url.self' && e.ctrlKey) {
-                        if (that.states[id]?.val && typeof that.states[id].val === 'string') {
-                            window.location.href = that.states[id].val;
-                        }
+                    } else if (!that.state.filter.expertMode && item.data.button) {
+                        // in non-expert mode control button directly
+                        that.props.socket
+                            .setState(id, true)
+                            .catch(e => window.alert(`Cannot write state "${id}": ${e}`));
+                    } else if (!that.state.filter.expertMode && item.data.switch) {
+                        // in non-expert mode control switch directly
+                        that.props.socket
+                            .setState(id, !that.states[id].val)
+                            .catch(e => window.alert(`Cannot write state "${id}": ${e}`));
+                    } else {
+                        that.edit = {
+                            val: that.states[id] ? that.states[id].val : '',
+                            q: that.states[id] ? that.states[id].q || 0 : 0,
+                            ack: false,
+                            id,
+                        };
+                        that.setState({ updateOpened: true });
                     }
-                }}
-            >
-                {columnValue}
-            </div>
-        ) : null;
+                } else if (common?.role === 'url' || (common?.role === 'url.blank' && e.ctrlKey)) {
+                    if (that.states[id]?.val && typeof that.states[id].val === 'string') {
+                        window.open(that.states[id].val, '_blank');
+                    }
+                } else if (common?.role === 'url.self' && e.ctrlKey) {
+                    if (that.states[id]?.val && typeof that.states[id].val === 'string') {
+                        window.location.href = that.states[id].val;
+                    }
+                }
+            }}
+        >
+            {columnValue}
+        </div>
+    ) : null;
 
     let colButtons =
         narrowStyleWithDetails || that.columnsVisibility.buttons ? (
