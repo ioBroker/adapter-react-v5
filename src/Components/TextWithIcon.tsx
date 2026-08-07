@@ -43,6 +43,11 @@ interface TextWithIconProps {
     };
     icon?: string;
     color?: string;
+    /**
+     * Keep the place of the icon free if the entry has no icon.
+     * Use it in lists and tables, where entries with and without icon must stay aligned under each other.
+     */
+    reserveIconSpace?: boolean;
 }
 
 interface TextWithIconItem {
@@ -146,6 +151,8 @@ export function TextWithIcon(props: TextWithIconProps): React.JSX.Element {
                     className={props.moreClasses?.icon}
                     style={styles.icon}
                 />
+            ) : props.reserveIconSpace ? (
+                <div style={{ width: styles.icon.width, marginRight: styles.icon.marginRight, flexShrink: 0 }} />
             ) : null}
             <div
                 style={styles.text}

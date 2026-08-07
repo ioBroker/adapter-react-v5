@@ -856,6 +856,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Tuned TextWithIcon component
+
 ### 10.0.14 (2026-08-07)
 
 - (@GermanBluefox) Allowed to tap empty value to edit the value in the `TreeTable` component (mobile view)
