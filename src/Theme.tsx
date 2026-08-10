@@ -2,6 +2,7 @@ import { type CSSProperties } from 'react';
 import {
     createTheme,
     alpha,
+    type Palette as PaletteMui,
     type PaletteOptions as PaletteOptionsMui,
     type SimplePaletteColorOptions,
     type ThemeOptions as ThemeOptionsMui,
@@ -82,6 +83,29 @@ function getElevations(color: string, overlay: string): Record<string, CSSProper
     }
 
     return elevations;
+}
+
+const ALERT_SEVERITIES = ['error', 'warning', 'info', 'success'] as const;
+
+type AlertSeverity = (typeof ALERT_SEVERITIES)[number];
+
+/**
+ * Text color for a filled alert (`<Alert variant="filled"/>` and with it every snackbar/toast).
+ *
+ * MUI fills the box with `palette[severity].dark` in the dark themes, but derives the text color from
+ * `palette[severity].main`. For "info" and "success" that ends up as almost black text on a mid-blue
+ * or mid-green box. Calculate the contrast against the background that is really painted.
+ *
+ * @param palette palette of the already created theme
+ * @param color `color` or `severity` of the alert. Anything but the four severities is left to MUI
+ */
+function getFilledAlertTextColor(palette: PaletteMui, color: string | undefined): string | undefined {
+    if (!ALERT_SEVERITIES.includes(color as AlertSeverity)) {
+        return undefined;
+    }
+    const severity = color as AlertSeverity;
+
+    return palette.getContrastText(palette.mode === 'dark' ? palette[severity].dark : palette[severity].main);
 }
 
 // const buttonsPalette = () => ({
@@ -476,6 +500,20 @@ export function Theme(type: ThemeName, overrides?: Record<string, any>): IobThem
         ...(overrides || undefined),
         components: {
             ...localOverrides,
+            MuiAlert: {
+                // do not lose the alert overrides of the theme itself (e.g. of the "modern*" themes)
+                ...(localOverrides.MuiAlert || undefined),
+                styleOverrides: {
+                    ...(localOverrides.MuiAlert?.styleOverrides || undefined),
+                    // "filled" is the only per-variant slot of the alert - the severity comes with the ownerState
+                    filled: (props: { ownerState?: { color?: string; severity?: string } }) => ({
+                        color: getFilledAlertTextColor(
+                            theme.palette,
+                            props.ownerState?.color || props.ownerState?.severity || 'success',
+                        ),
+                    }),
+                },
+            },
             MuiButton: {
                 // do not lose the button overrides of the theme itself (e.g. of the "modern*" themes)
                 ...(localOverrides.MuiButton || undefined),

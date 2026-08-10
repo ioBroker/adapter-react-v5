@@ -856,6 +856,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Corrected the text color of the filled alerts (snackbars) in the dark themes
+
 ### 10.0.15 (2026-08-07)
 
 - (@GermanBluefox) Tuned TextWithIcon component
