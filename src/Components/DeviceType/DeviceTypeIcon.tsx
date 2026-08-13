@@ -31,11 +31,22 @@ import {
     MdPolyline as TypeIconNode,
     MdHub as TypeIconHub5,
     MdControlCamera as TypeIconController,
+    MdAir as TypeIconAirQuality,
+    MdElectricMeter as TypeIconElectricity,
 } from 'react-icons/md';
 import { WiCloudy as TypeIconWeather } from 'react-icons/wi';
 import { IoIosRadioButtonOn as TypeIconButtonSensor } from 'react-icons/io';
-import { TbSunElectricity as TypeIconIlluminance } from 'react-icons/tb';
-import { PiPaletteDuotone as TypeIconRGBWSingle } from 'react-icons/pi';
+import {
+    TbSunElectricity as TypeIconIlluminance,
+    TbAlarmSmoke as TypeIconCoAlarm,
+    TbBarrel as TypeIconFillLevel,
+    TbRipple as TypeIconFlow,
+    TbGauge as TypeIconPressure,
+    TbEngine as TypeIconPump,
+    TbCircuitSwitchClosed as TypeIconContact,
+} from 'react-icons/tb';
+import { PiPaletteDuotone as TypeIconRGBWSingle, PiFan as TypeIconFan } from 'react-icons/pi';
+import { LuAirVent as TypeIconAirPurifier } from 'react-icons/lu';
 
 import { Types } from '@iobroker/type-detector';
 
@@ -65,23 +76,36 @@ import { extendDeviceTypeTranslation } from './deviceTypeTranslations';
 
 export type TypesExtended = Types | 'invalid' | 'hub3' | 'node' | 'hub5' | 'controller';
 
+/**
+ * Icon for every device type.
+ *
+ * This map is deliberately a complete `Record` over `TypesExtended`: when `@iobroker/type-detector`
+ * adds a new member to `Types`, the build fails here until an icon is assigned. Never add keys that
+ * are not part of `TypesExtended` (a single `@ts-expect-error` inside the literal would suppress the
+ * completeness check for the whole object) — put those in `ROLE_ICONS` below.
+ */
 const TYPE_ICONS: Record<TypesExtended, React.FC<IconPropsSVG>> = {
     [Types.airCondition]: TypeIconAC,
+    [Types.airPurifier]: TypeIconAirPurifier,
+    [Types.airQuality]: TypeIconAirQuality,
     [Types.blind]: TypeIconBlinds,
     [Types.blindButtons]: TypeIconBlinds,
     [Types.button]: TypeIconButton,
     [Types.buttonSensor]: TypeIconButtonSensor,
     [Types.camera]: TypeIconCamera,
     [Types.chart]: TypeIconChart,
+    [Types.coAlarm]: TypeIconCoAlarm,
+    [Types.contact]: TypeIconContact,
     // [Types.url]: TypeIconURL,
     [Types.image]: TypeIconImage,
     [Types.dimmer]: TypeIconDimmer,
     [Types.door]: TypeIconDoor,
+    [Types.electricity]: TypeIconElectricity,
+    [Types.fan]: TypeIconFan,
+    [Types.fillLevel]: TypeIconFillLevel,
     [Types.fireAlarm]: TypeIconFireAlarm,
-    // @ts-expect-error special case
-    'sensor.alarm.fire': TypeIconFireAlarm,
     [Types.floodAlarm]: TypeIconFloodAlarm,
-    'sensor.alarm.flood': TypeIconFloodAlarm,
+    [Types.flow]: TypeIconFlow,
     [Types.gate]: TypeIconGate,
     [Types.humidity]: TypeIconHumidity,
     [Types.illuminance]: TypeIconIlluminance,
@@ -94,6 +118,8 @@ const TYPE_ICONS: Record<TypesExtended, React.FC<IconPropsSVG>> = {
     [Types.motion]: TypeIconMotion,
     [Types.ct]: TypeIconCT,
     [Types.percentage]: TypeIconSlider,
+    [Types.pressure]: TypeIconPressure,
+    [Types.pump]: TypeIconPump,
     [Types.rgb]: TypeIconRGB,
     [Types.rgbSingle]: TypeIconRGB,
     [Types.rgbwSingle]: TypeIconRGBWSingle,
@@ -123,6 +149,18 @@ const TYPE_ICONS: Record<TypesExtended, React.FC<IconPropsSVG>> = {
     hub5: TypeIconHub5,
     controller: TypeIconController,
 };
+
+/** Icons for state roles that may be given as `src` instead of a device type */
+const ROLE_ICONS: Record<string, React.FC<IconPropsSVG>> = {
+    'sensor.alarm.fire': TypeIconFireAlarm,
+    'sensor.alarm.flood': TypeIconFloodAlarm,
+};
+
+const ALL_ICONS: Record<string, React.FC<IconPropsSVG>> = { ...TYPE_ICONS, ...ROLE_ICONS };
+
+function isKnownIcon(src: unknown): src is TypesExtended {
+    return typeof src === 'string' && Object.prototype.hasOwnProperty.call(ALL_ICONS, src);
+}
 
 const defaultStyle: React.CSSProperties = {
     width: 32,
@@ -173,10 +211,8 @@ export function DeviceTypeIcon(props: TypeIconProps): React.JSX.Element | null {
             />
         );
     }
-    // src could contain a device type too, so detect if it is a type
-    const type: TypesExtended | undefined =
-        props.type ||
-        (props.src ? (Object.keys(TYPE_ICONS).find(type => props.src === type) as TypesExtended) : undefined);
+    // src could contain a device type or a state role too, so detect if it is a type
+    const type: TypesExtended | undefined = props.type || (isKnownIcon(props.src) ? props.src : undefined);
 
     if (!type && props.src) {
         return (
@@ -189,7 +225,7 @@ export function DeviceTypeIcon(props: TypeIconProps): React.JSX.Element | null {
         );
     }
 
-    const TypeIcon = type && TYPE_ICONS[type];
+    const TypeIcon = type && ALL_ICONS[type];
     if (!TypeIcon) {
         // Show the first letter of a type
         return type ? (

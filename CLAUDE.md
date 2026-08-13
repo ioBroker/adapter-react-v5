@@ -10,10 +10,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Build:** `npm run build` (cleans `build/`, generates icon sets, copies assets, patches README version, runs `tsc`)
 - **TypeScript only:** `npm run build:ts` (runs `tsc -p tsconfig.build.json`)
+- **Type check:** `npm run check` (runs `tsc -p tsconfig.build.json --noEmit`)
 - **Lint:** `npm run lint` (ESLint with `@iobroker/eslint-config` + React config)
+- **Device type check:** `npm run check-device-types` (see below)
 - **Dev GUI:** `cd test-gui && npm start` (Vite dev server on port 3000, imports directly from `../../src/`)
 - **Release:** `npm run release-patch`, `release-minor`, `release-major` (uses `@alcalzone/release-script`)
-- **No test suite** — there are no unit tests in this project. CI only runs lint.
+- **No test suite** — there are no unit tests in this project. CI runs `check`, `lint` and `check-device-types`.
 
 ## Architecture
 
@@ -45,6 +47,7 @@ Node script with flag-driven steps:
 - `--0-clean` — deletes `build/`
 - `--2-copy` — generates base64 icon set JSONs from SVGs in `src/assets/devices/` and `src/assets/rooms/`, copies `.d.ts`, `.css`, assets, and i18n JSON files
 - `--3-patchReadme` — updates the version number in README.md
+- `--check-device-types` — verifies that `src/Components/DeviceType/` is in sync with the `Types` enum of `@iobroker/type-detector`: every type has an icon in `TYPE_ICONS` and a name in every language, no names are left over for removed types, and every language file is actually imported by `deviceTypeTranslations.ts`. Run in CI; exits non-zero on drift.
 
 ### Test GUI (`test-gui/`)
 
@@ -55,7 +58,7 @@ Vite-based app for visual development and testing of components. Imports directl
 Two separate translation sets:
 
 1. **Library-level** — `src/i18n/*.json` (11 languages: en, de, ru, pt, nl, fr, it, es, pl, uk, zh-cn). Aggregated in `src/dictionary.ts`.
-2. **DeviceType component** — `src/Components/DeviceType/i18n/*.json` (same 11 languages). Loaded separately via `deviceTypeTranslations.ts`.
+2. **DeviceType component** — `src/Components/DeviceType/i18n/*.json` (same 11 languages). Loaded separately via `deviceTypeTranslations.ts`. Every language file must be imported there, and the `type-*` keys must match the `Types` enum of `@iobroker/type-detector` — both are enforced by `npm run check-device-types`.
 
 All translations are flat key-value JSON. English (`en.json`) is the source of truth.
 

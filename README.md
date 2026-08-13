@@ -812,6 +812,22 @@ npm start
 
 It expects a running ioBroker admin on `127.0.0.1:8081`.
 
+## Checks
+
+There is no unit test suite. The following checks run in CI and should be run before a pull request:
+
+```bash
+npm run check              # type check (tsc --noEmit)
+npm run lint               # eslint
+npm run check-device-types # device types are in sync with @iobroker/type-detector
+```
+
+`check-device-types` fails if a device type of `@iobroker/type-detector` has no icon in
+`DeviceTypeIcon.tsx` or no name in one of the `src/Components/DeviceType/i18n/*.json` files, if a
+name is left over for a type that no longer exists, or if a language file is not imported by
+`deviceTypeTranslations.ts`. See [the DeviceType readme](src/Components/DeviceType/README.md) for
+the details.
+
 ## List of adapters that use this library
 
 - Admin
@@ -856,6 +872,14 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Updated `@iobroker/type-detector` to 6.0.0
+- (@GermanBluefox) Added icons and names for the device types `airPurifier`, `airQuality`, `coAlarm`, `contact`, `electricity`, `fan`, `fillLevel`, `flow`, `pressure`, `pump` and `unknown`
+- (@GermanBluefox) Removed the names of the no longer existing device types `url` and `valve`
+- (@GermanBluefox) Corrected the Spanish translations of the device types, as they were never loaded
+- (@GermanBluefox) Added `npm run check-device-types` to detect missing device type icons and names
+
 ### 10.0.16 (2026-08-10)
 
 - (@GermanBluefox) Corrected the text color of the filled alerts (snackbars) in the dark themes

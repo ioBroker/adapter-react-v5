@@ -27,8 +27,12 @@ jobs:
             - uses: ioBroker/testing-action-check@v2.0.0
               with:
                   node-version: '24.x'
+                  # `npm run check` type-checks the sources. Among other things it enforces that
+                  # `TYPE_ICONS` covers every device type of `@iobroker/type-detector`.
+                  type-checking: true
                   lint: true
-                  test-command: 'false'
+                  # Checks that icons and translations stay in sync with `@iobroker/type-detector`
+                  test-command: 'npm run check-device-types'
 
     # Deploys the final package to NPM
     deploy:

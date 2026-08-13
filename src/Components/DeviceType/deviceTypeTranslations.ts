@@ -4,6 +4,7 @@ import deLang from './i18n/de.json';
 import ruLang from './i18n/ru.json';
 import ptLang from './i18n/pt.json';
 import plLang from './i18n/pl.json';
+import esLang from './i18n/es.json';
 import frLang from './i18n/fr.json';
 import itLang from './i18n/it.json';
 import nlLang from './i18n/nl.json';
@@ -20,6 +21,7 @@ export function extendDeviceTypeTranslation(): void {
             ru: ruLang,
             pt: ptLang,
             pl: plLang,
+            es: esLang,
             fr: frLang,
             it: itLang,
             nl: nlLang,
