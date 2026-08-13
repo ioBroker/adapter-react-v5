@@ -250,7 +250,70 @@ import type { SimplePaletteColorOptions } from '@mui/material/styles/createPalet
 import type { SimplePaletteColorOptions } from '@mui/material/styles';
 ```
 
-## 6. Checklist
+## 6. Custom admin components
+
+Adapters that deliver own components for the JSON config (`"type": "custom"` in `jsonConfig.json`) are
+loaded by the admin via module federation. React, MUI and the component library are shared as
+singletons, so a component that was built against `@iobroker/adapter-react-v5` would be handed APIs it
+was never compiled against. Because of that the admin decides **before** it registers the remote
+whether the component may run at all, and it needs two things from the adapter to do so.
+
+### Declare the GUI API generation
+
+`@iobroker/gui-components` is generation `2`, `@iobroker/adapter-react-v5` was generation `1`.
+Declare it in every `custom` item of `admin/jsonConfig.json`:
+
+```diff
+     "myCustomAttribute": {
+       "type": "custom",
+       "i18n": true,
+       "url": "custom/customComponents.js",
+       "name": "MyComponentSet/Components/ExampleComponent",
+-      "bundlerType": "module"
++      "guiApi": 2
+     }
+```
+
+`bundlerType` is deprecated and ignored — generation 2 components are always ES modules.
+
+### Copy `mf-manifest.json`
+
+Additionally, the admin fetches the federation manifest that sits next to the remote entry and reads
+from it which component library the build was made against. A component without a manifest that does
+not declare `guiApi` is treated as generation 1 and is not started.
+
+Make sure the manifest is generated in `src-admin/vite.config.ts`:
+
+```ts
+federation({
+    manifest: true,
+    name: 'MyComponentSet',
+    filename: 'customComponents.js',
+    // ...
+});
+```
+
+and extend the copy list in `tasks.ts` (or `tasks.js`) of the adapter by it:
+
+```js
+copyFiles(['src-admin/build/static/js/*.js'], 'admin/custom/static/js');
+copyFiles(['src-admin/build/customComponents.js'], 'admin/custom');
+// new: the admin reads the manifest to check the component against its own GUI API generation
+copyFiles(['src-admin/build/mf-manifest.json'], 'admin/custom');
+copyFiles(['src-admin/src/i18n/*.json'], 'admin/custom/i18n');
+```
+
+The manifest must land in the same directory as `customComponents.js`, because the admin requests it
+as `<directory of the url>/mf-manifest.json`.
+
+A manifest of an older build that still names `@iobroker/adapter-react-v5` wins over `guiApi` and
+blocks the component, so delete the build directory before the release build (the `--0-clean` step).
+
+If the component does not appear, the reason is written to the browser console.
+[ioBroker.admin-component-template](https://github.com/ioBroker/ioBroker.admin-component-template) is
+the reference implementation of the whole setup.
+
+## 7. Checklist
 
 - [ ] Replace `@iobroker/adapter-react-v5` with `@iobroker/gui-components` in `package.json` and all imports
 - [ ] Update React to 19, MUI to 9, `@types/react(-dom)` to 19 (and `overrides`, if needed)
@@ -259,5 +322,6 @@ import type { SimplePaletteColorOptions } from '@mui/material/styles';
 - [ ] `inputProps` / `InputProps` / `ContentProps` => `slotProps`
 - [ ] `React.RefObject<T>` => `React.RefObject<T | null>`
 - [ ] Replace `LegacyConnection` by `Connection` / `AdminConnection`
+- [ ] Custom admin components: `"guiApi": 2` in `jsonConfig.json` and `mf-manifest.json` copied into `admin/custom`
 - [ ] With TypeScript 6: `moduleResolution` => `bundler`, no deep imports into packages
 - [ ] `npm run lint` and a full build to catch the rest

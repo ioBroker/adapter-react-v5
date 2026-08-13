@@ -799,6 +799,11 @@ shared is delivered with this package:
 const { moduleFederationShared } = require('@iobroker/gui-components/modulefederation.admin.config');
 ```
 
+Custom components of the JSON config must additionally be built with `manifest: true` and ship the
+generated `mf-manifest.json` next to `customComponents.js`, as the admin reads from it against which
+component library the build was made. See
+[the migration instructions](MIGRATION_8_10.md#6-custom-admin-components) for the details.
+
 ## Test GUI
 
 The `test-gui` directory contains a vite application to develop and test the components visually.
