@@ -21,7 +21,6 @@ import { TabContent } from '../TabContent';
 import { TabHeader } from '../TabHeader';
 import {
     applyFilter,
-    binarySearch,
     buildTree,
     findNode,
     formatValue,
@@ -1207,7 +1206,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             this.root = root;
             this.info = info;
             if (!this.pausedSubscribes) {
-                this.doFilter();
+                this.doFilter(true);
             } else {
                 // the new tree has no visibility flags yet; re-apply the filter when the dialog is closed
                 this.treeRebuiltWhilePaused = true;
@@ -1352,7 +1351,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             if (this.treeRebuiltWhilePaused) {
                 // without this filter run, no node of the rebuilt tree is marked visible and the browser stays empty
                 this.treeRebuiltWhilePaused = false;
-                this.doFilter();
+                this.doFilter(true);
             }
         }
     }
@@ -1403,20 +1402,21 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         this.setState({ expanded: [], depth: 0, selected: [] }, () => this.onAfterSelect());
     }
 
-    private expandDepth(root: TreeItem, depth: number, expanded: string[]): void {
+    private expandDepth(root: TreeItem, depth: number, expanded: string[], expandedSet?: Set<string>): void {
         if (!this.root) {
             throw new Error('No root');
         }
         root ||= this.root;
+        expandedSet ||= new Set(expanded);
         if (depth > 0) {
             root.children?.forEach(item => {
                 if (item.data.sumVisibility) {
-                    if (!binarySearch(expanded, item.data.id)) {
+                    if (!expandedSet.has(item.data.id)) {
                         expanded.push(item.data.id);
-                        expanded.sort();
+                        expandedSet.add(item.data.id);
                     }
                     if (depth - 1 > 0) {
-                        this.expandDepth(item, depth - 1, expanded);
+                        this.expandDepth(item, depth - 1, expanded, expandedSet);
                     }
                 }
             });
@@ -1433,6 +1433,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             const expanded = [...this.state.expanded];
             if (this.root) {
                 this.expandDepth(this.root, depth, expanded);
+                expanded.sort();
             }
             this.localStorage.setItem(`${this.props.dialogName || 'App'}.objectExpanded`, JSON.stringify(expanded));
             this.setState({ depth, expanded });
