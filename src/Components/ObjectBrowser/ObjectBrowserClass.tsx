@@ -1043,6 +1043,19 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
      */
     onStateChange = (id: string, state?: ioBroker.State | null): void => {
         // console.log(`> stateChange ${id}`);
+        const oldState = this.states[id];
+        if (
+            state &&
+            oldState &&
+            state.val === oldState.val &&
+            state.ack === oldState.ack &&
+            state.q === oldState.q &&
+            state.ts === oldState.ts &&
+            state.lc === oldState.lc
+        ) {
+            // echo of the already known state: nothing that is displayed can have changed
+            return;
+        }
         if (this.states[id]) {
             const item = this.findItem(id);
             if (item?.data.state) {
