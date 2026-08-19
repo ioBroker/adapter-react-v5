@@ -111,7 +111,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     private applyingNav: boolean = false;
     root: TreeItem | null = null;
     readonly states: Record<string, ioBroker.State> = {};
-    subscribes: string[] = [];
+    subscribes: Set<string> = new Set();
     private unsubscribeTimer: ReturnType<typeof setTimeout> | null = null;
     private statesUpdateTimer: ReturnType<typeof setTimeout> | null = null;
     private objectsUpdateTimer: ReturnType<typeof setTimeout> | null = null;
@@ -167,7 +167,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     } = {};
     changedIds: null | string[] = null;
     contextMenu: null | { item: any; ts: number } = null;
-    recordStates: string[] = [];
+    recordStates: Set<string> = new Set();
     styles: {
         cellIdIconFolder?: React.CSSProperties;
         cellIdIconDocument?: React.CSSProperties;
@@ -836,7 +836,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             this.props.socket.unsubscribeState(pattern, this.onStateChange);
         });
 
-        this.subscribes = [];
+        this.subscribes.clear();
         this.objects = {};
     }
 
@@ -892,7 +892,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             this.props.socket.unsubscribeState(pattern, this.onStateChange);
         });
 
-        this.subscribes = [];
+        this.subscribes.clear();
 
         this.loadAllObjects(true)
             .then(() => console.log('updated!'))
@@ -1001,12 +1001,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
 
     private checkUnsubscribes(): void {
         // Remove unused subscriptions
-        for (let i = this.subscribes.length - 1; i >= 0; i--) {
-            if (!this.recordStates.includes(this.subscribes[i])) {
-                this.unsubscribe(this.subscribes[i]);
+        for (const id of [...this.subscribes]) {
+            if (!this.recordStates.has(id)) {
+                this.unsubscribe(id);
             }
         }
-        this.recordStates = [];
+        this.recordStates.clear();
     }
 
     /**
@@ -1316,8 +1316,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     }
 
     subscribe(id: string): void {
-        if (!this.subscribes.includes(id)) {
-            this.subscribes.push(id);
+        if (!this.subscribes.has(id)) {
+            this.subscribes.add(id);
             // console.log(`+ subscribe ${id}`);
             if (!this.pausedSubscribes) {
                 this.props.socket
@@ -1328,9 +1328,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     }
 
     unsubscribe(id: string): void {
-        const pos = this.subscribes.indexOf(id);
-        if (pos !== -1) {
-            this.subscribes.splice(pos, 1);
+        if (this.subscribes.has(id)) {
+            this.subscribes.delete(id);
             if (this.states[id]) {
                 delete this.states[id];
             }
@@ -2773,7 +2772,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
      * The rendering method of this component.
      */
     render(): JSX.Element {
-        this.recordStates = [];
+        this.recordStates.clear();
         if (this.unsubscribeTimer) {
             clearTimeout(this.unsubscribeTimer);
         }
