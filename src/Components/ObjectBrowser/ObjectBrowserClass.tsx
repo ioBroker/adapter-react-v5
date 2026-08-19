@@ -21,7 +21,6 @@ import { TabContent } from '../TabContent';
 import { TabHeader } from '../TabHeader';
 import {
     applyFilter,
-    binarySearch,
     buildTree,
     findNode,
     formatValue,
@@ -100,6 +99,10 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     /** Width class for which the columns were calculated the last time */
     private lastCalculatedWidth: Width | null = null;
     private pausedSubscribes: boolean = false;
+    /** The tree was rebuilt while subscribes were paused, so the filter must be re-applied on resume */
+    private treeRebuiltWhilePaused: boolean = false;
+    /** Time of the first object change since the last tree rebuild (upper bound for the rebuild delay) */
+    private objectsUpdateFirstTs: number = 0;
     private selectFirst: string;
     /** Last navigation that was applied from `navigateTo` or reported via `onNavigateTo` (loop guard). */
     private lastNav: ObjectBrowserNavigation | null = null;
@@ -107,7 +110,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     private applyingNav: boolean = false;
     root: TreeItem | null = null;
     readonly states: Record<string, ioBroker.State> = {};
-    subscribes: string[] = [];
+    subscribes: Set<string> = new Set();
     private unsubscribeTimer: ReturnType<typeof setTimeout> | null = null;
     private statesUpdateTimer: ReturnType<typeof setTimeout> | null = null;
     private objectsUpdateTimer: ReturnType<typeof setTimeout> | null = null;
@@ -163,7 +166,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     } = {};
     changedIds: null | string[] = null;
     contextMenu: null | { item: any; ts: number } = null;
-    recordStates: string[] = [];
+    recordStates: Set<string> = new Set();
     styles: {
         cellIdIconFolder?: React.CSSProperties;
         cellIdIconDocument?: React.CSSProperties;
@@ -832,7 +835,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             this.props.socket.unsubscribeState(pattern, this.onStateChange);
         });
 
-        this.subscribes = [];
+        this.subscribes.clear();
         this.objects = {};
     }
 
@@ -888,7 +891,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             this.props.socket.unsubscribeState(pattern, this.onStateChange);
         });
 
-        this.subscribes = [];
+        this.subscribes.clear();
 
         this.loadAllObjects(true)
             .then(() => console.log('updated!'))
@@ -997,12 +1000,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
 
     private checkUnsubscribes(): void {
         // Remove unused subscriptions
-        for (let i = this.subscribes.length - 1; i >= 0; i--) {
-            if (!this.recordStates.includes(this.subscribes[i])) {
-                this.unsubscribe(this.subscribes[i]);
+        for (const id of [...this.subscribes]) {
+            if (!this.recordStates.has(id)) {
+                this.unsubscribe(id);
             }
         }
-        this.recordStates = [];
+        this.recordStates.clear();
     }
 
     /**
@@ -1039,6 +1042,19 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
      */
     onStateChange = (id: string, state?: ioBroker.State | null): void => {
         // console.log(`> stateChange ${id}`);
+        const oldState = this.states[id];
+        if (
+            state &&
+            oldState &&
+            state.val === oldState.val &&
+            state.ack === oldState.ack &&
+            state.q === oldState.q &&
+            state.ts === oldState.ts &&
+            state.lc === oldState.lc
+        ) {
+            // echo of the already known state: nothing that is displayed can have changed
+            return;
+        }
         if (this.states[id]) {
             const item = this.findItem(id);
             if (item?.data.state) {
@@ -1166,23 +1182,36 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     };
 
     afterObjectUpdated(): void {
-        if (!this.objectsUpdateTimer && this.objects) {
-            this.objectsUpdateTimer = setTimeout(() => {
-                this.objectsUpdateTimer = null;
-                const { info, root } = buildTree(this.objects, {
-                    imagePrefix: this.props.imagePrefix,
-                    root: this.props.root,
-                    lang: this.props.lang,
-                    themeType: this.props.themeType,
-                });
-                this.root = root;
-                this.info = info;
-                if (!this.pausedSubscribes) {
-                    this.doFilter();
-                }
-                // else it will be re-rendered when the dialog will be closed
-            }, 500);
+        if (!this.objects) {
+            return;
         }
+        if (this.objectsUpdateTimer) {
+            // collect a burst of object changes into one rebuild: wait for a quiet period,
+            // but do not postpone the rebuild forever while changes keep arriving
+            if (Date.now() - this.objectsUpdateFirstTs >= 2000) {
+                return;
+            }
+            clearTimeout(this.objectsUpdateTimer);
+        } else {
+            this.objectsUpdateFirstTs = Date.now();
+        }
+        this.objectsUpdateTimer = setTimeout(() => {
+            this.objectsUpdateTimer = null;
+            const { info, root } = buildTree(this.objects, {
+                imagePrefix: this.props.imagePrefix,
+                root: this.props.root,
+                lang: this.props.lang,
+                themeType: this.props.themeType,
+            });
+            this.root = root;
+            this.info = info;
+            if (!this.pausedSubscribes) {
+                this.doFilter(true);
+            } else {
+                // the new tree has no visibility flags yet; re-apply the filter when the dialog is closed
+                this.treeRebuiltWhilePaused = true;
+            }
+        }, 500);
     }
 
     // This function is called when the user changes the alias of an object.
@@ -1286,8 +1315,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     }
 
     subscribe(id: string): void {
-        if (!this.subscribes.includes(id)) {
-            this.subscribes.push(id);
+        if (!this.subscribes.has(id)) {
+            this.subscribes.add(id);
             // console.log(`+ subscribe ${id}`);
             if (!this.pausedSubscribes) {
                 this.props.socket
@@ -1298,9 +1327,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     }
 
     unsubscribe(id: string): void {
-        const pos = this.subscribes.indexOf(id);
-        if (pos !== -1) {
-            this.subscribes.splice(pos, 1);
+        if (this.subscribes.has(id)) {
+            this.subscribes.delete(id);
             if (this.states[id]) {
                 delete this.states[id];
             }
@@ -1320,6 +1348,11 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         } else if (this.pausedSubscribes && !isPause) {
             this.pausedSubscribes = false;
             this.subscribes.forEach(id => this.props.socket.subscribeState(id, this.onStateChange));
+            if (this.treeRebuiltWhilePaused) {
+                // without this filter run, no node of the rebuilt tree is marked visible and the browser stays empty
+                this.treeRebuiltWhilePaused = false;
+                this.doFilter(true);
+            }
         }
     }
 
@@ -1369,20 +1402,21 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         this.setState({ expanded: [], depth: 0, selected: [] }, () => this.onAfterSelect());
     }
 
-    private expandDepth(root: TreeItem, depth: number, expanded: string[]): void {
+    private expandDepth(root: TreeItem, depth: number, expanded: string[], expandedSet?: Set<string>): void {
         if (!this.root) {
             throw new Error('No root');
         }
         root ||= this.root;
+        expandedSet ||= new Set(expanded);
         if (depth > 0) {
             root.children?.forEach(item => {
                 if (item.data.sumVisibility) {
-                    if (!binarySearch(expanded, item.data.id)) {
+                    if (!expandedSet.has(item.data.id)) {
                         expanded.push(item.data.id);
-                        expanded.sort();
+                        expandedSet.add(item.data.id);
                     }
                     if (depth - 1 > 0) {
-                        this.expandDepth(item, depth - 1, expanded);
+                        this.expandDepth(item, depth - 1, expanded, expandedSet);
                     }
                 }
             });
@@ -1399,6 +1433,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             const expanded = [...this.state.expanded];
             if (this.root) {
                 this.expandDepth(this.root, depth, expanded);
+                expanded.sort();
             }
             this.localStorage.setItem(`${this.props.dialogName || 'App'}.objectExpanded`, JSON.stringify(expanded));
             this.setState({ depth, expanded });
@@ -2738,7 +2773,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
      * The rendering method of this component.
      */
     render(): JSX.Element {
-        this.recordStates = [];
+        this.recordStates.clear();
         if (this.unsubscribeTimer) {
             clearTimeout(this.unsubscribeTimer);
         }

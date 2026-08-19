@@ -877,6 +877,11 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@krobipd) Corrected: the object browser stayed empty after closing the object customization dialog if any object was changed while the dialog was open (ioBroker/ioBroker.admin#3391)
+- (@krobipd) Improved: object browser performance on large installations — bursts of object changes cause one tree rebuild instead of several, state-change echoes no longer trigger redraws, subscription bookkeeping is no longer quadratic, and rows outside the viewport skip layout and paint
+
 ### 10.1.0 (2026-08-13)
 
 - (@GermanBluefox) Updated `@iobroker/type-detector` to 6.0.0

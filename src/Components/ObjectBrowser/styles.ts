@@ -140,6 +140,9 @@ export const styles: Record<string, any> = {
         verticalAlign: 'top',
         userSelect: 'none',
         position: 'relative',
+        // rows outside the viewport keep their size but skip layout and paint
+        contentVisibility: 'auto',
+        containIntrinsicHeight: `${ROW_HEIGHT}px`,
         // The row is as wide as the sum of the columns, exactly like the header. If that is wider
         // than the container, the container scrolls horizontally and takes the header with it.
         // Without `flexShrink: 0` the cells would be squeezed and would not match the header anymore.
