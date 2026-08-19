@@ -102,6 +102,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     private pausedSubscribes: boolean = false;
     /** The tree was rebuilt while subscribes were paused, so the filter must be re-applied on resume */
     private treeRebuiltWhilePaused: boolean = false;
+    /** Time of the first object change since the last tree rebuild (upper bound for the rebuild delay) */
+    private objectsUpdateFirstTs: number = 0;
     private selectFirst: string;
     /** Last navigation that was applied from `navigateTo` or reported via `onNavigateTo` (loop guard). */
     private lastNav: ObjectBrowserNavigation | null = null;
@@ -1168,25 +1170,36 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     };
 
     afterObjectUpdated(): void {
-        if (!this.objectsUpdateTimer && this.objects) {
-            this.objectsUpdateTimer = setTimeout(() => {
-                this.objectsUpdateTimer = null;
-                const { info, root } = buildTree(this.objects, {
-                    imagePrefix: this.props.imagePrefix,
-                    root: this.props.root,
-                    lang: this.props.lang,
-                    themeType: this.props.themeType,
-                });
-                this.root = root;
-                this.info = info;
-                if (!this.pausedSubscribes) {
-                    this.doFilter();
-                } else {
-                    // the new tree has no visibility flags yet; re-apply the filter when the dialog is closed
-                    this.treeRebuiltWhilePaused = true;
-                }
-            }, 500);
+        if (!this.objects) {
+            return;
         }
+        if (this.objectsUpdateTimer) {
+            // collect a burst of object changes into one rebuild: wait for a quiet period,
+            // but do not postpone the rebuild forever while changes keep arriving
+            if (Date.now() - this.objectsUpdateFirstTs >= 2000) {
+                return;
+            }
+            clearTimeout(this.objectsUpdateTimer);
+        } else {
+            this.objectsUpdateFirstTs = Date.now();
+        }
+        this.objectsUpdateTimer = setTimeout(() => {
+            this.objectsUpdateTimer = null;
+            const { info, root } = buildTree(this.objects, {
+                imagePrefix: this.props.imagePrefix,
+                root: this.props.root,
+                lang: this.props.lang,
+                themeType: this.props.themeType,
+            });
+            this.root = root;
+            this.info = info;
+            if (!this.pausedSubscribes) {
+                this.doFilter();
+            } else {
+                // the new tree has no visibility flags yet; re-apply the filter when the dialog is closed
+                this.treeRebuiltWhilePaused = true;
+            }
+        }, 500);
     }
 
     // This function is called when the user changes the alias of an object.
