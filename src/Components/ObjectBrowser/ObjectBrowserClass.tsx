@@ -100,6 +100,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     /** Width class for which the columns were calculated the last time */
     private lastCalculatedWidth: Width | null = null;
     private pausedSubscribes: boolean = false;
+    /** The tree was rebuilt while subscribes were paused, so the filter must be re-applied on resume */
+    private treeRebuiltWhilePaused: boolean = false;
     private selectFirst: string;
     /** Last navigation that was applied from `navigateTo` or reported via `onNavigateTo` (loop guard). */
     private lastNav: ObjectBrowserNavigation | null = null;
@@ -1179,8 +1181,10 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 this.info = info;
                 if (!this.pausedSubscribes) {
                     this.doFilter();
+                } else {
+                    // the new tree has no visibility flags yet; re-apply the filter when the dialog is closed
+                    this.treeRebuiltWhilePaused = true;
                 }
-                // else it will be re-rendered when the dialog will be closed
             }, 500);
         }
     }
@@ -1320,6 +1324,11 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         } else if (this.pausedSubscribes && !isPause) {
             this.pausedSubscribes = false;
             this.subscribes.forEach(id => this.props.socket.subscribeState(id, this.onStateChange));
+            if (this.treeRebuiltWhilePaused) {
+                // without this filter run, no node of the rebuilt tree is marked visible and the browser stays empty
+                this.treeRebuiltWhilePaused = false;
+                this.doFilter();
+            }
         }
     }
 
