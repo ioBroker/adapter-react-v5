@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.1.0",
+        "@iobroker/gui-components": "^10.2.0",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,7 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.2.0 (2026-08-26)
 
 - (@krobipd) Corrected: the object browser stayed empty after closing the object customization dialog if any object was changed while the dialog was open (ioBroker/ioBroker.admin#3391)
 - (@krobipd) Changed: `ObjectBrowserClass.subscribes` and `.recordStates` are `Set`s instead of arrays now
