@@ -690,12 +690,12 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.3.3 (2026-08-27)
 
 - (@krobipd) Corrected: the object browser stayed empty after closing the object customization dialog if any object was changed while the dialog was open (ioBroker/ioBroker.admin#3391)
 
 ### 8.3.2 (2026-07-22)
-- (@GermanBluefox) Corrected tooltip if object is wrong
+- (@GermanBluefox) Corrected tooltip if the object is wrong
 
 ### 8.3.1 (2026-07-12)
 - (@GermanBluefox) Used strict types
