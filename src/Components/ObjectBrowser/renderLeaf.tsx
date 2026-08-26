@@ -351,17 +351,13 @@ export function renderColumnValue(
     if (!that.states[id]) {
         if (obj.type === 'state') {
             // we are waiting for state
-            if (!that.recordStates.includes(id)) {
-                that.recordStates.push(id);
-            }
+            that.recordStates.add(id);
             that.states[id] = { val: null } as ioBroker.State;
             that.subscribe(id);
         }
         return null;
     }
-    if (!that.recordStates.includes(id)) {
-        that.recordStates.push(id);
-    }
+    that.recordStates.add(id);
 
     const state = that.states[id];
 
@@ -862,14 +858,12 @@ export function renderLeaf(
 
             if (!that.states[_id]) {
                 if (that.objects[_id]?.type === 'state') {
-                    if (!that.recordStates.includes(_id)) {
-                        that.recordStates.push(_id);
-                    }
+                    that.recordStates.add(_id);
                     that.states[_id] = { val: null } as ioBroker.State;
                     that.subscribe(_id);
                 }
-            } else if (!that.recordStates.includes(_id)) {
-                that.recordStates.push(_id);
+            } else {
+                that.recordStates.add(_id);
             }
         });
         // calculate color

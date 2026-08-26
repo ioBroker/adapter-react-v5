@@ -793,7 +793,7 @@ export function renderEditObjectDialog(that: ObjectBrowserClass): JSX.Element | 
                     that.props.socket
                         .setObject(obj._id, obj)
                         .then(() => {
-                            if (updateAlias && that.subscribes.includes(updateAlias)) {
+                            if (updateAlias && that.subscribes.has(updateAlias)) {
                                 that.unsubscribe(updateAlias);
                                 setTimeout(() => that.subscribe(updateAlias), 100);
                             }

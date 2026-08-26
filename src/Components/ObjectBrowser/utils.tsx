@@ -1048,19 +1048,11 @@ export function buildTree(
 ): { root: TreeItem; info: TreeInfo } {
     const imagePrefix = options.imagePrefix || '.';
 
-    let ids = Object.keys(objects);
-
-    ids.sort((a, b) => {
-        if (a === b) {
-            return 0;
-        }
-        a = a.replace(/\./g, '!!!');
-        b = b.replace(/\./g, '!!!');
-        if (a > b) {
-            return 1;
-        }
-        return -1;
-    });
+    // sort by a precomputed key ('.' sorts before all other chars) instead of running two replaces per comparison
+    let ids = Object.keys(objects)
+        .map(id => [id.replace(/\./g, '!!!'), id] as [string, string])
+        .sort((a, b) => (a[0] > b[0] ? 1 : a[0] < b[0] ? -1 : 0))
+        .map(entry => entry[1]);
 
     if (options.root) {
         ids = ids.filter(id => id === options.root || id.startsWith(`${options.root}.`));
