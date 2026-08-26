@@ -140,9 +140,15 @@ export const styles: Record<string, any> = {
         verticalAlign: 'top',
         userSelect: 'none',
         position: 'relative',
-        // rows outside the viewport keep their size but skip layout and paint
+        // Rows outside the viewport keep their size but skip layout and paint. The `auto` keyword
+        // makes the browser remember the last rendered size, which is needed because not every row
+        // is ROW_HEIGHT high: alias rows (`tableRowAlias`, `tableRowAliasReadWrite`) are higher and
+        // the focused row of the narrow view has no fixed height at all. `content-visibility`
+        // contains both axes, so the width is remembered as well - otherwise a skipped row would
+        // collapse to `minWidth` and re-expand when it scrolls into view.
         contentVisibility: 'auto',
-        containIntrinsicHeight: `${ROW_HEIGHT}px`,
+        containIntrinsicHeight: `auto ${ROW_HEIGHT}px`,
+        containIntrinsicWidth: 'auto none',
         // The row is as wide as the sum of the columns, exactly like the header. If that is wider
         // than the container, the container scrolls horizontally and takes the header with it.
         // Without `flexShrink: 0` the cells would be squeezed and would not match the header anymore.

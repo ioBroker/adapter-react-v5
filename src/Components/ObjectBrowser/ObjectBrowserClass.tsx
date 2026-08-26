@@ -1050,9 +1050,11 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             state.ack === oldState.ack &&
             state.q === oldState.q &&
             state.ts === oldState.ts &&
-            state.lc === oldState.lc
+            state.lc === oldState.lc &&
+            state.from === oldState.from
         ) {
             // echo of the already known state: nothing that is displayed can have changed
+            // (`from` is compared too, because it is shown in the `changedFrom` column)
             return;
         }
         if (this.states[id]) {
