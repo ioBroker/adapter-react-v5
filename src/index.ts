@@ -3,7 +3,8 @@ export { getModernTheme, MODERN_DARK, MODERN_LIGHT, type ModernTokens } from './
 export { GenericApp } from './GenericApp';
 export { I18n } from './i18n';
 export { printPrompt } from './Prompt';
-export { ColorPicker } from './Components/ColorPicker';
+export { ColorPicker, parseColor, formatColor } from './Components/ColorPicker';
+export type { ColorPickerFormat, RGBColor } from './Components/ColorPicker';
 export { ComplexCron } from './Components/ComplexCron';
 export { copy } from './Components/CopyToClipboard';
 export { CustomModal } from './Components/CustomModal';

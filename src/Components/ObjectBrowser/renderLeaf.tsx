@@ -1347,11 +1347,32 @@ export function renderLeaf(
     // the value and open the editor. Keep the (empty) cell for editable states.
     const showValueCell = that.columnsVisibility.val || (narrowStyleWithDetails && (!!columnValue || valueEditable));
 
+    /** Open the value editor - used by the value cell and by the edit button of the narrow details view */
+    const editValue = (): void => {
+        if (!obj || !that.states) {
+            return;
+        }
+        if (common?.type === 'file') {
+            that.setState({ viewFileDialog: id });
+            return;
+        }
+        that.edit = {
+            val: that.states[id] ? that.states[id].val : '',
+            q: that.states[id] ? that.states[id].q || 0 : 0,
+            ack: false,
+            id,
+        };
+        that.setState({ updateOpened: true });
+    };
+
     let colValue = showValueCell ? (
         <div
             style={{
                 ...styles.cellValue,
                 width: that.width !== 'xs' ? colWidth('val') : 'calc(100% - 100px)',
+                // An empty inline-block has no height, so a state without a value would offer nothing
+                // to tap on in the narrow details view.
+                minHeight: narrowStyleWithDetails ? 20 : undefined,
                 cursor: valueEditable
                     ? common?.type === 'file'
                         ? 'zoom-in'
@@ -1365,7 +1386,7 @@ export function renderLeaf(
                     if (!obj || !that.states) {
                         // return;
                     } else if (common?.type === 'file') {
-                        that.setState({ viewFileDialog: id });
+                        editValue();
                     } else if (item.data.url && e.ctrlKey) {
                         if (that.states[id]?.val && typeof that.states[id].val === 'string') {
                             if (common?.role === 'url.self') {
@@ -1386,13 +1407,7 @@ export function renderLeaf(
                             .setState(id, !that.states[id].val)
                             .catch(e => window.alert(`Cannot write state "${id}": ${e}`));
                     } else {
-                        that.edit = {
-                            val: that.states[id] ? that.states[id].val : '',
-                            q: that.states[id] ? that.states[id].q || 0 : 0,
-                            ack: false,
-                            id,
-                        };
-                        that.setState({ updateOpened: true });
+                        editValue();
                     }
                 } else if (common?.role === 'url' || (common?.role === 'url.blank' && e.ctrlKey)) {
                     if (that.states[id]?.val && typeof that.states[id].val === 'string') {
@@ -1459,6 +1474,8 @@ export function renderLeaf(
         }
         colDetails = (
             <Paper
+                // `renderItem` pushes this panel into the array of rows, so it needs its own key
+                key={`details_${id}`}
                 style={{
                     width: '100%',
                     // the padding must be inside of the width, else the row is wider than the table
@@ -1518,6 +1535,16 @@ export function renderLeaf(
                             }}
                             key="cc"
                         />
+                        {/* Like the role/room/function lines, the value gets its own edit button. Tapping
+                            the value itself only works when there is something to tap on - a state that
+                            was never written renders nothing. */}
+                        {valueEditable ? (
+                            <IconEdit
+                                style={styles.cellCopyButtonInDetails}
+                                onClick={editValue}
+                                key="ce"
+                            />
+                        ) : null}
                     </div>
                 )}
                 {colButtons && <div style={{ ...styles.cellDetailsLine, justifyContent: 'right' }}>{colButtons}</div>}

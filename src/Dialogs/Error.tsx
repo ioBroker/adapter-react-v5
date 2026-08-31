@@ -8,10 +8,32 @@
 import React, { Component, type JSX } from 'react';
 
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
-import { Check as IconCheck } from '@mui/icons-material';
+import { Check as IconCheck, ErrorOutlined as IconError } from '@mui/icons-material';
 
 import { I18n } from '../i18n';
+
+import type { IobTheme } from '../types';
+
+const styles: Record<string, any> = {
+    // Accent line on top of the dialog, so it is recognizable as an error at a glance
+    paper: (theme: IobTheme) => ({
+        '& .MuiDialog-paper': {
+            borderTop: `4px solid ${theme.palette.error.main}`,
+        },
+    }),
+    title: (theme: IobTheme) => ({
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        color: theme.palette.error.main,
+        backgroundColor: alpha(theme.palette.error.main, theme.palette.mode === 'dark' ? 0.16 : 0.08),
+    }),
+    content: {
+        pt: '20px !important',
+    },
+};
 
 interface DialogErrorProps {
     /* The dialog title; default: Error (translated) */
@@ -36,13 +58,20 @@ export class DialogError extends Component<DialogErrorProps> {
             <Dialog
                 open={!0}
                 maxWidth="sm"
+                sx={styles.paper}
                 fullWidth={this.props.fullWidth !== undefined ? this.props.fullWidth : true}
                 onClose={() => this.handleOk()}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
             >
-                <DialogTitle id="ar_alert_dialog_title">{this.props.title || I18n.t('ra_Error')}</DialogTitle>
-                <DialogContent>
+                <DialogTitle
+                    id="ar_alert_dialog_title"
+                    sx={styles.title}
+                >
+                    <IconError />
+                    {this.props.title || I18n.t('ra_Error')}
+                </DialogTitle>
+                <DialogContent sx={styles.content}>
                     <DialogContentText id="ar_alert_dialog_description">
                         {this.props.text || I18n.t('ra_Unknown error!')}
                     </DialogContentText>
@@ -52,7 +81,7 @@ export class DialogError extends Component<DialogErrorProps> {
                         id="ar_dialog_error_ok"
                         variant="contained"
                         onClick={() => this.handleOk()}
-                        color="primary"
+                        color="error"
                         autoFocus
                         startIcon={<IconCheck />}
                     >

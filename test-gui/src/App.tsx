@@ -35,8 +35,15 @@ import {
     FileViewer,
     ObjectBrowser,
     type ObjectBrowserFilter,
+    ColorPicker,
+    TreeTable,
+    extendDeviceTypeTranslation,
 } from '../../src';
 import ThemeDemo from './ThemeDemo';
+import ComponentsDemo from './demos/ComponentsDemo';
+import DialogsDemo from './demos/DialogsDemo';
+import CronDemo from './demos/CronDemo';
+import IconsDemo from './demos/IconsDemo';
 
 /** Themes that can be cycled through with the theme button */
 const THEMES: ThemeName[] = ['light', 'dark', 'modernLight', 'modernDark'];
@@ -44,13 +51,53 @@ const THEMES: ThemeName[] = ['light', 'dark', 'modernLight', 'modernDark'];
 interface AppState {
     connected: boolean;
     loaded: boolean;
-    tab: 'ObjectBrowser' | 'LoaderHA' | 'Icon' | 'FileBrowser' | 'ThemeDemo';
+    tab:
+        | 'ObjectBrowser'
+        | 'LoaderHA'
+        | 'Icon'
+        | 'FileBrowser'
+        | 'ThemeDemo'
+        | 'ColorPicker'
+        | 'TreeTable'
+        | 'Components'
+        | 'Dialogs'
+        | 'Cron'
+        | 'Icons';
     theme: IobTheme;
     themeName: ThemeName;
     expertMode: boolean;
     showInputTextDialog: boolean;
     inputTextDialogValue: string;
+    color: string;
+    colorHex: string;
+    colorNoAlpha: string;
+    colorBar: string;
+    tableData: Record<string, any>[];
 }
+
+/** Columns of the TreeTable demo - the `color` column uses the ColorPicker for editing */
+const TABLE_COLUMNS = [
+    { title: 'ID', field: 'id', editable: 'never' as const },
+    { title: 'Name', field: 'name', type: 'string' as const },
+    { title: 'Color', field: 'color', type: 'color' as const },
+    { title: 'Enabled', field: 'enabled', type: 'boolean' as const },
+];
+
+/** Palette offered in the color picker demo */
+const DEMO_PALETTE: string[] = [
+    '#e53935',
+    '#d81b60',
+    '#8e24aa',
+    '#3949ab',
+    '#1e88e5',
+    '#00acc1',
+    '#43a047',
+    '#fdd835',
+    '#fb8c00',
+    '#6d4c41',
+    'rgba(0, 0, 0, 0.5)',
+    'transparent',
+];
 
 function InputTextDialog(props: { onClose: (text?: string) => void }): React.JSX.Element | null {
     const [text, setText] = React.useState<string>('');
@@ -123,9 +170,22 @@ export default class App extends Component<object, AppState> {
             tab: (window.localStorage.getItem('gui-test-tab') as AppState['tab']) || 'ObjectBrowser',
             showInputTextDialog: false,
             inputTextDialogValue: '',
+            color: 'rgba(62, 122, 224, 0.65)',
+            colorHex: '#43a047',
+            colorNoAlpha: 'hsl(280, 60%, 50%)',
+            colorBar: '',
+            tableData: [
+                { id: 'living', name: 'Living room', color: 'rgba(229, 57, 53, 0.6)', enabled: true },
+                { id: 'living.lamp', parentId: 'living', name: 'Lamp', color: '#fdd835', enabled: true },
+                { id: 'living.strip', parentId: 'living', name: 'LED strip', color: 'hsla(280, 60%, 50%, 0.5)' },
+                { id: 'kitchen', name: 'Kitchen', color: '#1e88e5', enabled: true },
+                { id: 'kitchen.spots', parentId: 'kitchen', name: 'Spots', color: 'tomato' },
+            ],
         };
 
-        I18n.setTranslations(translations);
+        I18n.extendTranslations(translations);
+        // the DeviceType components bring their own translations
+        extendDeviceTypeTranslation();
         I18n.setLanguage('en');
         this.socket = new AdminConnection({
             protocol: 'http:',
@@ -247,6 +307,135 @@ export default class App extends Component<object, AppState> {
         );
     }
 
+    renderTreeTable(): React.JSX.Element {
+        return (
+            <div style={{ width: '100%', height: 'calc(100% - 48px)', overflow: 'auto', padding: 16 }}>
+                <TreeTable
+                    adapterName="test"
+                    theme={this.state.theme}
+                    themeType={this.state.theme.palette.mode}
+                    name="gui-test-tree-table"
+                    columns={TABLE_COLUMNS}
+                    data={this.state.tableData}
+                    onUpdate={(newData: Record<string, any>, oldData?: Record<string, any>) => {
+                        if (!oldData) {
+                            return;
+                        }
+                        this.setState({
+                            tableData: this.state.tableData.map(item => (item.id === oldData.id ? newData : item)),
+                        });
+                    }}
+                    onDelete={(oldData: Record<string, any>) =>
+                        this.setState({ tableData: this.state.tableData.filter(item => item.id !== oldData.id) })
+                    }
+                />
+            </div>
+        );
+    }
+
+    renderColorPickerDemo(title: string, hint: string, picker: React.JSX.Element, value: string): React.JSX.Element {
+        return (
+            <div
+                style={{
+                    minWidth: 280,
+                    padding: 16,
+                    borderRadius: 8,
+                    border: `1px solid ${this.state.theme.palette.divider}`,
+                }}
+            >
+                <div style={{ fontWeight: 'bold' }}>{title}</div>
+                <div style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: 8 }}>{hint}</div>
+                {picker}
+                <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div
+                        style={{
+                            width: 40,
+                            height: 24,
+                            borderRadius: 4,
+                            border: `1px solid ${this.state.theme.palette.divider}`,
+                            background: value || 'transparent',
+                        }}
+                    />
+                    <code style={{ fontSize: '0.8rem' }}>{value || '<empty>'}</code>
+                </div>
+            </div>
+        );
+    }
+
+    renderColorPicker(): React.JSX.Element {
+        return (
+            <div
+                style={{
+                    width: '100%',
+                    height: 'calc(100% - 48px)',
+                    overflow: 'auto',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 16,
+                    padding: 16,
+                    boxSizing: 'border-box',
+                    alignContent: 'flex-start',
+                }}
+            >
+                {this.renderColorPickerDemo(
+                    'Default',
+                    'alpha channel, eye dropper, HEX/RGB/HSL',
+                    <ColorPicker
+                        label="Color"
+                        value={this.state.color}
+                        onChange={color => this.setState({ color })}
+                    />,
+                    this.state.color,
+                )}
+                {this.renderColorPickerDemo(
+                    'With palette',
+                    'customPalette + recently used colors',
+                    <ColorPicker
+                        label="Color"
+                        format="hex"
+                        customPalette={DEMO_PALETTE}
+                        value={this.state.colorHex}
+                        onChange={colorHex => this.setState({ colorHex })}
+                    />,
+                    this.state.colorHex,
+                )}
+                {this.renderColorPickerDemo(
+                    'Without alpha',
+                    'noAlpha - the alpha slider is hidden',
+                    <ColorPicker
+                        label="Color"
+                        noAlpha
+                        value={this.state.colorNoAlpha}
+                        onChange={colorNoAlpha => this.setState({ colorNoAlpha })}
+                    />,
+                    this.state.colorNoAlpha,
+                )}
+                {this.renderColorPickerDemo(
+                    'Only the bar',
+                    'noInputField + barWidth',
+                    <ColorPicker
+                        noInputField
+                        barWidth={60}
+                        value={this.state.colorBar}
+                        onChange={colorBar => this.setState({ colorBar })}
+                    />,
+                    this.state.colorBar,
+                )}
+                {this.renderColorPickerDemo(
+                    'Disabled',
+                    'disabled',
+                    <ColorPicker
+                        label="Color"
+                        disabled
+                        value="rgba(229, 57, 53, 0.4)"
+                        onChange={() => {}}
+                    />,
+                    'rgba(229, 57, 53, 0.4)',
+                )}
+            </div>
+        );
+    }
+
     render(): React.JSX.Element {
         return (
             <StyledEngineProvider injectFirst>
@@ -300,6 +489,30 @@ export default class App extends Component<object, AppState> {
                                 label="Theme demo"
                                 value="ThemeDemo"
                             />
+                            <Tab
+                                label="Color Picker"
+                                value="ColorPicker"
+                            />
+                            <Tab
+                                label="Tree table"
+                                value="TreeTable"
+                            />
+                            <Tab
+                                label="Components"
+                                value="Components"
+                            />
+                            <Tab
+                                label="Dialogs"
+                                value="Dialogs"
+                            />
+                            <Tab
+                                label="Cron"
+                                value="Cron"
+                            />
+                            <Tab
+                                label="Icons"
+                                value="Icons"
+                            />
                             <div style={{ flexGrow: 1, alignSelf: 'center', textAlign: 'right', paddingRight: 8 }}>
                                 {this.state.themeName}
                             </div>
@@ -335,6 +548,26 @@ export default class App extends Component<object, AppState> {
                         {this.state.loaded && this.state.tab === 'LoaderHA' && this.renderLoaderHA()}
                         {this.state.loaded && this.state.tab === 'Icon' && this.renderIcon()}
                         {this.state.loaded && this.state.tab === 'FileBrowser' && this.renderFileBrowser()}
+                        {this.state.loaded && this.state.tab === 'ColorPicker' && this.renderColorPicker()}
+                        {this.state.loaded && this.state.tab === 'TreeTable' && this.renderTreeTable()}
+                        {this.state.loaded && this.state.tab === 'Components' && (
+                            <ComponentsDemo
+                                theme={this.state.theme}
+                                themeType={this.state.theme.palette.mode}
+                            />
+                        )}
+                        {this.state.loaded && this.state.tab === 'Dialogs' && (
+                            <DialogsDemo
+                                theme={this.state.theme}
+                                themeName={this.state.themeName}
+                                themeType={this.state.theme.palette.mode}
+                                socket={this.socket}
+                            />
+                        )}
+                        {this.state.loaded && this.state.tab === 'Cron' && <CronDemo theme={this.state.theme} />}
+                        {this.state.loaded && this.state.tab === 'Icons' && (
+                            <IconsDemo themeType={this.state.theme.palette.mode} />
+                        )}
                     </div>
                 </ThemeProvider>
             </StyledEngineProvider>

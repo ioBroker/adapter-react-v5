@@ -1,8 +1,7 @@
 import React, { Component, type JSX } from 'react';
 
-import { HexColorPicker as ColorPicker } from 'react-colorful';
-
 import {
+    Box,
     Fab,
     Table,
     TableBody,
@@ -15,24 +14,24 @@ import {
     MenuItem,
     TextField,
     Checkbox,
-    Dialog,
+    Tooltip,
 } from '@mui/material';
 
 import {
     Edit as IconEdit,
     Delete as IconDelete,
     NavigateNext as IconExpand,
-    ExpandMore as IconCollapse,
     Check as IconCheck,
     Close as IconClose,
     Add as IconAdd,
     ViewHeadline as IconList,
-    Colorize as IconColor,
 } from '@mui/icons-material';
 
 import type { Connection } from '../Connection';
 
 import { DialogSelectID } from '../Dialogs/SelectID';
+import { ColorPicker, parseColor } from './ColorPicker';
+import { I18n } from '../i18n';
 import { Utils } from './Utils';
 import type { IobTheme, ThemeType } from '../types';
 
@@ -71,6 +70,10 @@ function setAttr(obj: Record<string, any>, attr: string | string[], value: any):
     return setAttr(obj[name], attr, value);
 }
 
+/** Checkerboard, so a semi-transparent color is recognizable as such */
+const ALPHA_BACKGROUND =
+    'linear-gradient(45deg, #c0c0c0 25%, transparent 25%), linear-gradient(-45deg, #c0c0c0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #c0c0c0 75%), linear-gradient(-45deg, transparent 75%, #c0c0c0 75%)';
+
 const styles: Record<string, any> = {
     tableContainer: {
         width: '100%',
@@ -81,32 +84,66 @@ const styles: Record<string, any> = {
         width: '100%',
         minWidth: 800,
         maxWidth: 1920,
+        borderCollapse: 'separate',
     },
-    cell: {
-        paddingTop: 0,
-        paddingBottom: 0,
-        paddingLeft: 4,
-        paddingRight: 4,
-    },
+    cell: (theme: IobTheme) => ({
+        py: '4px',
+        px: '8px',
+        borderBottom: `1px solid ${theme.palette.divider}`,
+    }),
+    row: (theme: IobTheme) => ({
+        transition: 'background-color 0.15s ease-in-out',
+        '&:hover': {
+            backgroundColor: theme.palette.action.hover,
+        },
+        // Show the row actions only while the row is hovered or focused. Only the buttons are faded out -
+        // the cell itself must stay visible, else its bottom border would disappear too.
+        '& .iob-table-actions .MuiIconButton-root': {
+            opacity: 0,
+            transition: 'opacity 0.15s ease-in-out',
+        },
+        '&:hover .iob-table-actions .MuiIconButton-root, &:focus-within .iob-table-actions .MuiIconButton-root': {
+            opacity: 1,
+        },
+    }),
     rowMainWithChildren: {},
     rowMainWithoutChildren: {},
     rowNoEdit: {
-        opacity: 0.3,
+        opacity: 0.35,
     },
+    rowEditing: (theme: IobTheme) => ({
+        backgroundColor: theme.palette.action.selected,
+        '& .iob-table-actions .MuiIconButton-root': {
+            opacity: 1,
+        },
+    }),
     cellExpand: {
-        width: 30,
+        width: 36,
+        pr: 0,
     },
     cellButton: {
-        width: 30,
+        width: 40,
+        textAlign: 'center',
     },
-    cellHeader: {
-        fontWeight: 'bold',
-        background: (theme: IobTheme) => (theme.palette.mode === 'dark' ? '#888' : '#888'),
-        color: (theme: IobTheme) => (theme.palette.mode === 'dark' ? '#EEE' : '#111'),
-        height: 48,
+    cellHeader: (theme: IobTheme) => ({
+        fontWeight: 600,
+        fontSize: '0.72rem',
+        textTransform: 'uppercase',
+        letterSpacing: '0.06em',
+        lineHeight: 1.4,
+        backgroundColor: theme.palette.background.default,
+        color: theme.palette.text.secondary,
+        borderBottom: `2px solid ${theme.palette.divider}`,
+        height: 44,
         wordBreak: 'break-word',
-        whiteSpace: 'pre',
-    },
+        whiteSpace: 'nowrap',
+        '& .MuiTableSortLabel-root': {
+            color: 'inherit',
+        },
+        '& .MuiTableSortLabel-root:hover, & .MuiTableSortLabel-root.Mui-active': {
+            color: theme.palette.text.primary,
+        },
+    }),
     width_name_nicknames: {
         maxWidth: 150,
     },
@@ -122,11 +159,24 @@ const styles: Record<string, any> = {
     width_roomHint: {
         maxWidth: 100,
     },
-    rowSecondary: {
-        fontStyle: 'italic',
+    rowSecondary: {},
+    cellSecondary: (theme: IobTheme) => ({
+        fontSize: '0.8rem',
+        color: theme.palette.text.secondary,
+    }),
+    /** Vertical guide in front of a child row, so the hierarchy stays readable */
+    childIndent: (theme: IobTheme) => ({
+        display: 'inline-block',
+        borderLeft: `1px solid ${theme.palette.divider}`,
+        height: 20,
+        mr: '8px',
+        verticalAlign: 'middle',
+    }),
+    expandButton: {
+        transition: 'transform 0.15s ease-in-out',
     },
-    cellSecondary: {
-        fontSize: 10,
+    expandButtonOpened: {
+        transform: 'rotate(90deg)',
     },
     visuallyHidden: {
         border: 0,
@@ -146,20 +196,53 @@ const styles: Record<string, any> = {
     fieldEdit: {
         width: '100%',
         display: 'inline-block',
-        lineHeight: '50px',
         verticalAlign: 'middle',
     },
     fieldButton: {
         width: 30,
         display: 'inline-block',
     },
-    colorDialog: {
-        overflow: 'hidden',
-        padding: 15,
+    mainText: {
+        fontSize: '0.875rem',
     },
     subText: {
-        fontSize: 10,
-        fontStyle: 'italic',
+        fontSize: '0.7rem',
+        opacity: 0.7,
+    },
+    /** Color cell: swatch plus the value in a monospace font */
+    colorCell: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+    },
+    colorSwatch: {
+        width: 22,
+        height: 22,
+        flexShrink: 0,
+        borderRadius: '5px',
+        boxShadow: '0 0 0 1px rgba(128,128,128,.35) inset',
+        backgroundImage: ALPHA_BACKGROUND,
+        backgroundSize: '8px 8px',
+        backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
+    },
+    colorSwatchEmpty: {
+        border: '1px dashed',
+        borderColor: 'divider',
+        backgroundImage: 'none',
+        boxSizing: 'border-box',
+    },
+    colorSwatchFill: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 'inherit',
+    },
+    colorValue: {
+        fontFamily: 'monospace',
+        fontSize: '0.78rem',
+        whiteSpace: 'nowrap',
+    },
+    colorValueInvalid: {
+        color: 'error.main',
     },
     glow: {
         animation: 'glow 0.2s 2 alternate',
@@ -255,7 +338,6 @@ interface TreeTableState {
     order: 'desc' | 'asc';
     update: string[] | null;
     orderBy: string;
-    showSelectColor: boolean;
     selectIdValue?: string | null;
     showSelectId?: boolean;
     data?: Record<string, any>[];
@@ -288,7 +370,6 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
             order: 'asc',
             update: null,
             orderBy: this.props.columns[0].field,
-            showSelectColor: false,
         };
     }
 
@@ -450,62 +531,16 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
         );
     }
 
-    renderSelectColorDialog(): JSX.Element {
-        return (
-            <Dialog
-                sx={{
-                    '& .MuiPaper-root': styles.root,
-                    '& .MuiPaper-paper': styles.paper,
-                }}
-                onClose={() => {
-                    this.selectCallback = null;
-                    this.setState({ showSelectColor: false });
-                }}
-                open={this.state.showSelectColor}
-            >
-                <ColorPicker
-                    color={this.state.selectIdValue || undefined}
-                    onChange={color =>
-                        this.setState({ selectIdValue: color }, () => {
-                            if (this.selectCallback) {
-                                this.selectCallback(color);
-                            }
-                        })
-                    }
-                />
-            </Dialog>
-        );
-    }
-
     renderCellEditColor(col: Column, val: string): JSX.Element {
         const _val =
             this.state.editData && this.state.editData[col.field] !== undefined ? this.state.editData[col.field] : val;
         return (
-            <div style={styles.fieldEdit}>
-                <TextField
-                    variant="standard"
-                    fullWidth
-                    style={styles.fieldEditWithButton}
-                    value={_val}
-                    slotProps={{
-                        htmlInput: {
-                            style: { backgroundColor: _val, color: Utils.isUseBright(_val) ? '#FFF' : '#000' },
-                        },
-                    }}
-                    onChange={e => this.onChange(col, !!val, e.target.value)}
-                />
-
-                <IconButton
-                    style={styles.fieldButton}
-                    onClick={() => {
-                        this.selectCallback = newColor => this.onChange(col, val, newColor);
-                        this.setState({ showSelectColor: true, selectIdValue: val });
-                    }}
-                    size="large"
-                >
-                    <IconColor />
-                </IconButton>
-            </div>
+            <ColorPicker
+                id={`ar_tree_table_color_${col.field}`}
+                style={styles.fieldEdit}
+                value={(_val as string) || ''}
+                onChange={color => this.onChange(col, val, color)}
+            />
         );
     }
 
@@ -565,6 +600,42 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
         );
     }
 
+    /**
+     * Show a color as swatch together with its value.
+     *
+     * @param color The color in any CSS notation.
+     */
+    static renderColorValue(color: string): JSX.Element {
+        const isValid = !!color && !!parseColor(color);
+
+        return (
+            <Box
+                component="div"
+                sx={styles.colorCell}
+            >
+                <Box
+                    component="div"
+                    sx={{ ...styles.colorSwatch, ...(isValid ? undefined : styles.colorSwatchEmpty) }}
+                    title={color || undefined}
+                >
+                    {isValid ? (
+                        <Box
+                            component="div"
+                            sx={styles.colorSwatchFill}
+                            style={{ background: color }}
+                        />
+                    ) : null}
+                </Box>
+                <Box
+                    component="span"
+                    sx={{ ...styles.colorValue, ...(color && !isValid ? styles.colorValueInvalid : undefined) }}
+                >
+                    {color || ''}
+                </Box>
+            </Box>
+        );
+    }
+
     static renderCellNonEdit(item: Record<string, any>, col: Column): JSX.Element | string | number | null {
         let val = getAttr(item, col.field, col.lookup);
         if (Array.isArray(val)) {
@@ -576,33 +647,30 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
                 <Checkbox
                     checked={!!val}
                     disabled
+                    size="small"
                     slotProps={{ input: { 'aria-label': 'checkbox' } }}
                 />
             );
+        }
+
+        if (col.type === 'color') {
+            return TreeTable.renderColorValue(typeof val === 'string' ? val : '');
         }
 
         return val;
     }
 
     renderCell(item: Record<string, any>, col: Column, level: number, i: number): JSX.Element {
-        if (this.state.editMode === i && col.editable !== 'never' && col.editable !== false) {
-            return (
-                <TableCell
-                    key={col.field}
-                    style={{ ...styles.cell, ...(level ? styles.cellSecondary : undefined), ...col.cellStyle }}
-                    component="th"
-                >
-                    {this.renderCellEdit(item, col)}
-                </TableCell>
-            );
-        }
+        const isEdit = this.state.editMode === i && col.editable !== 'never' && col.editable !== false;
+
         return (
             <TableCell
                 key={col.field}
-                style={{ ...styles.cell, ...(level ? styles.cellSecondary : undefined), ...col.cellStyle }}
+                sx={Utils.getStyle(this.props.theme, styles.cell, level ? styles.cellSecondary : undefined)}
+                style={col.cellStyle}
                 component="th"
             >
-                {TreeTable.renderCellNonEdit(item, col)}
+                {isEdit ? this.renderCellEdit(item, col) : TreeTable.renderCellNonEdit(item, col)}
             </TableCell>
         );
     }
@@ -643,25 +711,45 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
         const opened = this.state.opened.includes(item.id);
         const children = this.props.data.filter(it => it.parentId === item.id);
 
+        const isEditingThis = this.state.editMode === i || this.state.deleteMode === i;
+        const isBlurred =
+            (this.state.editMode !== false && this.state.editMode !== i) ||
+            (this.state.deleteMode !== false && this.state.deleteMode !== i);
+
         const row = (
             <TableRow
                 key={item.id}
                 className={`table-row-${(item.id || '').toString().replace(/[.$]/g, '_')}`}
-                style={{
-                    ...((this.state.update && this.state.update.includes(item.id) && styles.glow) || undefined),
-                    ...styles.row,
-                    ...(level ? styles.rowSecondary : undefined),
-                    ...(!level && children.length ? styles.rowMainWithChildren : undefined),
-                    ...(!level && !children.length ? styles.rowMainWithoutChildren : undefined),
-                    ...(this.state.editMode !== false && this.state.editMode !== i ? styles.rowNoEdit : undefined),
-                    ...(this.state.deleteMode !== false && this.state.deleteMode !== i ? styles.rowNoEdit : undefined),
-                }}
+                sx={Utils.getStyle(
+                    this.props.theme,
+                    styles.row,
+                    level ? styles.rowSecondary : undefined,
+                    !level && children.length ? styles.rowMainWithChildren : undefined,
+                    !level && !children.length ? styles.rowMainWithoutChildren : undefined,
+                    isEditingThis ? styles.rowEditing : undefined,
+                    isBlurred ? styles.rowNoEdit : undefined,
+                )}
+                style={
+                    this.state.update && this.state.update.includes(item.id)
+                        ? { ...(styles.glow as React.CSSProperties) }
+                        : undefined
+                }
             >
                 <TableCell
-                    style={{ ...styles.cell, ...styles.cellExpand, ...(level ? styles.cellSecondary : undefined) }}
+                    sx={Utils.getStyle(
+                        this.props.theme,
+                        styles.cell,
+                        styles.cellExpand,
+                        level ? styles.cellSecondary : undefined,
+                    )}
                 >
                     {children.length ? (
                         <IconButton
+                            sx={{
+                                ...styles.expandButton,
+                                ...(opened ? styles.expandButtonOpened : undefined),
+                            }}
+                            title={I18n.t(opened ? 'ra_Collapse' : 'ra_Expand')}
                             onClick={() => {
                                 const _opened = [...this.state.opened];
                                 const pos = _opened.indexOf(item.id);
@@ -681,22 +769,29 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
                             }}
                             size="small"
                         >
-                            {opened ? <IconCollapse /> : <IconExpand />}
+                            <IconExpand fontSize="small" />
                         </IconButton>
                     ) : null}
                 </TableCell>
                 <TableCell
                     scope="row"
-                    style={{
-                        ...styles.cell,
-                        ...(level ? styles.cellSecondary : undefined),
-                        ...this.props.columns[0].cellStyle,
-                        paddingLeft: levelShift * level,
-                    }}
+                    sx={Utils.getStyle(this.props.theme, styles.cell, level ? styles.cellSecondary : undefined)}
+                    style={{ ...this.props.columns[0].cellStyle, paddingLeft: levelShift * level }}
                 >
-                    {this.props.columns[0].subField
-                        ? TreeTable.renderCellWithSubField(item, this.props.columns[0])
-                        : getAttr(item, this.props.columns[0].field, this.props.columns[0].lookup)}
+                    <Box
+                        component="div"
+                        sx={{ display: 'flex', alignItems: 'center' }}
+                    >
+                        {level ? (
+                            <Box
+                                component="span"
+                                sx={styles.childIndent}
+                            />
+                        ) : null}
+                        {this.props.columns[0].subField
+                            ? TreeTable.renderCellWithSubField(item, this.props.columns[0])
+                            : getAttr(item, this.props.columns[0].field, this.props.columns[0].lookup)}
+                    </Box>
                 </TableCell>
 
                 {this.props.columns.map((col, ii) =>
@@ -704,86 +799,115 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
                 )}
 
                 {this.props.onUpdate ? (
-                    <TableCell style={{ ...styles.cell, ...styles.cellButton }}>
-                        {this.state.editMode === i || this.state.deleteMode === i ? (
-                            <IconButton
-                                disabled={
-                                    this.state.editMode !== false &&
-                                    (!this.state.editData || !Object.keys(this.state.editData).length)
-                                }
-                                onClick={() => {
-                                    if (this.state.editMode !== false) {
-                                        const newData = JSON.parse(JSON.stringify(item));
-                                        this.state.editData &&
-                                            Object.keys(this.state.editData).forEach(attr =>
-                                                setAttr(newData, attr, this.state.editData?.[attr]),
-                                            );
-                                        this.setState(
-                                            { editMode: false },
-                                            () => this.props.onUpdate && this.props.onUpdate(newData, item),
-                                        );
-                                    } else {
-                                        this.setState(
-                                            { deleteMode: false },
-                                            () => this.props.onDelete && this.props.onDelete(item),
-                                        );
-                                    }
-                                }}
-                                size="large"
-                            >
-                                <IconCheck />
-                            </IconButton>
+                    <TableCell
+                        className="iob-table-actions"
+                        sx={Utils.getStyle(this.props.theme, styles.cell, styles.cellButton)}
+                    >
+                        {isEditingThis ? (
+                            <Tooltip title={I18n.t(this.state.editMode !== false ? 'ra_Save' : 'ra_Delete')}>
+                                <span>
+                                    <IconButton
+                                        color={this.state.deleteMode !== false ? 'error' : 'primary'}
+                                        disabled={
+                                            this.state.editMode !== false &&
+                                            (!this.state.editData || !Object.keys(this.state.editData).length)
+                                        }
+                                        onClick={() => {
+                                            if (this.state.editMode !== false) {
+                                                const newData = JSON.parse(JSON.stringify(item));
+                                                this.state.editData &&
+                                                    Object.keys(this.state.editData).forEach(attr =>
+                                                        setAttr(newData, attr, this.state.editData?.[attr]),
+                                                    );
+                                                this.setState(
+                                                    { editMode: false },
+                                                    () => this.props.onUpdate && this.props.onUpdate(newData, item),
+                                                );
+                                            } else {
+                                                this.setState(
+                                                    { deleteMode: false },
+                                                    () => this.props.onDelete && this.props.onDelete(item),
+                                                );
+                                            }
+                                        }}
+                                        size="small"
+                                    >
+                                        <IconCheck fontSize="small" />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
                         ) : (
-                            <IconButton
-                                disabled={this.state.editMode !== false}
-                                onClick={() => this.setState({ editMode: i, editData: null })}
-                                size="large"
-                            >
-                                <IconEdit />
-                            </IconButton>
+                            <Tooltip title={I18n.t('ra_Edit')}>
+                                <span>
+                                    <IconButton
+                                        disabled={this.state.editMode !== false}
+                                        onClick={() => this.setState({ editMode: i, editData: null })}
+                                        size="small"
+                                    >
+                                        <IconEdit fontSize="small" />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
                         )}
                     </TableCell>
                 ) : null}
 
                 {this.props.onDelete && !this.props.onUpdate ? (
-                    <TableCell style={{ ...styles.cell, ...styles.cellButton }}>
+                    <TableCell
+                        className="iob-table-actions"
+                        sx={Utils.getStyle(this.props.theme, styles.cell, styles.cellButton)}
+                    >
                         {this.state.deleteMode === i ? (
-                            <IconButton
-                                disabled={
-                                    this.state.editMode !== false &&
-                                    (!this.state.editData || !Object.keys(this.state.editData).length)
-                                }
-                                onClick={() =>
-                                    this.setState(
-                                        { deleteMode: false },
-                                        () => this.props.onDelete && this.props.onDelete(item),
-                                    )
-                                }
-                                size="large"
-                            >
-                                <IconCheck />
-                            </IconButton>
+                            <Tooltip title={I18n.t('ra_Delete')}>
+                                <span>
+                                    <IconButton
+                                        color="error"
+                                        disabled={
+                                            this.state.editMode !== false &&
+                                            (!this.state.editData || !Object.keys(this.state.editData).length)
+                                        }
+                                        onClick={() =>
+                                            this.setState(
+                                                { deleteMode: false },
+                                                () => this.props.onDelete && this.props.onDelete(item),
+                                            )
+                                        }
+                                        size="small"
+                                    >
+                                        <IconCheck fontSize="small" />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
                         ) : null}
                     </TableCell>
                 ) : null}
 
                 {this.props.onUpdate || this.props.onDelete ? (
-                    <TableCell style={{ ...styles.cell, ...styles.cellButton }}>
-                        {this.state.editMode === i || this.state.deleteMode === i ? (
-                            <IconButton
-                                onClick={() => this.setState({ editMode: false, deleteMode: false })}
-                                size="large"
-                            >
-                                <IconClose />
-                            </IconButton>
+                    <TableCell
+                        className="iob-table-actions"
+                        sx={Utils.getStyle(this.props.theme, styles.cell, styles.cellButton)}
+                    >
+                        {isEditingThis ? (
+                            <Tooltip title={I18n.t('ra_Cancel')}>
+                                <IconButton
+                                    onClick={() => this.setState({ editMode: false, deleteMode: false })}
+                                    size="small"
+                                >
+                                    <IconClose fontSize="small" />
+                                </IconButton>
+                            </Tooltip>
                         ) : this.props.onDelete ? (
-                            <IconButton
-                                disabled={this.state.deleteMode !== false}
-                                onClick={() => this.setState({ deleteMode: i })}
-                                size="large"
-                            >
-                                <IconDelete />
-                            </IconButton>
+                            <Tooltip title={I18n.t('ra_Delete')}>
+                                <span>
+                                    <IconButton
+                                        disabled={this.state.deleteMode !== false}
+                                        onClick={() => this.setState({ deleteMode: i })}
+                                        size="small"
+                                    >
+                                        <IconDelete fontSize="small" />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
                         ) : null}
                     </TableCell>
                 ) : null}
@@ -881,16 +1005,22 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
                             sx={Utils.getStyle(this.props.theme, styles.cell, styles.cellHeader, styles.cellButton)}
                         >
                             {!this.props.noAdd ? (
-                                <Fab
-                                    color="primary"
-                                    size="small"
-                                    disabled={this.state.editMode !== false}
-                                    onClick={() =>
-                                        this.props.onUpdate && (this.props.onUpdate as (addNew: true) => void)(true)
-                                    }
-                                >
-                                    <IconAdd />
-                                </Fab>
+                                <Tooltip title={I18n.t('ra_Add')}>
+                                    <span>
+                                        <Fab
+                                            color="primary"
+                                            size="small"
+                                            sx={{ width: 30, height: 30, minHeight: 30, boxShadow: 2 }}
+                                            disabled={this.state.editMode !== false}
+                                            onClick={() =>
+                                                this.props.onUpdate &&
+                                                (this.props.onUpdate as (addNew: true) => void)(true)
+                                            }
+                                        >
+                                            <IconAdd fontSize="small" />
+                                        </Fab>
+                                    </span>
+                                </Tooltip>
                             ) : null}
                         </TableCell>
                     ) : null}
@@ -934,7 +1064,6 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
                         <TableBody>{table.map(it => this.renderLine(it))}</TableBody>
                     </Table>
                     {this.renderSelectIdDialog()}
-                    {this.renderSelectColorDialog()}
                 </div>
             );
         }

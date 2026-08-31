@@ -877,6 +877,12 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Changed layouts for some components
+- (@GermanBluefox) Color picker was updated
+- (@GermanBluefox) Schedule wizard was updated
+
 ### 10.2.0 (2026-08-26)
 
 - (@krobipd) Corrected: the object browser stayed empty after closing the object customization dialog if any object was changed while the dialog was open (ioBroker/ioBroker.admin#3391)

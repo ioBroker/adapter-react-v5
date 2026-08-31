@@ -17,27 +17,80 @@ import { I18n } from '../i18n';
 import type { IobTheme } from '../types';
 import { Utils } from './Utils';
 
+/**
+ * Indentation of a group that belongs to the radio button above it. It matches the width of the radio
+ * button (24px icon plus the horizontal padding of `inputRadio`), so the group starts under its label.
+ */
+const SUB_OPTION_INDENT = 45;
+
+/** A period row - a quiet card instead of the former full-color background */
+function rowStyle(theme: IobTheme): Record<string, any> {
+    return {
+        mt: '8px',
+        p: '6px 10px',
+        // the rows are `width: 100%`, so padding and border must not add to that
+        boxSizing: 'border-box',
+        borderRadius: '8px',
+        border: `1px solid ${theme.palette.divider}`,
+        // The mode ("Monthly") and its settings used to be inline-blocks, which wrapped underneath each
+        // other as soon as the settings got wide - with twelve months they always did. As flex items they
+        // stay side by side and only the settings themselves wrap.
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '4px',
+        transition: 'background-color 0.15s ease-in-out',
+        '&:hover': {
+            backgroundColor: theme.palette.action.hover,
+        },
+    };
+}
+
+/** A sub-option inside a period row */
+function subRowStyle(theme: IobTheme): Record<string, any> {
+    return {
+        ml: '8px',
+        pl: '12px',
+        pb: '8px',
+        boxSizing: 'border-box',
+        borderLeft: `2px solid ${theme.palette.primary.main}`,
+        borderRadius: '0 8px 8px 0',
+        backgroundColor: theme.palette.action.hover,
+        // these containers are rendered even when their content is null - without this an empty
+        // box with an accent line would be left over next to the unselected period
+        '&:empty': {
+            display: 'none',
+        },
+    };
+}
+
 const styles: Record<string, any> = {
-    hr: {
+    hr: (theme: IobTheme) => ({
         border: 0,
-        borderTop: '1px solid gray',
-    },
+        borderTop: `1px solid ${theme.palette.divider}`,
+        margin: '16px 0',
+    }),
+    // Grows into whatever height the parent gives and only scrolls when the content really does not fit.
+    // It used to reserve a fixed height, which showed a scrollbar even when there was room to spare.
     scrollWindow: {
         width: '100%',
-        overflow: 'auto',
-        height: 'calc(100% - 22px)',
+        flex: '1 1 auto',
+        minHeight: 0,
+        overflowY: 'auto',
+        overflowX: 'hidden',
     },
     rowDiv: {
         width: '100%',
     },
     modeDiv: {
         width: 200,
+        flexShrink: 0,
         display: 'inline-block',
         verticalAlign: 'top',
     },
     settingsDiv: {
         display: 'inline-block',
         verticalAlign: 'top',
+        minWidth: 0,
     },
     inputTime: {
         width: 90,
@@ -58,71 +111,106 @@ const styles: Record<string, any> = {
         padding: '4px 12px',
         verticalAlign: 'top',
     },
+    // Group of checkboxes (weekdays, months, days of the month). All entries have the same width, so
+    // they line up in columns - a CSS grid with `auto-fill` cannot be used here, because none of the
+    // surrounding boxes has a definite width and the grid would collapse into a single column.
     inputGroup: {
-        maxWidth: 400,
-        display: 'inline-block',
+        // The group belongs to the radio button above it, so it is indented by that button's width -
+        // and it fills the rest of the row instead of wrapping into a narrow column while the place
+        // next to it stays empty.
+        marginLeft: SUB_OPTION_INDENT,
+        maxWidth: `calc(100% - ${SUB_OPTION_INDENT}px)`,
+        display: 'flex',
+        flexWrap: 'wrap',
+        columnGap: 8,
     },
     inputGroupElement: {
         width: 120,
+        marginRight: 0,
+    },
+    /** Ends the current line, so the entries start on a line of their own */
+    lineBreak: {
+        flexBasis: '100%',
+        height: 0,
     },
     inputDateDay: {
         width: 60,
+        marginRight: 0,
+    },
+    /** "all"/"none"/"invert" - the same width as an entry, so they line up with the columns below them */
+    inputGroupAction: {
+        width: 120,
+        marginRight: 0,
     },
     inputDateDayCheck: {
         padding: 4,
     },
     inputSmallCheck: {
         padding: 0,
+        // without this, the label sticks directly to the checkbox
+        marginRight: 6,
     },
-    rowOnce: {},
-    rowDays: (theme: IobTheme) => ({
-        background: theme.palette.mode !== 'dark' ? '#ddeaff' : '#4b5057',
-    }),
-    rowDows: (theme: IobTheme) => ({
-        background: theme.palette.mode !== 'dark' ? '#DDFFDD' : '#52646c',
-    }),
-    rowDates: (theme: IobTheme) => ({
-        background: theme.palette.mode !== 'dark' ? '#DDDDFF' : '#747a86',
-    }),
-    rowWeeks: (theme: IobTheme) => ({
-        background: theme.palette.mode !== 'dark' ? '#DDDDFF' : '#717680',
-    }),
-    rowMonths: (theme: IobTheme) => ({
-        background: theme.palette.mode !== 'dark' ? '#DDFFFF' : '#1f5557',
-    }),
-    rowMonthsDates: (theme: IobTheme) => ({
-        background: theme.palette.mode !== 'dark' ? '#EEFFFF' : '#3c5737',
+    // One period option (once, daily, weekly, monthly, yearly). They used to be told apart by a full color
+    // per row, which made the dialog look like a patchwork. Now they are quiet cards and the hierarchy
+    // comes from the frame and the indentation instead.
+    rowOnce: (theme: IobTheme) => rowStyle(theme),
+    rowDays: (theme: IobTheme) => rowStyle(theme),
+    rowDows: (theme: IobTheme) => rowStyle(theme),
+    rowDates: (theme: IobTheme) => rowStyle(theme),
+    rowWeeks: (theme: IobTheme) => rowStyle(theme),
+    rowMonths: (theme: IobTheme) => rowStyle(theme),
+    rowYears: (theme: IobTheme) => rowStyle(theme),
+    // Sub-options of a period - indented and marked with an accent line on the left
+    // "Dates" belongs to the same level as "Every month"/"Specific months", so it stays flush with them
+    // instead of sitting in an indented box below the month grid.
+    rowMonthsDates: {
+        display: 'block',
+        mt: '6px',
         maxWidth: 600,
+    },
+    rowDaysDows: (theme: IobTheme) => subRowStyle(theme),
+    rowDowsDows: (theme: IobTheme) => subRowStyle(theme),
+    sectionTitle: (theme: IobTheme) => ({
+        m: '16px 0 8px 0',
+        fontSize: '0.72rem',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.06em',
+        color: theme.palette.text.secondary,
     }),
-    rowYears: (theme: IobTheme) => ({
-        background: theme.palette.mode !== 'dark' ? '#fbffdd' : '#574b33',
-    }),
-    rowDaysDows: (theme: IobTheme) => ({
-        background: theme.palette.mode !== 'dark' ? '#EEEAFF' : '#573544',
-        pl: '10px',
-        pb: '10px',
-    }),
-    rowDowsDows: (theme: IobTheme) => ({
-        background: theme.palette.mode !== 'dark' ? '#EEFFEE' : '#3d4c54',
-        pl: '10px',
-        pb: '10px',
+    description: (theme: IobTheme) => ({
+        fontSize: '0.95rem',
+        fontWeight: 500,
+        color: theme.palette.primary.main,
+        minHeight: 22,
     }),
 };
 
-const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+// Translation keys, not display names - they used to be the plain English words, which have no entry in the
+// dictionary, so every weekday and month was shown in English no matter which language was selected.
+const WEEKDAYS = [
+    'ra_Sunday',
+    'ra_Monday',
+    'ra_Tuesday',
+    'ra_Wednesday',
+    'ra_Thursday',
+    'ra_Friday',
+    'ra_Saturday',
+    'ra_Sunday',
+];
 const MONTHS = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
+    'ra_January',
+    'ra_February',
+    'ra_March',
+    'ra_April',
+    'ra_May',
+    'ra_June',
+    'ra_July',
+    'ra_August',
+    'ra_September',
+    'ra_October',
+    'ra_November',
+    'ra_December',
 ];
 const PERIODS = {
     minutes: 'minutes',
@@ -936,7 +1024,12 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
     }
 
     static getDivider(): JSX.Element {
-        return <hr style={styles.hr} />;
+        return (
+            <Box
+                component="hr"
+                sx={styles.hr}
+            />
+        );
     }
 
     getPeriodModes(): JSX.Element[] {
@@ -955,9 +1048,10 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
 
         return [
             // ----- once ---
-            <div
+            <Box
+                component="div"
                 key="once"
-                style={{ ...styles.rowDiv, ...styles.rowOnce }}
+                sx={Utils.getStyle(this.props.theme, styles.rowDiv, styles.rowOnce)}
             >
                 <div style={styles.modeDiv}>
                     <FormControlLabel
@@ -1028,7 +1122,7 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                         />
                     </div>
                 )}
-            </div>,
+            </Box>,
 
             // ----- days ---
             <Box
@@ -1174,19 +1268,25 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                                                 const _schedule: ScheduleConfig = JSON.parse(
                                                     JSON.stringify(this.state.schedule),
                                                 );
-                                                _schedule.period.months ||= 1;
-                                                const dates = [];
-                                                for (let i = 1; i <= 31; i++) {
-                                                    dates.push(i);
+                                                if (_schedule.period.dates) {
+                                                    // `dates` was only ever assigned with `||=`, so the
+                                                    // checkbox could be switched on but never off again
+                                                    _schedule.period.dates = '';
+                                                } else {
+                                                    _schedule.period.months ||= 1;
+                                                    const dates = [];
+                                                    for (let i = 1; i <= 31; i++) {
+                                                        dates.push(i);
+                                                    }
+                                                    _schedule.period.dates = JSON.stringify(dates);
+                                                    _schedule.period.dows = '';
+                                                    _schedule.period.years = 0;
+                                                    _schedule.period.yearDate = 0;
+                                                    _schedule.period.yearMonth = 0;
+                                                    _schedule.period.weeks = 0;
+                                                    _schedule.period.days = 0;
+                                                    _schedule.period.once = '';
                                                 }
-                                                _schedule.period.dates ||= JSON.stringify(dates);
-                                                _schedule.period.dows = '';
-                                                _schedule.period.years = 0;
-                                                _schedule.period.yearDate = 0;
-                                                _schedule.period.yearMonth = 0;
-                                                _schedule.period.weeks = 0;
-                                                _schedule.period.days = 0;
-                                                _schedule.period.once = '';
 
                                                 this.onChange(_schedule);
                                             }}
@@ -1395,7 +1495,7 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                 {isSpecific && (schedule.period.days === 1 || schedule.period.weeks) && (
                     <FormGroup
                         row
-                        style={{ ...styles.inputGroup, width: 150 }}
+                        style={styles.inputGroup}
                     >
                         {[1, 2, 3, 4, 5, 6, 0].map(i => (
                             <FormControlLabel
@@ -1579,10 +1679,10 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
         return (
             <FormGroup
                 row
-                style={{ ...styles.inputGroup, maxWidth: 620 }}
+                style={styles.inputGroup}
             >
                 <FormControlLabel
-                    style={styles.inputDateDay}
+                    style={styles.inputGroupAction}
                     control={
                         <Checkbox
                             style={styles.inputDateDayCheck}
@@ -1601,7 +1701,7 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                     label={I18n.t('sch_all')}
                 />
                 <FormControlLabel
-                    style={styles.inputDateDay}
+                    style={styles.inputGroupAction}
                     control={
                         <Checkbox
                             style={styles.inputDateDayCheck}
@@ -1617,7 +1717,7 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                 />
                 {parsedDates.length !== 31 && !!parsedDates.length && (
                     <FormControlLabel
-                        style={styles.inputDateDay}
+                        style={styles.inputGroupAction}
                         control={
                             <Checkbox
                                 style={styles.inputDateDayCheck}
@@ -1640,7 +1740,10 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                         label={I18n.t('sch_invert')}
                     />
                 )}
-                <div />
+                <Box
+                    component="div"
+                    sx={styles.lineBreak}
+                />
                 {dates.map(i => (
                     <FormControlLabel
                         key={`date_${i}`}
@@ -1781,10 +1884,10 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                         style={styles.inputGroup}
                     >
                         <FormControlLabel
-                            style={styles.inputDateDay}
+                            style={styles.inputGroupAction}
                             control={
                                 <Checkbox
-                                    style={styles.inputDateDayCheck}
+                                    style={styles.inputSmallCheck}
                                     checked={parsedMonths.length === 12}
                                     onChange={() => {
                                         const _schedule: ScheduleConfig = JSON.parse(
@@ -1802,10 +1905,10 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                             label={I18n.t('sch_all')}
                         />
                         <FormControlLabel
-                            style={styles.inputDateDay}
+                            style={styles.inputGroupAction}
                             control={
                                 <Checkbox
-                                    style={styles.inputDateDayCheck}
+                                    style={styles.inputSmallCheck}
                                     checked={!parsedMonths.length}
                                     onChange={() => {
                                         const _schedule: ScheduleConfig = JSON.parse(
@@ -1820,10 +1923,10 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                         />
                         {parsedMonths.length !== 12 && !!parsedMonths.length && (
                             <FormControlLabel
-                                style={styles.inputDateDay}
+                                style={styles.inputGroupAction}
                                 control={
                                     <Checkbox
-                                        style={styles.inputDateDayCheck}
+                                        style={styles.inputSmallCheck}
                                         checked={false}
                                         onChange={() => {
                                             const _schedule: ScheduleConfig = JSON.parse(
@@ -1845,7 +1948,10 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                                 label={I18n.t('sch_invert')}
                             />
                         )}
-                        <div />
+                        <Box
+                            component="div"
+                            sx={styles.lineBreak}
+                        />
                         {MONTHS.map((month, i) => (
                             <FormControlLabel
                                 key={`month_${i}`}
@@ -2085,14 +2191,37 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
 
     render(): JSX.Element {
         return (
-            <div style={{ height: 'calc(100% - 48px)', width: '100%', overflow: 'hidden' }}>
-                <div>{this.state.desc}</div>
+            <div
+                style={{
+                    height: '100%',
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                }}
+            >
+                <Box
+                    component="div"
+                    sx={styles.description}
+                >
+                    {this.state.desc}
+                </Box>
                 <div style={styles.scrollWindow}>
-                    <h5>{I18n.t('sch_time')}</h5>
+                    <Box
+                        component="h5"
+                        sx={styles.sectionTitle}
+                    >
+                        {I18n.t('sch_time')}
+                    </Box>
                     {this.getTimePeriodElements()}
                     {this.getTimeExactElements()}
                     {Schedule.getDivider()}
-                    <h5>{I18n.t('sch_period')}</h5>
+                    <Box
+                        component="h5"
+                        sx={styles.sectionTitle}
+                    >
+                        {I18n.t('sch_period')}
+                    </Box>
                     {this.getPeriodModes()}
                     {!this.state.schedule.period.once && Schedule.getDivider()}
                     {!this.state.schedule.period.once && this.getValidSettings()}

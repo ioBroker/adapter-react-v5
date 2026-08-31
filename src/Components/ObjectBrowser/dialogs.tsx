@@ -908,9 +908,14 @@ export function renderEditValueDialog(that: ObjectBrowserClass): JSX.Element | n
         return null;
     }
 
-    const type = that.objects[that.edit.id].common?.type
-        ? that.objects[that.edit.id].common.type
-        : typeof that.edit.val;
+    // The value editor only understands 'states' | 'string' | 'number' | 'boolean' | 'json'. Without
+    // `common.type` the type was taken from the value - but a state that was never written has
+    // `val === null`, and `typeof null` is "object". The editor then got a type it does not know and
+    // showed nothing at all, so such a state could not be edited.
+    const valueType = typeof that.edit.val;
+    const type =
+        that.objects[that.edit.id].common?.type ||
+        (valueType === 'number' || valueType === 'boolean' ? valueType : 'string');
 
     const role = that.objects[that.edit.id].common.role;
 
