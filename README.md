@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.2.1",
+        "@iobroker/gui-components": "^10.2.2",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,7 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.2.2 (2026-09-03)
 
 - (@GermanBluefox) Fixed: the object browser lost the column widths as soon as the page was left and opened again. Every width class has its own widths, and the stored ones were written into the class that was guessed before the container was measured, so the table fell back to the defaults of the class it really had: https://github.com/ioBroker/ioBroker.admin/issues/3616
 - (@GermanBluefox) Fixed: after reopening the object browser, the next resize stored only the two columns it touched and dropped every other width the user had set
