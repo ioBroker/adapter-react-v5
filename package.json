@@ -56,13 +56,13 @@
   "dependencies": {
     "@iobroker/js-controller-common": "^7.2.2",
     "@iobroker/js-controller-common-db": "^7.2.2",
-    "@iobroker/socket-client": "^5.2.1",
-    "@iobroker/type-detector": "^6.0.0",
+    "@iobroker/socket-client": "^5.2.3",
+    "@iobroker/type-detector": "^6.0.1",
     "@iobroker/types": "^7.2.2",
-    "@sentry/browser": "^10.71.0",
+    "@sentry/browser": "^10.73.0",
     "cronstrue": "^3.24.0",
     "file-selector": "^5.0.1",
-    "react-colorful": "^5.8.0",
+    "react-colorful": "^5.8.1",
     "react-cropper": "^2.3.3",
     "react-dropzone": "^20.1.1",
     "react-icons": "^5.7.0",
@@ -81,11 +81,11 @@
     "@emotion/styled": "^11.14.1",
     "@iobroker/build-tools": "^3.0.1",
     "@iobroker/eslint-config": "^2.3.4",
-    "@mui/icons-material": "^9.3.1",
-    "@mui/material": "^9.3.1",
-    "@types/node": "^26.3.0",
+    "@mui/icons-material": "^9.4.0",
+    "@mui/material": "^9.4.0",
+    "@types/node": "^26.4.1",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5",
+    "@types/react-dom": "^19.2.7",
     "ajv": "^8.20.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -96,6 +96,6 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5"
+    "@types/react-dom": "^19.2.7"
   }
 }

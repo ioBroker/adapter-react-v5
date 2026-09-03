@@ -98,6 +98,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     private observedContainer: HTMLDivElement | null = null;
     /** Width class for which the columns were calculated the last time */
     private lastCalculatedWidth: Width | null = null;
+    /** States view for which the columns were calculated the last time */
+    private lastCalculatedStatesView: boolean | null = null;
     private pausedSubscribes: boolean = false;
     /** The tree was rebuilt while subscribes were paused, so the filter must be re-applied on resume */
     private treeRebuiltWhilePaused: boolean = false;
@@ -145,7 +147,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     private resizerPosition: number = 0;
     private resizerActiveDiv: HTMLDivElement | null = null;
     private resizerNextDiv: HTMLDivElement | null = null;
-    private storedWidths: ScreenWidthOne | null = null;
+    /**
+     * The column widths the user stored for this dialog, as they were written to
+     * `<dialogName>.table`. They are kept independently of the width class, because the class is
+     * only known after the container was measured and changes when the window is resized.
+     */
+    private storedColumnWidths: Record<string, number> | null = null;
     systemConfig: ioBroker.SystemConfigObject | null = null;
     public objects!: Record<string, ioBroker.Object>;
     defaultHistory: string = '';
@@ -457,27 +464,52 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         const resizerCurrentWidthsStr = this.localStorage.getItem(`${this.props.dialogName || 'App'}.table`);
         if (resizerCurrentWidthsStr) {
             try {
-                const resizerCurrentWidths = JSON.parse(resizerCurrentWidthsStr);
-                const width = this.width || 'lg';
-                this.storedWidths = JSON.parse(JSON.stringify(this.screenWidths[width]));
-                Object.keys(resizerCurrentWidths).forEach(id => {
-                    if (id === 'id') {
-                        this.screenWidths[width].idWidth = resizerCurrentWidths.id;
-                    } else if (id === 'nameHeader') {
-                        // widths stored by an older version, where the header had an own width
-                        this.screenWidths[width].widths.name = resizerCurrentWidths[id];
-                    } else if ((this.screenWidths[width].widths as Record<string, number>)[id] !== undefined) {
-                        (this.screenWidths[width].widths as Record<string, number>)[id] = resizerCurrentWidths[id];
-                    }
+                const parsed: Record<string, number> = JSON.parse(resizerCurrentWidthsStr);
+                const storedColumnWidths: Record<string, number> = {};
+                Object.keys(parsed).forEach(id => {
+                    // widths stored by an older version, where the header had an own width
+                    storedColumnWidths[id === 'nameHeader' ? 'name' : id] = parsed[id];
                 });
-
-                this.customWidth = true;
+                this.storedColumnWidths = storedColumnWidths;
+                // The resizer has to start from the stored widths too. Without them the next drag
+                // would write only the two columns it touched back to the storage, and every other
+                // width the user had set would be lost.
+                this.resizerCurrentWidths = { ...storedColumnWidths };
             } catch {
-                // ignore
+                this.storedColumnWidths = null;
             }
         }
 
+        this.applyStoredWidths();
+
         this.calculateColumnsVisibility();
+    }
+
+    /**
+     * Write the stored column widths into the width class that is active now.
+     *
+     * Every width class has its own default widths, and the class of the object browser is only
+     * known after its container was measured - in the constructor it is still the initial guess.
+     * The stored widths must therefore be applied again whenever the class changes, otherwise the
+     * table falls back to the defaults of the new class and the user sees their widths reset.
+     */
+    applyStoredWidths(): void {
+        if (!this.storedColumnWidths) {
+            return;
+        }
+        const screen = this.screenWidths[this.width || 'lg'];
+        const storedColumnWidths = this.storedColumnWidths;
+        Object.keys(storedColumnWidths).forEach(id => {
+            if (id === 'id') {
+                screen.idWidth = storedColumnWidths.id;
+            } else if ((screen.widths as Record<string, number>)[id] !== undefined) {
+                // A column that this width class does not know keeps its place; only the widths of
+                // the columns the class actually shows may be overwritten.
+                (screen.widths as Record<string, number>)[id] = storedColumnWidths[id];
+            }
+        });
+
+        this.customWidth = true;
     }
 
     async loadAllObjects(update?: boolean): Promise<void> {
@@ -2239,30 +2271,49 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             }
         } else {
             const width = this.width || 'lg';
+            /**
+             * A row shows either type/role/room/function or the four columns of the states view,
+             * never both. A column of the set that is not shown must have the width zero, so that
+             * the ID column, which fills the rest of the row, gets the right place.
+             */
+            const shown = (name: string, inStatesView: boolean): boolean =>
+                !!this.state.statesView === inStatesView && columns.includes(name);
+            /** Width of one column: what the user set for it, else the default of the width class */
+            const widthOf = (name: string): number =>
+                columnsWidths[name] || (WIDTHS as Record<string, number>)[name] || 0;
+            /**
+             * The width classes below `lg` do not define the columns of the states view, but the
+             * user can select them by hand there too, so they fall back to the widest class.
+             */
+            const statesWidthOf = (name: string): number =>
+                widthOf(name) || (this.screenWidths.xl.widths as Record<string, number>)[name] || 0;
+
             this.columnsVisibility = {
                 id: columnsWidths.id || this.screenWidths[width].idWidth,
-                name: columns.includes('name')
-                    ? columnsWidths.name || WIDTHS.name || this.screenWidths[width].widths.name || 0
-                    : 0,
-                type: columns.includes('type')
-                    ? columnsWidths.type || WIDTHS.type || this.screenWidths[width].widths.type || 0
-                    : 0,
-                role: columns.includes('role')
-                    ? columnsWidths.role || WIDTHS.role || this.screenWidths[width].widths.role || 0
-                    : 0,
-                room: columns.includes('room')
-                    ? columnsWidths.room || WIDTHS.room || this.screenWidths[width].widths.room || 0
-                    : 0,
-                func: columns.includes('func')
-                    ? columnsWidths.func || WIDTHS.func || this.screenWidths[width].widths.func || 0
-                    : 0,
+                name: columns.includes('name') ? widthOf('name') : 0,
+                type: shown('type', false) ? widthOf('type') : 0,
+                role: shown('role', false) ? widthOf('role') : 0,
+                room: shown('room', false) ? widthOf('room') : 0,
+                func: shown('func', false) ? widthOf('func') : 0,
+                // The states view columns were missing here completely: their checkboxes in the
+                // configuration dialog had no effect, and the header showed them although no row
+                // had a cell for them.
+                changedFrom: shown('changedFrom', true) ? statesWidthOf('changedFrom') : 0,
+                qualityCode: shown('qualityCode', true) ? statesWidthOf('qualityCode') : 0,
+                timestamp: shown('timestamp', true) ? statesWidthOf('timestamp') : 0,
+                lastChange: shown('lastChange', true) ? statesWidthOf('lastChange') : 0,
             };
             let widthSum: number = this.columnsVisibility.id as number; // id is always visible
             if (this.columnsVisibility.name) {
+                // Only one of the two sets has a width, so both may be added up
                 widthSum += this.columnsVisibility.type || 0;
                 widthSum += this.columnsVisibility.role || 0;
                 widthSum += this.columnsVisibility.room || 0;
                 widthSum += this.columnsVisibility.func || 0;
+                widthSum += this.columnsVisibility.changedFrom || 0;
+                widthSum += this.columnsVisibility.qualityCode || 0;
+                widthSum += this.columnsVisibility.timestamp || 0;
+                widthSum += this.columnsVisibility.lastChange || 0;
             }
 
             if (columnsForAdmin && columns) {
@@ -2431,6 +2482,10 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     };
 
     resizerMouseUp = (): void => {
+        // Remember the new widths for the other width classes as well: the drag only changed two CSS
+        // variables, the width class of the container may change at any time afterwards.
+        this.storedColumnWidths = { ...this.resizerCurrentWidths };
+        this.applyStoredWidths();
         this.localStorage.setItem(`${this.props.dialogName || 'App'}.table`, JSON.stringify(this.resizerCurrentWidths));
         this.resizerActiveName = null;
         this.resizerNextName = null;
@@ -2441,8 +2496,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     };
 
     resizerMouseDown = (e: React.MouseEvent<HTMLDivElement>): void => {
-        this.storedWidths ||= JSON.parse(JSON.stringify(this.screenWidths[this.width || 'lg'])) as ScreenWidthOne;
-
         this.resizerCurrentWidths ||= {};
         this.resizerActiveDiv = (e.target as HTMLDivElement).parentNode as HTMLDivElement;
         this.resizerActiveName = this.resizerActiveDiv.dataset.name || null;
@@ -2467,6 +2520,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                     this.resizerNextDiv = this.resizerNextDiv.nextElementSibling;
                     i++;
                 } */
+            }
+            if (!this.resizerNextDiv) {
+                // The column is the last one of the row, there is no neighbour to take the place from
+                this.resizerActiveDiv = null;
+                this.resizerActiveName = null;
+                return;
             }
             this.resizerNextName = this.resizerNextDiv.dataset.name || null;
 
@@ -2564,7 +2623,15 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
 
     resizerReset = (): void => {
         this.customWidth = false;
-        this.screenWidths[this.width || 'lg'] = JSON.parse(JSON.stringify(this.storedWidths));
+        this.storedColumnWidths = null;
+        this.resizerCurrentWidths = {};
+        // Back to the defaults of every width class, not only of the one that is active now - the
+        // stored widths had been applied to every class the user had the browser open in.
+        Object.keys(SCREEN_WIDTHS).forEach(width => {
+            this.screenWidths[width as Width] = JSON.parse(
+                JSON.stringify(SCREEN_WIDTHS[width as Width]),
+            ) as ScreenWidthOne;
+        });
         this.calculateColumnsVisibility();
         this.localStorage.removeItem(`${this.props.dialogName || 'App'}.table`);
         this.forceUpdate();
@@ -2824,9 +2891,13 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             return <LinearProgress key={`${this.props.dialogName}_c`} />;
         }
 
-        // the container was resized into another width class => other columns are visible
-        if (this.lastCalculatedWidth !== this.width) {
+        // the container was resized into another width class => other columns are visible, and the
+        // stored widths have to be written into the defaults of the new class.
+        // The states view shows other columns too, so it has to be recalculated as well.
+        if (this.lastCalculatedWidth !== this.width || this.lastCalculatedStatesView !== this.state.statesView) {
             this.lastCalculatedWidth = this.width;
+            this.lastCalculatedStatesView = this.state.statesView;
+            this.applyStoredWidths();
             this.calculateColumnsVisibility();
         }
 

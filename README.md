@@ -877,6 +877,15 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Fixed: the object browser lost the column widths as soon as the page was left and opened again. Every width class has its own widths, and the stored ones were written into the class that was guessed before the container was measured, so the table fell back to the defaults of the class it really had: https://github.com/ioBroker/ioBroker.admin/issues/3616
+- (@GermanBluefox) Fixed: after reopening the object browser, the next resize stored only the two columns it touched and dropped every other width the user had set
+- (@GermanBluefox) Fixed: with "Auto" switched off, the checkboxes for "Changed from", "Quality code", "Timestamp" and "Last change" had no effect, and the header of the states view showed those columns although the rows had no cells for them
+- (@GermanBluefox) Fixed: the buttons column could not be resized, as neither it nor the value column in front of it had a resize handle
+- (@GermanBluefox) Fixed: switching "Auto" off did not store the column selection, so after a reload the table showed nothing but the ID column
+- (@GermanBluefox) A double click on a resize handle resets the widths of all width classes now, not only of the current one
+
 ### 10.2.1 (2026-08-31)
 
 - (@GermanBluefox) Changed layouts for some components

@@ -612,58 +612,68 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
             )}
             {that.state.statesView && (
                 <>
-                    <div
-                        style={{
-                            ...styles.headerCell,
-                            ...styles.headerCellValue,
-                            width: colWidth('changedFrom'),
-                            position: 'relative',
-                        }}
-                        data-min={100}
-                        data-name="changedFrom"
-                    >
-                        {that.props.t('ra_Changed from')}
-                        {renderHandleRight(that)}
-                    </div>
-                    <div
-                        style={{
-                            ...styles.headerCell,
-                            ...styles.headerCellValue,
-                            width: colWidth('qualityCode'),
-                            position: 'relative',
-                        }}
-                        data-min={100}
-                        data-name="qualityCode"
-                    >
-                        {that.props.t('ra_Quality code')}
-                        {renderHandleRight(that)}
-                    </div>
-                    <div
-                        style={{
-                            ...styles.headerCell,
-                            ...styles.headerCellValue,
-                            width: colWidth('timestamp'),
-                            position: 'relative',
-                        }}
-                        data-min={100}
-                        data-name="timestamp"
-                    >
-                        {that.props.t('ra_Timestamp')}
-                        {renderHandleRight(that)}
-                    </div>
-                    <div
-                        style={{
-                            ...styles.headerCell,
-                            ...styles.headerCellValue,
-                            width: colWidth('lastChange'),
-                            position: 'relative',
-                        }}
-                        data-min={100}
-                        data-name="lastChange"
-                    >
-                        {that.props.t('ra_Last change')}
-                        {renderHandleRight(that)}
-                    </div>
+                    {/* Every one of these columns can be switched off in the configuration dialog,
+                        so the header must ask for it just like the columns of the normal view do. */}
+                    {that.columnsVisibility.changedFrom ? (
+                        <div
+                            style={{
+                                ...styles.headerCell,
+                                ...styles.headerCellValue,
+                                width: colWidth('changedFrom'),
+                                position: 'relative',
+                            }}
+                            data-min={100}
+                            data-name="changedFrom"
+                        >
+                            {that.props.t('ra_Changed from')}
+                            {renderHandleRight(that)}
+                        </div>
+                    ) : null}
+                    {that.columnsVisibility.qualityCode ? (
+                        <div
+                            style={{
+                                ...styles.headerCell,
+                                ...styles.headerCellValue,
+                                width: colWidth('qualityCode'),
+                                position: 'relative',
+                            }}
+                            data-min={100}
+                            data-name="qualityCode"
+                        >
+                            {that.props.t('ra_Quality code')}
+                            {renderHandleRight(that)}
+                        </div>
+                    ) : null}
+                    {that.columnsVisibility.timestamp ? (
+                        <div
+                            style={{
+                                ...styles.headerCell,
+                                ...styles.headerCellValue,
+                                width: colWidth('timestamp'),
+                                position: 'relative',
+                            }}
+                            data-min={100}
+                            data-name="timestamp"
+                        >
+                            {that.props.t('ra_Timestamp')}
+                            {renderHandleRight(that)}
+                        </div>
+                    ) : null}
+                    {that.columnsVisibility.lastChange ? (
+                        <div
+                            style={{
+                                ...styles.headerCell,
+                                ...styles.headerCellValue,
+                                width: colWidth('lastChange'),
+                                position: 'relative',
+                            }}
+                            data-min={100}
+                            data-name="lastChange"
+                        >
+                            {that.props.t('ra_Last change')}
+                            {renderHandleRight(that)}
+                        </div>
+                    ) : null}
                 </>
             )}
             {that.adapterColumns.map(item => (
@@ -694,12 +704,17 @@ export function renderHeader(that: ObjectBrowserClass): JSX.Element {
                 >
                     {that.props.t('ra_Value')}
                     {filterClearInValue}
+                    {/* A handle takes the place from the column that follows, so it is only useful
+                        if there is one. It is the only way to resize the buttons column. */}
+                    {that.columnsVisibility.buttons ? renderHandleRight(that) : null}
                 </div>
             ) : null}
             {that.columnsVisibility.buttons ? (
                 <div
                     title={that.texts.filter_custom}
                     style={{ ...styles.headerCell, width: colWidth('buttons') }}
+                    data-min={80}
+                    data-name="buttons"
                 >
                     {' '}
                     {getFilterSelectCustoms(that)}

@@ -181,8 +181,16 @@ export function renderColumnsSelectorDialog(that: ObjectBrowserClass): JSX.Eleme
                                     that.calculateColumnsVisibility(true);
                                     that.setState({ columnsAuto: true });
                                 } else if (!that.state.columns) {
-                                    that.calculateColumnsVisibility(false, [...that.visibleCols]);
-                                    that.setState({ columnsAuto: false, columns: [...that.visibleCols] });
+                                    // The columns that are visible now become the manual selection.
+                                    // Without storing them, the selection would be empty after a
+                                    // reload and the table would show nothing but the ID column.
+                                    const columns = [...that.visibleCols];
+                                    that.localStorage.setItem(
+                                        `${that.props.dialogName || 'App'}.columns`,
+                                        JSON.stringify(columns),
+                                    );
+                                    that.calculateColumnsVisibility(false, columns);
+                                    that.setState({ columnsAuto: false, columns });
                                 } else {
                                     that.calculateColumnsVisibility(false);
                                     that.setState({ columnsAuto: false });
