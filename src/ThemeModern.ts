@@ -431,10 +431,19 @@ export function getModernTheme(
         },
         MuiIconButton: {
             styleOverrides: {
-                root: {
-                    borderRadius: 8,
-                    color: t.textSecondary,
-                    '&:hover': { backgroundColor: t.hover, color: t.textPrimary },
+                // The color must only be set for `color="default"`. The style overrides of the theme are
+                // applied after the color variants of MUI, so a flat `color` in `root` would swallow
+                // `color="primary"`, `color="secondary"`, ... and all the buttons would look the same.
+                root: ({ ownerState }: { ownerState: { color?: string } }) => {
+                    const isDefault = !ownerState.color || ownerState.color === 'default';
+                    return {
+                        borderRadius: 8,
+                        color: isDefault ? t.textSecondary : undefined,
+                        '&:hover': {
+                            backgroundColor: t.hover,
+                            color: isDefault ? t.textPrimary : undefined,
+                        },
+                    };
                 },
             },
         },

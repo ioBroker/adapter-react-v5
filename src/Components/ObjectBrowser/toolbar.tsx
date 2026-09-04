@@ -34,6 +34,7 @@ import {
     getSelectIdIconFromObjects,
     getVisibleItems,
 } from './utils';
+import type { IobTheme } from '../../types';
 import { type InputSelectItem } from './types';
 import { styles } from './styles';
 import { ITEM_IMAGES } from './constants';
@@ -218,7 +219,9 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                     >
                         <IconButton
                             key="expertMode"
-                            color={that.state.filter.expertMode ? 'secondary' : 'default'}
+                            sx={(theme: IobTheme) => ({
+                                color: that.state.filter.expertMode ? theme.palette.expert : undefined,
+                            })}
                             onClick={() => {
                                 const filter = { ...that.state.filter };
                                 filter.expertMode = !filter.expertMode;

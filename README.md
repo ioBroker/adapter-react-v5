@@ -877,6 +877,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Fixed: Expert button highlighted in the object browser
+
 ### 10.2.2 (2026-09-03)
 
 - (@GermanBluefox) Fixed: the object browser lost the column widths as soon as the page was left and opened again. Every width class has its own widths, and the stored ones were written into the class that was guessed before the container was measured, so the table fell back to the defaults of the class it really had: https://github.com/ioBroker/ioBroker.admin/issues/3616
