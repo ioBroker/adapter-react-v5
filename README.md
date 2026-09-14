@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.2.3",
+        "@iobroker/gui-components": "^10.3.0",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,7 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.3.0 (2026-09-14)
 
 - (@GermanBluefox) Added: the icon selector offers a library of 448 icons for rooms, buildings, furniture, lighting, climate, windows and shading, security, energy, water, household appliances, multimedia, garden, weather, people and more. Every icon has a name in all 11 languages, and the search looks through all categories. The icons are taken from Material Design Icons (Apache License 2.0), painted with `currentColor` and loaded only when the dialog is opened. The classic room and device icons stay available as their own categories
 - (@GermanBluefox) Added: `getClassicIconTemplates()` returns the classic room and function templates with ID, name and icon, so the admin does not need its own copy of them any more. `loadIconLibrary()` and `getIconLibrarySvg()` give access to the icon library
