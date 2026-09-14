@@ -28,6 +28,15 @@ export {
 export { getSystemIcon, getSelectIdIcon, Icon } from './Components/Icon';
 export { IconPicker } from './Components/IconPicker';
 export { IconSelector } from './Components/IconSelector';
+export {
+    loadIconLibrary,
+    getIconLibrarySvg,
+    getIconLibraryName,
+    isIconLibraryMatch,
+    type IconLibrary,
+} from './Components/IconLibrary/iconLibrary';
+export type { IconLibraryCategory, IconLibraryItem } from './Components/IconLibrary/types';
+export { getClassicIconTemplates, type ClassicIconTemplate } from './Components/IconLibrary/classicIcons';
 export { Image } from './Components/Image';
 export { DeviceTypeSelector } from './Components/DeviceType/DeviceTypeSelector';
 export { DeviceTypeIcon } from './Components/DeviceType/DeviceTypeIcon';

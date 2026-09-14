@@ -123,6 +123,7 @@
     "ra_Name": "Nazwa",
     "ra_No data": "Brak danych",
     "ra_No data found in file": "Nie znaleziono danych w pliku",
+    "ra_No icons found": "Nie znaleziono ikon",
     "ra_No response from admin": "Brak odpowiedzi od administratora",
     "ra_No response from the backend": "Brak odpowiedzi z zaplecza",
     "ra_Non-experts may create new objects only in \"0_userdata.0\" or \"alias.0\".": "Osoby nie będące ekspertami mogą tworzyć nowe obiekty tylko w „0_userdata.0” lub „alias.0”.",

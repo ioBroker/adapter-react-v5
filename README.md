@@ -877,6 +877,13 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Added: the icon selector offers a library of 448 icons for rooms, buildings, furniture, lighting, climate, windows and shading, security, energy, water, household appliances, multimedia, garden, weather, people and more. Every icon has a name in all 11 languages, and the search looks through all categories. The icons are taken from Material Design Icons (Apache License 2.0), painted with `currentColor` and loaded only when the dialog is opened. The classic room and device icons stay available as their own categories
+- (@GermanBluefox) Added: `getClassicIconTemplates()` returns the classic room and function templates with ID, name and icon, so the admin does not need its own copy of them any more. `loadIconLibrary()` and `getIconLibrarySvg()` give access to the icon library
+- (@GermanBluefox) Changed: `onlyRooms` and `onlyDevices` of `IconSelector` and `IconPicker` only choose the category that is opened first - all other categories stay available
+- (@GermanBluefox) Fixed: the classic room templates used the ID `windscreen` and had no `cellar`, while the admin creates the enums `vestibule` and `cellar`
+
 ### 10.2.3 (2026-09-04)
 
 - (@GermanBluefox) Fixed: Expert button highlighted in the object browser

@@ -1,0 +1,20 @@
+[
+    { "id": "account", "name": { "en": "Person", "de": "Person", "ru": "Человек", "pt": "Pessoa", "nl": "Persoon", "fr": "Personne", "it": "Persona", "es": "Persona", "pl": "Osoba", "uk": "Людина", "zh-cn": "人" } },
+    { "id": "account-group", "name": { "en": "Group of people", "de": "Personengruppe", "ru": "Группа людей", "pt": "Grupo de pessoas", "nl": "Groep mensen", "fr": "Groupe de personnes", "it": "Gruppo di persone", "es": "Grupo de personas", "pl": "Grupa osób", "uk": "Група людей", "zh-cn": "人群" } },
+    { "id": "human-male", "name": { "en": "Man", "de": "Mann", "ru": "Мужчина", "pt": "Homem", "nl": "Man", "fr": "Homme", "it": "Uomo", "es": "Hombre", "pl": "Mężczyzna", "uk": "Чоловік", "zh-cn": "男人" } },
+    { "id": "human-female", "name": { "en": "Woman", "de": "Frau", "ru": "Женщина", "pt": "Mulher", "nl": "Vrouw", "fr": "Femme", "it": "Donna", "es": "Mujer", "pl": "Kobieta", "uk": "Жінка", "zh-cn": "女人" } },
+    { "id": "human-child", "name": { "en": "Child", "de": "Kind", "ru": "Ребёнок", "pt": "Criança", "nl": "Kind", "fr": "Enfant", "it": "Bambino", "es": "Niño", "pl": "Dziecko", "uk": "Дитина", "zh-cn": "儿童" } },
+    { "id": "baby-face", "name": { "en": "Baby", "de": "Baby", "ru": "Малыш", "pt": "Bebé", "nl": "Baby", "fr": "Bébé", "it": "Neonato", "es": "Bebé", "pl": "Niemowlę", "uk": "Немовля", "zh-cn": "婴儿" } },
+    { "id": "human-male-female-child", "name": { "en": "Family", "de": "Familie", "ru": "Семья", "pt": "Família", "nl": "Gezin", "fr": "Famille", "it": "Famiglia", "es": "Familia", "pl": "Rodzina", "uk": "Родина", "zh-cn": "家庭" } },
+    { "id": "human-greeting", "name": { "en": "Guest", "de": "Gast", "ru": "Гость", "pt": "Convidado", "nl": "Gast", "fr": "Invité", "it": "Ospite", "es": "Invitado", "pl": "Gość", "uk": "Гість", "zh-cn": "客人" } },
+    { "id": "human-wheelchair", "name": { "en": "Accessibility", "de": "Barrierefreiheit", "ru": "Доступная среда", "pt": "Acessibilidade", "nl": "Toegankelijkheid", "fr": "Accessibilité", "it": "Accessibilità", "es": "Accesibilidad", "pl": "Dostępność", "uk": "Доступність", "zh-cn": "无障碍" } },
+    { "id": "run-fast", "name": { "en": "Activity", "de": "Aktivität", "ru": "Активность", "pt": "Atividade", "nl": "Activiteit", "fr": "Activité", "it": "Attività", "es": "Actividad", "pl": "Aktywność", "uk": "Активність", "zh-cn": "活动" } },
+    { "id": "account-heart", "name": { "en": "Care", "de": "Pflege", "ru": "Уход", "pt": "Cuidados", "nl": "Zorg", "fr": "Soins", "it": "Assistenza", "es": "Cuidados", "pl": "Opieka", "uk": "Догляд", "zh-cn": "看护" } },
+    { "id": "dog", "name": { "en": "Dog", "de": "Hund", "ru": "Собака", "pt": "Cão", "nl": "Hond", "fr": "Chien", "it": "Cane", "es": "Perro", "pl": "Pies", "uk": "Собака", "zh-cn": "狗" } },
+    { "id": "cat", "name": { "en": "Cat", "de": "Katze", "ru": "Кошка", "pt": "Gato", "nl": "Kat", "fr": "Chat", "it": "Gatto", "es": "Gato", "pl": "Kot", "uk": "Кіт", "zh-cn": "猫" } },
+    { "id": "horse", "name": { "en": "Horse", "de": "Pferd", "ru": "Лошадь", "pt": "Cavalo", "nl": "Paard", "fr": "Cheval", "it": "Cavallo", "es": "Caballo", "pl": "Koń", "uk": "Кінь", "zh-cn": "马" } },
+    { "id": "paw", "name": { "en": "Pet", "de": "Haustier", "ru": "Питомец", "pt": "Animal de estimação", "nl": "Huisdier", "fr": "Animal de compagnie", "it": "Animale domestico", "es": "Mascota", "pl": "Zwierzę domowe", "uk": "Домашня тварина", "zh-cn": "宠物" } },
+    { "id": "bird", "name": { "en": "Bird", "de": "Vogel", "ru": "Птица", "pt": "Pássaro", "nl": "Vogel", "fr": "Oiseau", "it": "Uccello", "es": "Pájaro", "pl": "Ptak", "uk": "Птах", "zh-cn": "鸟" } },
+    { "id": "fish", "name": { "en": "Fish", "de": "Fisch", "ru": "Рыба", "pt": "Peixe", "nl": "Vis", "fr": "Poisson", "it": "Pesce", "es": "Pez", "pl": "Ryba", "uk": "Риба", "zh-cn": "鱼" } },
+    { "id": "rabbit", "name": { "en": "Rabbit", "de": "Kaninchen", "ru": "Кролик", "pt": "Coelho", "nl": "Konijn", "fr": "Lapin", "it": "Coniglio", "es": "Conejo", "pl": "Królik", "uk": "Кролик", "zh-cn": "兔子" } }
+]

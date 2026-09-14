@@ -123,6 +123,7 @@
     "ra_Name": "Имя",
     "ra_No data": "Нет данных",
     "ra_No data found in file": "Данные в файле не найдены",
+    "ra_No icons found": "Значки не найдены",
     "ra_No response from admin": "Нет ответа от администратора",
     "ra_No response from the backend": "Нет ответа от бэкэнда",
     "ra_Non-experts may create new objects only in \"0_userdata.0\" or \"alias.0\".": "Не-эксперты могут создавать новые объекты только в «0_userdata.0» или «alias.0».",
