@@ -255,12 +255,6 @@ export const styles: Record<string, any> = {
         position: 'absolute',
         right: 3,
     },
-    cellCopyButtonInDetails: {
-        width: SMALL_BUTTON_SIZE,
-        height: SMALL_BUTTON_SIZE,
-        top: (ROW_HEIGHT - SMALL_BUTTON_SIZE) / 2,
-        opacity: 0.8,
-    },
     cellEditButton: {
         width: SMALL_BUTTON_SIZE,
         height: SMALL_BUTTON_SIZE,
@@ -483,17 +477,90 @@ export const styles: Record<string, any> = {
     cellButtonsValueButtonEdit: {
         right: SMALL_BUTTON_SIZE / 2 + 16,
     },
+    /** Details of the selected object in the narrow (xs) view, shown below its row */
+    cellDetails: {
+        width: '100%',
+        // the padding must be inside of the width, else the panel is wider than the table
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '2px',
+        pl: 1.5,
+        pr: 0.5,
+        py: 1,
+        borderRadius: 0,
+        borderLeft: '3px solid',
+        borderLeftColor: 'primary.main',
+        bgcolor: 'action.hover',
+    },
+    cellDetailsHeader: {
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 8,
+    },
+    cellDetailsHeaderWithLines: {
+        paddingBottom: 6,
+        marginBottom: 4,
+        borderBottom: '1px solid rgba(128, 128, 128, 0.3)',
+    },
+    cellDetailsId: {
+        flexGrow: 1,
+        minWidth: 0,
+        pt: '6px',
+        fontFamily: 'monospace',
+        fontSize: 13,
+        lineHeight: '20px',
+        wordBreak: 'break-all',
+    },
     cellDetailsLine: {
         display: 'flex',
         alignItems: 'center',
+        gap: 8,
         width: '100%',
-        height: 32,
-        fontSize: 16,
+        minHeight: 32,
+        fontSize: 14,
     },
     cellDetailsName: {
-        fontWeight: 'bold',
-        marginRight: 8,
-        minWidth: 80,
+        flexShrink: 0,
+        width: 80,
+        fontSize: 13,
+        opacity: 0.7,
+    },
+    cellDetailsValue: {
+        flexGrow: 1,
+        minWidth: 0,
+        overflowWrap: 'anywhere',
+        // the cells are made for one line in the table, here they may wrap
+        '& > div': {
+            whiteSpace: 'normal',
+            overflow: 'visible',
+            height: 'auto',
+        },
+    },
+    cellDetailsEmpty: {
+        opacity: 0.5,
+    },
+    cellDetailsButton: {
+        flexShrink: 0,
+        color: 'text.secondary',
+    },
+    cellDetailsIcon: {
+        width: 18,
+        height: 18,
+    },
+    cellDetailsButtons: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'flex-end',
+        // strings, because numbers are multiplied with the theme spacing in `sx`
+        gap: '4px',
+        pt: '6px',
+        mt: '4px',
+        borderTop: '1px solid rgba(128, 128, 128, 0.3)',
+        // `renderColumnButtons` may render only an empty container
+        '&:not(:has(button))': {
+            display: 'none',
+        },
     },
 
     filteredOut: {

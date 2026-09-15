@@ -40,6 +40,7 @@
     "ra_Continue": "继续",
     "ra_Copied": "复制的",
     "ra_Copied %s": "复制的\"%s\"",
+    "ra_Copy to clipboard": "复制到剪贴板",
     "ra_Create": "创建",
     "ra_Create alias": "创建别名",
     "ra_Create folder": "创建文件夹",

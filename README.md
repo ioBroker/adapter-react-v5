@@ -877,6 +877,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Changed: the details of the selected object in the narrow view of the object browser were reworked - theme colors, the full ID with a copy button, a dash for empty values and buttons with tooltips
+
 ### 10.3.0 (2026-09-14)
 
 - (@GermanBluefox) Added: the icon selector offers a library of 448 icons for rooms, buildings, furniture, lighting, climate, windows and shading, security, energy, water, household appliances, multimedia, garden, weather, people and more. Every icon has a name in all 11 languages, and the search looks through all categories. The icons are taken from Material Design Icons (Apache License 2.0), painted with `currentColor` and loaded only when the dialog is opened. The classic room and device icons stay available as their own categories

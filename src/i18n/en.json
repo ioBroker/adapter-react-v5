@@ -40,6 +40,7 @@
     "ra_Continue": "Continue",
     "ra_Copied": "Copied",
     "ra_Copied %s": "Copied \"%s\"",
+    "ra_Copy to clipboard": "Copy to clipboard",
     "ra_Create": "Create",
     "ra_Create alias": "Create alias",
     "ra_Create folder": "Create folder",

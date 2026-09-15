@@ -1369,7 +1369,7 @@ export function renderLeaf(
         <div
             style={{
                 ...styles.cellValue,
-                width: that.width !== 'xs' ? colWidth('val') : 'calc(100% - 100px)',
+                width: that.width !== 'xs' ? colWidth('val') : '100%',
                 // An empty inline-block has no height, so a state without a value would offer nothing
                 // to tap on in the narrow details view.
                 minHeight: narrowStyleWithDetails ? 20 : undefined,
@@ -1437,117 +1437,148 @@ export function renderLeaf(
         ) : null;
 
     let colDetails: JSX.Element | null = null;
-    if (that.width === 'xs' && that.state.focused === id) {
-        colMiddle = colMiddle.filter(a => a);
-        let renderedMiddle: (JSX.Element | null)[] | null;
-        if (!colMiddle.length) {
-            renderedMiddle = null;
-        } else {
-            renderedMiddle = colMiddle.map(it => {
-                if (!it) {
-                    return null;
-                }
-                return (
-                    <div
-                        key={it.type}
-                        style={styles.cellDetailsLine}
+    if (narrowStyleWithDetails) {
+        /** Texts of the middle columns: the cells are always rendered, so an empty one must be detected here */
+        const middleTexts: Record<string, unknown> = {
+            filter_type: obj?.type,
+            filter_role: common?.role,
+            filter_room: item.data.rooms,
+            filter_func: item.data.funcs,
+        };
+        const editTitles: Record<string, string> = {
+            filter_role: 'ra_Edit role',
+            filter_room: 'ra_Edit room',
+            filter_func: 'ra_Edit function',
+        };
+
+        /** One line of the details: the label, the value (or a dash) and the buttons for it */
+        const detailsLine = (
+            key: string,
+            label: string,
+            value: React.ReactNode,
+            actions: { title: string; icon: JSX.Element; onClick: (e: React.MouseEvent) => void }[] = [],
+        ): JSX.Element => (
+            <div
+                key={key}
+                style={styles.cellDetailsLine}
+            >
+                <span style={styles.cellDetailsName}>{label}</span>
+                <Box sx={styles.cellDetailsValue}>{value || <span style={styles.cellDetailsEmpty}>–</span>}</Box>
+                {actions.map(action => (
+                    <Tooltip
+                        key={action.title}
+                        title={action.title}
+                        slotProps={{ popper: { sx: styles.tooltip } }}
                     >
-                        <span style={styles.cellDetailsName}>{that.texts[it.type]}:</span>
-                        {it.el}
-                        <div style={{ flexGrow: 1 }} />
-                        {it.onClick ? (
-                            <IconEdit
-                                style={styles.cellCopyButtonInDetails}
-                                onClick={() => {
-                                    if (it?.onClick) {
-                                        it.onClick();
-                                    }
-                                }}
-                            />
-                        ) : null}
-                    </div>
-                );
-            });
-        }
-        if (!colCustom.length) {
+                        <IconButton
+                            size="small"
+                            sx={styles.cellDetailsButton}
+                            onClick={action.onClick}
+                        >
+                            {action.icon}
+                        </IconButton>
+                    </Tooltip>
+                ))}
+            </div>
+        );
+
+        const copyTitle = that.props.t('ra_Copy to clipboard');
+        const copyIcon = <IconCopy style={styles.cellDetailsIcon} />;
+        const editIcon = <IconEdit style={styles.cellDetailsIcon} />;
+
+        if (!colCustom?.length) {
             colCustom = null;
         }
+        // a folder without an object has nothing but its ID, so the header does not need a separator then
+        const hasLines = !!colName || !!colMiddle?.some(it => it) || !!colCustom || that.objects[id]?.type === 'state';
+
         colDetails = (
             <Paper
                 // `renderItem` pushes this panel into the array of rows, so it needs its own key
                 key={`details_${id}`}
-                style={{
-                    width: '100%',
-                    // the padding must be inside of the width, else the row is wider than the table
-                    boxSizing: 'border-box',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    padding: 10,
-                    backgroundColor: that.props.theme.palette.mode === 'dark' ? '#333' : '#ccc',
-                }}
+                elevation={0}
+                sx={styles.cellDetails}
             >
-                <div style={styles.cellDetailsLine}>
-                    <div style={{ flexGrow: 1 }} />
-                    <IconCopy
-                        style={styles.cellCopyButtonInDetails}
-                        onClick={e => that.onCopy(e, id)}
-                    />
+                <div
+                    style={{
+                        ...styles.cellDetailsHeader,
+                        ...(hasLines ? styles.cellDetailsHeaderWithLines : undefined),
+                    }}
+                >
+                    <Box sx={styles.cellDetailsId}>{id}</Box>
+                    <Tooltip
+                        title={copyTitle}
+                        slotProps={{ popper: { sx: styles.tooltip } }}
+                    >
+                        <IconButton
+                            size="small"
+                            sx={styles.cellDetailsButton}
+                            onClick={e => that.onCopy(e, id)}
+                        >
+                            {copyIcon}
+                        </IconButton>
+                    </Tooltip>
                 </div>
-                {colName && (
-                    <div style={styles.cellDetailsLine}>
-                        <span style={styles.cellDetailsName}>{that.texts.name}:</span>
-                        {colName}
-                        <div style={{ flexGrow: 1 }} />
-                        {item.data?.title ? (
-                            <IconCopy
-                                className="copyButton"
-                                style={styles.cellCopyButtonInDetails}
-                                onClick={e => that.onCopy(e, item.data?.title)}
-                            />
-                        ) : null}
-                    </div>
+                {colName
+                    ? detailsLine(
+                          'name',
+                          that.texts.name,
+                          colName,
+                          item.data?.title
+                              ? [{ title: copyTitle, icon: copyIcon, onClick: e => that.onCopy(e, item.data?.title) }]
+                              : [],
+                      )
+                    : null}
+                {colMiddle?.map(it =>
+                    it
+                        ? detailsLine(
+                              it.type,
+                              that.texts[it.type],
+                              it.type in middleTexts && !middleTexts[it.type] ? null : it.el,
+                              it.onClick
+                                  ? [
+                                        {
+                                            title: that.props.t(editTitles[it.type] || 'ra_Edit'),
+                                            icon: editIcon,
+                                            onClick: () => it.onClick?.(),
+                                        },
+                                    ]
+                                  : [],
+                          )
+                        : null,
                 )}
-                {renderedMiddle}
-                {colCustom && <div style={styles.cellDetailsLine}>{colCustom}</div>}
-                {that.objects[id]?.type === 'state' && (
-                    <div style={styles.cellDetailsLine}>
-                        <span style={styles.cellDetailsName}>{that.texts.value}:</span>
-                        {colValue}
-                        <div style={{ flexGrow: 1 }} />
-                        <IconCopy
-                            className="copyButton"
-                            style={styles.cellCopyButtonInDetails}
-                            onClick={e => {
-                                const { valText } = formatValue({
-                                    state: that.states[id],
-                                    obj: that.objects[id] as ioBroker.StateObject,
-                                    texts: that.texts,
-                                    dateFormat:
-                                        that.props.dateFormat ||
-                                        that.systemConfig?.common.dateFormat ||
-                                        DEFAULT_DATE_FORMAT,
-                                    isFloatComma:
-                                        that.props.isFloatComma === undefined
-                                            ? (that.systemConfig?.common.isFloatComma ?? true)
-                                            : that.props.isFloatComma,
-                                });
-                                that.onCopy(e, valText.c !== undefined ? valText.c : valText.v.toString());
-                            }}
-                            key="cc"
-                        />
-                        {/* Like the role/room/function lines, the value gets its own edit button. Tapping
-                            the value itself only works when there is something to tap on - a state that
-                            was never written renders nothing. */}
-                        {valueEditable ? (
-                            <IconEdit
-                                style={styles.cellCopyButtonInDetails}
-                                onClick={editValue}
-                                key="ce"
-                            />
-                        ) : null}
-                    </div>
-                )}
-                {colButtons && <div style={{ ...styles.cellDetailsLine, justifyContent: 'right' }}>{colButtons}</div>}
+                {colCustom ? <div style={styles.cellDetailsLine}>{colCustom}</div> : null}
+                {that.objects[id]?.type === 'state'
+                    ? // an editable state without value has its own edit button here, so show a dash instead of the empty cell
+                      detailsLine('value', that.texts.value, columnValue ? colValue : null, [
+                          {
+                              title: that.texts.copyState,
+                              icon: copyIcon,
+                              onClick: e => {
+                                  const { valText } = formatValue({
+                                      state: that.states[id],
+                                      obj: that.objects[id] as ioBroker.StateObject,
+                                      texts: that.texts,
+                                      dateFormat:
+                                          that.props.dateFormat ||
+                                          that.systemConfig?.common.dateFormat ||
+                                          DEFAULT_DATE_FORMAT,
+                                      isFloatComma:
+                                          that.props.isFloatComma === undefined
+                                              ? (that.systemConfig?.common.isFloatComma ?? true)
+                                              : that.props.isFloatComma,
+                                  });
+                                  that.onCopy(e, valText.c !== undefined ? valText.c : valText.v.toString());
+                              },
+                          },
+                          // Tapping the value itself only works when there is something to tap on -
+                          // a state that was never written renders nothing
+                          ...(valueEditable
+                              ? [{ title: that.props.t('ra_Edit value'), icon: editIcon, onClick: editValue }]
+                              : []),
+                      ])
+                    : null}
+                {colButtons ? <Box sx={styles.cellDetailsButtons}>{colButtons}</Box> : null}
             </Paper>
         );
 

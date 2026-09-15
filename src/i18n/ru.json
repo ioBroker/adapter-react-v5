@@ -40,6 +40,7 @@
     "ra_Continue": "Продолжать",
     "ra_Copied": "скопировано",
     "ra_Copied %s": "Скопировано \"%s\"",
+    "ra_Copy to clipboard": "Копировать в буфер обмена",
     "ra_Create": "Создать",
     "ra_Create alias": "Создать псевдоним",
     "ra_Create folder": "Создать папку",

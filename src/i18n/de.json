@@ -40,6 +40,7 @@
     "ra_Continue": "Weitermachen",
     "ra_Copied": "Kopiert",
     "ra_Copied %s": "\"%s\" kopiert",
+    "ra_Copy to clipboard": "In die Zwischenablage kopieren",
     "ra_Create": "Erstellen",
     "ra_Create alias": "Alias erstellen",
     "ra_Create folder": "Ordner erstellen",
