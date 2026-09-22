@@ -588,8 +588,10 @@ export function renderLeaf(
     that: ObjectBrowserClass,
     item: TreeItem,
     isExpanded: boolean | undefined,
-    /** Kept for the public `ObjectBrowserClass.renderLeaf`. `renderItem` counts the items now, so
-     * that a row which is served from the memo is counted as well */
+    /**
+     * Kept for the public `ObjectBrowserClass.renderLeaf`. `renderItem` counts the items now, so
+     * that a row which is served from the memo is counted as well
+     */
     _counter?: { count: number },
 ): { row: JSX.Element; details: JSX.Element | null } {
     const id = item.data.id;
@@ -1684,17 +1686,12 @@ const ObjectBrowserRow = React.memo(
 );
 
 /**
- * Renders an item.
+ * Renders ONE row - without its children.
+ *
+ * The table renders only the rows around the visible area (see `ObjectBrowserClass.getWindow`), so
+ * the row of an item is built on its own and not as a part of the recursion over the tree.
  */
-export function renderItem(
-    that: ObjectBrowserClass,
-    root: TreeItem,
-    isExpanded: boolean | undefined,
-    counter?: { count: number },
-): (JSX.Element | null)[] {
-    const items: (JSX.Element | null)[] = [];
-    counter = counter || { count: 0 };
-    counter.count++;
+export function renderRow(that: ObjectBrowserClass, root: TreeItem, isExpanded: boolean | undefined): JSX.Element {
     const id = root.data.id;
     const DragWrapper = that.props.DragWrapper;
 
@@ -1735,15 +1732,34 @@ export function renderItem(
         );
     };
 
-    items.push(
+    return (
         <ObjectBrowserRow
             key={id || '__root__'}
             build={build}
             epoch={that.renderEpoch}
             stateVersion={that.rowStateVersion[id] || 0}
             isExpanded={isExpanded === undefined ? binarySearch(that.state.expanded, id) : isExpanded}
-        />,
+        />
     );
+}
+
+/**
+ * Renders an item and all its expanded children.
+ *
+ * Kept for the public `ObjectBrowserClass.renderLeaf`. The table itself walks the flat list of
+ * `flattenItems` and renders only the rows of the window.
+ */
+export function renderItem(
+    that: ObjectBrowserClass,
+    root: TreeItem,
+    isExpanded: boolean | undefined,
+    counter?: { count: number },
+): (JSX.Element | null)[] {
+    const items: (JSX.Element | null)[] = [];
+    counter = counter || { count: 0 };
+    counter.count++;
+
+    items.push(renderRow(that, root, isExpanded));
 
     isExpanded = isExpanded === undefined ? binarySearch(that.state.expanded, root.data.id) : isExpanded;
 
@@ -1797,4 +1813,62 @@ export function renderItem(
     }
 
     return items;
+}
+
+/** One row of the table, in the order in which the table shows it */
+export interface FlatItem {
+    item: TreeItem;
+    /** An open folder looks different from a closed one, and only an open one shows its children */
+    isExpanded: boolean;
+}
+
+/**
+ * Walks the tree in EXACTLY the order in which `renderItem` renders it and returns the rows as one
+ * flat list.
+ *
+ * The table needs that list to render only the rows around the visible area and to know where a row
+ * that is not rendered at the moment would be - `scrollToItem` and the keyboard navigation used to
+ * read that from the DOM. Every change of the order in `renderItem` belongs here as well.
+ */
+export function flattenItems(
+    that: ObjectBrowserClass,
+    root: TreeItem,
+    result?: FlatItem[],
+    counter?: { count: number },
+): FlatItem[] {
+    result = result || [];
+    counter = counter || { count: 0 };
+    counter.count++;
+
+    const isExpanded = binarySearch(that.state.expanded, root.data.id);
+    result.push({ item: root, isExpanded });
+
+    if ((!root.data.id || isExpanded) && root.children) {
+        // do not render too many items in column editor mode
+        const allowed = (item: TreeItem): boolean =>
+            (!that.state.columnsSelectorShow || counter.count < 15) && !!item.data.sumVisibility;
+
+        if (!that.state.foldersFirst) {
+            for (const item of root.children) {
+                if (allowed(item)) {
+                    flattenItems(that, item, result, counter);
+                }
+            }
+        } else {
+            // first only folders
+            for (const item of root.children) {
+                if (item.children && allowed(item)) {
+                    flattenItems(that, item, result, counter);
+                }
+            }
+            // then items
+            for (const item of root.children) {
+                if (!item.children && allowed(item)) {
+                    flattenItems(that, item, result, counter);
+                }
+            }
+        }
+    }
+
+    return result;
 }

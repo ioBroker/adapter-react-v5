@@ -20,6 +20,7 @@ import { TabContainer } from '../TabContainer';
 import { TabContent } from '../TabContent';
 import { TabHeader } from '../TabHeader';
 import {
+    ROW_HEIGHT,
     applyFilter,
     buildTree,
     findNode,
@@ -117,6 +118,35 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
 
     /** The next render was triggered by state changes only */
     private stateOnlyRender: boolean = false;
+
+    /** The next render was triggered by scrolling: only the window of rendered rows moved */
+    private windowOnlyRender: boolean = false;
+
+    /**
+     * Rows that are rendered above and below the visible area, so that scrolling does not run into
+     * a gap before the next render
+     */
+    private static readonly OVERSCAN_ROWS: number = 12;
+
+    /** Every row of the table in the order in which it is shown (see `flattenItems`) */
+    private flatRows: leaf.FlatItem[] = [];
+
+    /**
+     * Where every row of `flatRows` begins, in pixels. One entry longer than `flatRows`: the last
+     * one is the height of the whole table
+     */
+    private rowOffsets: number[] = [0];
+
+    /** id -> the height the row really had. Only rows that are not `ROW_HEIGHT` high end up here */
+    private readonly measuredHeights: Record<string, number> = {};
+
+    /** Scroll position and height of the table container, the two values the window is cut from */
+    private scrollTop: number = 0;
+    private viewportHeight: number = 0;
+    private scrollFrame: number | null = null;
+    /** First and last row of the last rendered window, to notice that scrolling moved it */
+    private windowFirst: number = 0;
+    private windowLast: number = 0;
 
     /** id -> how often the state of this row has changed. Part of the memo key of the row */
     readonly rowStateVersion: Record<string, number> = {};
@@ -821,6 +851,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         window.addEventListener('keyup', this.onKeyPress, true);
 
         this.observeContainerWidth();
+        this.measureRenderedRows();
 
         // Inform dialog that all objects are loaded
         if (this.props.onAllLoaded) {
@@ -855,6 +886,11 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         this.resizeObserver?.disconnect();
         this.resizeObserver = null;
         this.observedContainer = null;
+
+        if (this.scrollFrame !== null) {
+            window.cancelAnimationFrame(this.scrollFrame);
+            this.scrollFrame = null;
+        }
 
         // the timers must not fire after the component was destroyed
         if (this.unsubscribeTimer) {
@@ -2424,10 +2460,28 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         }
         this.resizeObserver?.disconnect();
         this.observedContainer = container;
-        this.resizeObserver = new ResizeObserver(entries => this.setContainerWidth(entries[0].contentRect.width));
+        this.resizeObserver = new ResizeObserver(entries => {
+            // the height decides how many rows are rendered (see `getWindow`)
+            this.setViewportHeight(entries[0].contentRect.height);
+            this.setContainerWidth(entries[0].contentRect.width);
+        });
         this.resizeObserver.observe(container);
         // measure immediately, so the first render after mounting shows the right columns
+        this.setViewportHeight(container.clientHeight);
         this.setContainerWidth(container.clientWidth);
+    }
+
+    /** Store the height of the container: it decides how many rows the window holds */
+    setViewportHeight(viewportHeight: number): void {
+        if (Math.abs(this.viewportHeight - viewportHeight) < 1) {
+            return;
+        }
+        this.viewportHeight = viewportHeight;
+        const { first, last } = this.getWindow();
+        if (first !== this.windowFirst || last !== this.windowLast) {
+            this.windowOnlyRender = true;
+            this.forceUpdate();
+        }
     }
 
     /** Store the width class of the container if it changed */
@@ -2436,6 +2490,130 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         if (width !== this.state.containerWidth) {
             // the columns are recalculated in `render`, as soon as the width class changed
             this.setState({ containerWidth: width });
+        }
+    }
+
+    /**
+     * The height a row needs.
+     *
+     * A row with an alias is higher than the others, and what a row really measured beats the
+     * estimate - the table has to know the height of rows it does not render at the moment,
+     * otherwise the scrollbar does not fit the content.
+     */
+    private rowHeight(item: TreeItem): number {
+        const id = item.data.id;
+        // the root itself has no row, only its children have one
+        if (!id) {
+            return 0;
+        }
+        const measured = this.measuredHeights[id];
+        if (measured) {
+            return measured;
+        }
+        const common = this.objects[id]?.common as ioBroker.StateCommon | undefined;
+        if (id.startsWith('alias.') && common?.alias?.id) {
+            // see `tableRowAlias` and `tableRowAliasReadWrite` in styles.ts
+            return typeof common.alias.id === 'object' ? ROW_HEIGHT + 22 : ROW_HEIGHT + 10;
+        }
+        return ROW_HEIGHT;
+    }
+
+    /** All rows in the order in which they are shown, and where each of them begins */
+    private buildFlatRows(): void {
+        this.flatRows = this.root ? leaf.flattenItems(this, this.root) : [];
+        const offsets: number[] = new Array(this.flatRows.length + 1);
+        offsets[0] = 0;
+        for (let i = 0; i < this.flatRows.length; i++) {
+            offsets[i + 1] = offsets[i] + this.rowHeight(this.flatRows[i].item);
+        }
+        this.rowOffsets = offsets;
+    }
+
+    /** The row that covers this position (binary search over `rowOffsets`) */
+    private findRowAt(position: number): number {
+        let low = 0;
+        let high = this.flatRows.length - 1;
+        while (low < high) {
+            const middle = (low + high + 1) >> 1;
+            if (this.rowOffsets[middle] <= position) {
+                low = middle;
+            } else {
+                high = middle - 1;
+            }
+        }
+        return low;
+    }
+
+    /**
+     * The rows that are rendered: the visible ones plus `OVERSCAN_ROWS` above and below.
+     *
+     * A tree with a few thousand open rows costs a fifth of a second of blocked main thread for
+     * every change that concerns all rows - selecting a row, a filter, folding a node - because
+     * every row is built anew. Only the rows around the visible area are rendered now, so that
+     * work no longer grows with the size of the tree.
+     */
+    private getWindow(): { first: number; last: number } {
+        const count = this.flatRows.length;
+        if (!count) {
+            return { first: 0, last: 0 };
+        }
+        // until the container was measured (the very first render) render a screen full of rows
+        const height = this.viewportHeight || 1_000;
+        const first = Math.max(0, this.findRowAt(this.scrollTop) - ObjectBrowserClass.OVERSCAN_ROWS);
+        const last = Math.min(count, this.findRowAt(this.scrollTop + height) + 1 + ObjectBrowserClass.OVERSCAN_ROWS);
+        return { first, last };
+    }
+
+    /** The table was scrolled: move the window of rendered rows, at most once per frame */
+    private readonly onTableScroll = (): void => {
+        if (this.scrollFrame !== null) {
+            return;
+        }
+        this.scrollFrame = window.requestAnimationFrame(() => {
+            this.scrollFrame = null;
+            const container = this.tableRef.current;
+            if (!container) {
+                return;
+            }
+            this.scrollTop = container.scrollTop;
+            const { first, last } = this.getWindow();
+            if (first !== this.windowFirst || last !== this.windowLast) {
+                // scrolling changes no row, so the rows that stay in the window keep their output
+                this.windowOnlyRender = true;
+                this.forceUpdate();
+            }
+        });
+    };
+
+    /**
+     * Remember how high the rendered rows really are.
+     *
+     * Rows are not all `ROW_HEIGHT` high (an alias is higher, the focused row of the narrow view
+     * has no fixed height at all), and a row outside the window cannot be measured - so every row
+     * that was rendered once keeps its measured height for the calculation of the window.
+     */
+    private measureRenderedRows(): void {
+        const container = this.tableRef.current;
+        if (!container) {
+            return;
+        }
+        let changed = false;
+        for (const child of Array.from(container.children)) {
+            // with drag and drop enabled the row sits inside a wrapper
+            const row = (child.id ? child : child.firstElementChild) as HTMLElement | null;
+            if (!row?.id) {
+                continue;
+            }
+            const height = row.offsetHeight;
+            if (height && Math.abs((this.measuredHeights[row.id] || ROW_HEIGHT) - height) > 0.5) {
+                this.measuredHeights[row.id] = height;
+                changed = true;
+            }
+        }
+        if (changed) {
+            // the rows kept their content, only the calculated positions move
+            this.windowOnlyRender = true;
+            this.forceUpdate();
         }
     }
 
@@ -2579,14 +2757,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
 
         if (event.code === 'ArrowUp' || event.code === 'ArrowDown') {
             event.preventDefault();
-            const ids: string[] = [];
-            // the first child is the header, it has no ID
-            this.tableRef.current?.childNodes.forEach((node: any) => {
-                const nodeId = (node as HTMLDivElement).id;
-                if (nodeId) {
-                    ids.push(nodeId);
-                }
-            });
+            // every row of the table, not only the rendered ones (see `getWindow`)
+            const ids: string[] = this.flatRows.map(row => row.item.data.id).filter(id => !!id);
             const idx = ids.indexOf(selectedId);
             const newIdx = event.code === 'ArrowDown' ? idx + 1 : idx - 1;
             const newId = ids[newIdx] || selectedId;
@@ -2777,6 +2949,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     componentDidUpdate(prevProps: ObjectBrowserProps): void {
         // the table is rendered only after the objects are loaded
         this.observeContainerWidth();
+        this.measureRenderedRows();
 
         if (this.tableRef.current && this.selectFirst) {
             this.scrollToItem(this.selectFirst);
@@ -2784,15 +2957,34 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         this.reconcileNavigation(prevProps);
     }
 
+    /**
+     * Scrolls to a row.
+     *
+     * The row does not have to be rendered: only the rows around the visible area are (see
+     * `getWindow`), so the position is taken from the flat list of all rows and the row is brought
+     * into the middle of the table by scrolling there.
+     */
     scrollToItem(id: string): void {
         this.selectFirst = '';
 
         const node = window.document.getElementById(id);
-        node?.scrollIntoView({
-            behavior: 'auto',
-            block: 'center',
-            inline: 'center',
-        });
+        if (node) {
+            node.scrollIntoView({
+                behavior: 'auto',
+                block: 'center',
+                inline: 'center',
+            });
+            return;
+        }
+
+        const container = this.tableRef.current;
+        const index = this.flatRows.findIndex(row => row.item.data.id === id);
+        if (!container || index === -1) {
+            return;
+        }
+        const middle = this.rowOffsets[index] - Math.max(0, (this.viewportHeight - ROW_HEIGHT) / 2);
+        container.scrollTop = Math.max(0, middle);
+        // the scroll event moves the window, and the row is rendered with the next frame
     }
 
     onUpdate(valAck: {
@@ -2867,8 +3059,15 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         // are (a row that is not rendered again does not record itself, and `checkUnsubscribes`
         // would take that for "not needed anymore" and unsubscribe it)
         const stateOnlyRender = this.stateOnlyRender;
+        // A render that was triggered by scrolling does not change any row either: the rows that
+        // stay in the window keep their output, and a row that keeps its output does not record
+        // its subscription - so the recorded subscriptions are left alone here as well. The
+        // subscriptions of rows that scrolled away are cleaned up with the next full render
+        const windowOnlyRender = this.windowOnlyRender;
         this.stateOnlyRender = false;
-        if (!stateOnlyRender) {
+        this.windowOnlyRender = false;
+        const fullRender = !stateOnlyRender && !windowOnlyRender;
+        if (fullRender) {
             this.renderEpoch++;
             this.recordStates.clear();
             if (this.unsubscribeTimer) {
@@ -2906,7 +3105,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             this.styleTheme = this.props.themeType;
         }
 
-        if (!stateOnlyRender) {
+        if (fullRender) {
             this.unsubscribeTimer = setTimeout(() => {
                 this.unsubscribeTimer = null;
                 this.checkUnsubscribes();
@@ -2932,7 +3131,21 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             this.calculateColumnsVisibility();
         }
 
-        const items = this.root ? this.renderItem(this.root, undefined) : null;
+        // Only the rows around the visible area are rendered - see `getWindow`. The rows that are
+        // not rendered are replaced by two spacers, so the scrollbar keeps the size of the table
+        if (fullRender || !this.flatRows.length) {
+            // a state change cannot add or remove a row, and scrolling does not either
+            this.buildFlatRows();
+        }
+        const { first, last } = this.getWindow();
+        this.windowFirst = first;
+        this.windowLast = last;
+        const items: JSX.Element[] = [];
+        for (let i = first; i < last; i++) {
+            items.push(leaf.renderRow(this, this.flatRows[i].item, this.flatRows[i].isExpanded));
+        }
+        const spaceAbove = this.rowOffsets[first];
+        const spaceBelow = this.rowOffsets[this.flatRows.length] - this.rowOffsets[last];
 
         return (
             <TabContainer
@@ -2983,9 +3196,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                         style={{ ...styles.tableDiv, ...this.getColumnWidthVariables() }}
                         ref={this.tableRef}
                         onKeyDown={event => this.navigateKeyPress(event)}
+                        onScroll={this.onTableScroll}
                     >
                         {toolbar.renderHeader(this)}
+                        {spaceAbove ? <div style={{ height: spaceAbove }} /> : null}
                         {items}
+                        {spaceBelow ? <div style={{ height: spaceBelow }} /> : null}
                     </Box>
                 </TabContent>
                 {contextMenu.renderContextMenu(this)}
