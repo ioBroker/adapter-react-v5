@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.3.1",
+        "@iobroker/gui-components": "^10.3.2",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -880,6 +880,10 @@ You can find the migration instructions:
 ### **WORK IN PROGRESS**
 
 - (@krobipd) Improved: a value that changes no longer rebuilds every open row of the object browser. Until now one state answered with a render of the whole table, and with a few hundred rows open that blocked the main thread for about a fifth of a second per value - on an installation whose adapters report all the time the table never stood still. A row is kept as it is unless its own state changed or something happened that concerns every row (filter, columns, theme, selection, a rebuilt tree). Measured in the admin with 542 open rows and ten state changes: 1937 ms of blocked main thread before, none after, with the new values shown in every case
+
+### 10.3.2 (2026-09-22)
+
+- (@GermanBluefox) Updated packages
 
 ### 10.3.1 (2026-09-15)
 
