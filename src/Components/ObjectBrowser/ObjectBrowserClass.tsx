@@ -105,6 +105,23 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     private treeRebuiltWhilePaused: boolean = false;
     /** Time of the first object change since the last tree rebuild (upper bound for the rebuild delay) */
     private objectsUpdateFirstTs: number = 0;
+
+    /**
+     * Counts up on every render that can change ANY row - a new filter, other columns, another
+     * theme, a different selection, a rebuilt tree. A state change does NOT count it up: it only
+     * concerns the rows whose value changed. Together with `rowStateVersion` this is the memo key
+     * of a row (see `renderItem`), so a value that ticks every second no longer rebuilds the whole
+     * table
+     */
+    renderEpoch: number = 0;
+
+    /** The next render was triggered by state changes only */
+    private stateOnlyRender: boolean = false;
+
+    /** id -> how often the state of this row has changed. Part of the memo key of the row */
+    readonly rowStateVersion: Record<string, number> = {};
+
+    private stateVersionCounter: number = 0;
     private selectFirst: string;
     /** Last navigation that was applied from `navigateTo` or reported via `onNavigateTo` (loop guard). */
     private lastNav: ObjectBrowserNavigation | null = null;
@@ -1100,11 +1117,14 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         } else {
             delete this.states[id];
         }
+        // only this row has to be rendered again
+        this.rowStateVersion[id] = ++this.stateVersionCounter;
 
         if (!this.pausedSubscribes) {
             if (!this.statesUpdateTimer) {
                 this.statesUpdateTimer = setTimeout(() => {
                     this.statesUpdateTimer = null;
+                    this.stateOnlyRender = true;
                     this.forceUpdate();
                 }, 300);
             }
@@ -2842,9 +2862,18 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
      * The rendering method of this component.
      */
     render(): JSX.Element {
-        this.recordStates.clear();
-        if (this.unsubscribeTimer) {
-            clearTimeout(this.unsubscribeTimer);
+        // A render that was triggered by state changes only touches the rows whose value changed:
+        // the set of rendered rows cannot have changed, so the recorded subscriptions stay as they
+        // are (a row that is not rendered again does not record itself, and `checkUnsubscribes`
+        // would take that for "not needed anymore" and unsubscribe it)
+        const stateOnlyRender = this.stateOnlyRender;
+        this.stateOnlyRender = false;
+        if (!stateOnlyRender) {
+            this.renderEpoch++;
+            this.recordStates.clear();
+            if (this.unsubscribeTimer) {
+                clearTimeout(this.unsubscribeTimer);
+            }
         }
 
         if (this.styleTheme !== this.props.themeType) {
@@ -2877,10 +2906,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             this.styleTheme = this.props.themeType;
         }
 
-        this.unsubscribeTimer = setTimeout(() => {
-            this.unsubscribeTimer = null;
-            this.checkUnsubscribes();
-        }, 200);
+        if (!stateOnlyRender) {
+            this.unsubscribeTimer = setTimeout(() => {
+                this.unsubscribeTimer = null;
+                this.checkUnsubscribes();
+            }, 200);
+        }
 
         if (this.expertMode !== !!this.state.filter.expertMode) {
             this.expertMode = !!this.state.filter.expertMode;

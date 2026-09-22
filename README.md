@@ -877,6 +877,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@krobipd) Improved: a value that changes no longer rebuilds every open row of the object browser. Until now one state answered with a render of the whole table, and with a few hundred rows open that blocked the main thread for about a fifth of a second per value - on an installation whose adapters report all the time the table never stood still. A row is kept as it is unless its own state changed or something happened that concerns every row (filter, columns, theme, selection, a rebuilt tree). Measured in the admin with 542 open rows and ten state changes: 1937 ms of blocked main thread before, none after, with the new values shown in every case
+
 ### 10.3.1 (2026-09-15)
 
 - (@GermanBluefox) Changed: the details of the selected object in the narrow view of the object browser were reworked - theme colors, the full ID with a copy button, a dash for empty values and buttons with tooltips

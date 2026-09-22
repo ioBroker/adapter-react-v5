@@ -588,10 +588,11 @@ export function renderLeaf(
     that: ObjectBrowserClass,
     item: TreeItem,
     isExpanded: boolean | undefined,
-    counter: { count: number },
+    /** Kept for the public `ObjectBrowserClass.renderLeaf`. `renderItem` counts the items now, so
+     * that a row which is served from the memo is counted as well */
+    _counter?: { count: number },
 ): { row: JSX.Element; details: JSX.Element | null } {
     const id = item.data.id;
-    counter.count++;
     isExpanded = isExpanded === undefined ? that.state.expanded.includes(id) : isExpanded;
 
     // icon
@@ -1650,6 +1651,38 @@ export function renderLeaf(
     return { row, details: colDetails };
 }
 
+interface ObjectBrowserRowProps {
+    /** Builds the row. Called only when the memo lets the component render */
+    build: () => JSX.Element;
+    /** See `ObjectBrowserClass.renderEpoch` - changes when anything but a state has changed */
+    epoch: number;
+    /** See `ObjectBrowserClass.rowStateVersion` - changes when the state of THIS row has changed */
+    stateVersion: number;
+    /** An open folder looks different from a closed one */
+    isExpanded: boolean | undefined;
+}
+
+/**
+ * One row of the table.
+ *
+ * Building a row is expensive: it assembles up to a dozen cells and merges its styles for every
+ * one of them (`Utils.getStyle` returns a fresh object each time, which the style engine has to
+ * serialize anew). Until now a single state change rebuilt EVERY open row, because the browser
+ * answers a value with `forceUpdate()` on the whole table - with a few hundred rows open that
+ * blocked the main thread for a fifth of a second per value, and on an installation whose adapters
+ * report all the time the table never stood still.
+ *
+ * The memo keeps the row as it is unless its own state changed or something happened that concerns
+ * every row (filter, columns, theme, selection, a rebuilt tree - all of which count up the epoch).
+ */
+const ObjectBrowserRow = React.memo(
+    function ObjectBrowserRow(props: ObjectBrowserRowProps): JSX.Element {
+        return props.build();
+    },
+    (prev, next) =>
+        prev.epoch === next.epoch && prev.stateVersion === next.stateVersion && prev.isExpanded === next.isExpanded,
+);
+
 /**
  * Renders an item.
  */
@@ -1661,40 +1694,56 @@ export function renderItem(
 ): (JSX.Element | null)[] {
     const items: (JSX.Element | null)[] = [];
     counter = counter || { count: 0 };
-    const result = renderLeaf(that, root, isExpanded, counter);
-    let leaf: JSX.Element;
+    counter.count++;
+    const id = root.data.id;
     const DragWrapper = that.props.DragWrapper;
-    if (that.props.dragEnabled && DragWrapper) {
-        if (root.data.sumVisibility) {
-            leaf = (
-                <DragWrapper
-                    key={root.data.id}
-                    item={root}
-                    style={styles.draggable}
-                >
-                    {result.row}
-                </DragWrapper>
-            );
+
+    // Everything the row needs is built inside the memo: it does not run while the row is reused
+    const build = (): JSX.Element => {
+        const result = renderLeaf(that, root, isExpanded);
+        let leaf: JSX.Element;
+        if (that.props.dragEnabled && DragWrapper) {
+            if (root.data.sumVisibility) {
+                leaf = (
+                    <DragWrapper
+                        key={id}
+                        item={root}
+                        style={styles.draggable}
+                    >
+                        {result.row}
+                    </DragWrapper>
+                );
+            } else {
+                // change cursor
+                leaf = (
+                    <div
+                        key={id}
+                        style={styles.nonDraggable}
+                    >
+                        {result.row}
+                    </div>
+                );
+            }
         } else {
-            // change cursor
-            leaf = (
-                <div
-                    key={root.data.id}
-                    style={styles.nonDraggable}
-                >
-                    {result.row}
-                </div>
-            );
+            leaf = result.row;
         }
-    } else {
-        leaf = result.row;
-    }
-    if (root.data.id && leaf) {
-        items.push(leaf);
-    }
-    if (result.details) {
-        items.push(result.details);
-    }
+        return (
+            <>
+                {id ? leaf : null}
+                {result.details}
+            </>
+        );
+    };
+
+    items.push(
+        <ObjectBrowserRow
+            key={id || '__root__'}
+            build={build}
+            epoch={that.renderEpoch}
+            stateVersion={that.rowStateVersion[id] || 0}
+            isExpanded={isExpanded === undefined ? binarySearch(that.state.expanded, id) : isExpanded}
+        />,
+    );
 
     isExpanded = isExpanded === undefined ? binarySearch(that.state.expanded, root.data.id) : isExpanded;
 
