@@ -877,6 +877,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Updated packages
+
 ### 10.3.1 (2026-09-15)
 
 - (@GermanBluefox) Changed: the details of the selected object in the narrow view of the object browser were reworked - theme colors, the full ID with a copy button, a dash for empty values and buttons with tooltips
