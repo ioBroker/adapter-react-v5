@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.3.3",
+        "@iobroker/gui-components": "^10.3.4",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,7 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.3.4 (2026-09-23)
 
 - (@GermanBluefox) Fixed: the schedule wizard threw the time of day away. A schedule with an exact time was saved as `{"time":{"exactTime":true}}` without the time itself, so it ran at 00:00 and the dialog showed `--:--` and "every day at undefined" when it was opened again (ioBroker.javascript#2386). A saved schedule that lacks a setting now also falls back to the default of that setting instead of `undefined`
 
