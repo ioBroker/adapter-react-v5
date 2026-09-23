@@ -877,6 +877,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Fixed: the schedule wizard threw the time of day away. A schedule with an exact time was saved as `{"time":{"exactTime":true}}` without the time itself, so it ran at 00:00 and the dialog showed `--:--` and "every day at undefined" when it was opened again (ioBroker.javascript#2386). A saved schedule that lacks a setting now also falls back to the default of that setting instead of `undefined`
+
 ### 10.3.3 (2026-09-23)
 
 - (@krobipd) Improved: the object browser renders the rows around the visible area instead of every open row of the tree. Selecting a row, applying a filter or folding a node rebuilt every open row, and that cost grows with the size of the tree: measured with 4003 rows open, one click on a row blocked the main thread for 3.9 seconds and a filter for 2.6 seconds - with 603 rows it was 0.4 seconds each. Now it is 0 ms in both cases, and the table holds 38 rows instead of 4003 (1985 instead of 164652 DOM nodes). Scrolling, scrolling to a row and the keyboard navigation reach every row as before

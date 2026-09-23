@@ -60,7 +60,7 @@
     "@iobroker/socket-client": "^5.3.0",
     "@iobroker/type-detector": "^6.0.1",
     "@iobroker/types": "^7.2.3",
-    "@sentry/browser": "^10.75.2",
+    "@sentry/browser": "^11.0.0",
     "cronstrue": "^3.27.0",
     "file-selector": "^5.0.1",
     "react-colorful": "^5.8.1",

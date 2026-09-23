@@ -244,6 +244,8 @@ export interface ScheduleConfigSaved {
     time?:
         | {
               exactTime: boolean;
+              /** The time of the day as "HH:MM" or the name of an astro event, like "sunrise" */
+              start: string;
           }
         | {
               start: string;
@@ -402,7 +404,13 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
             setTimeout(() => this.onChange(this.state.schedule, true), 200);
             schedule = DEFAULT;
         }
-        schedule = { ...DEFAULT, ...schedule };
+        // Only the settings of the chosen mode are saved, so everything else comes from the defaults. The parts are
+        // merged one by one, as a saved schedule has e.g. only the time of day in `time` and nothing else.
+        schedule = {
+            time: { ...DEFAULT.time, ...schedule.time },
+            period: { ...DEFAULT.period, ...schedule.period },
+            valid: { ...DEFAULT.valid, ...schedule.valid },
+        };
         schedule.valid.from ||= Schedule.now2string();
 
         this.refFrom = React.createRef();
@@ -482,27 +490,14 @@ export class Schedule extends Component<ScheduleProps, ScheduleState> {
                 }
             }
 
-            if (
-                (
-                    copy.time as {
-                        exactTime: boolean;
-                    }
-                )?.exactTime
-            ) {
+            const _time = copy.time as ScheduleConfig['time'];
+            if (_time?.exactTime) {
+                // The time of the day belongs to the exact time too, without it the schedule would run at 00:00
                 copy.time = {
-                    exactTime: (
-                        copy.time as {
-                            exactTime: boolean;
-                        }
-                    )?.exactTime,
+                    exactTime: _time.exactTime,
+                    start: _time.start,
                 };
             } else {
-                const _time = copy.time as {
-                    start: string;
-                    end: string;
-                    mode: string;
-                    interval: number;
-                };
                 copy.time = {
                     start: _time.start,
                     end: _time.end,
