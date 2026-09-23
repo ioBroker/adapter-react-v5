@@ -111,16 +111,39 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
      * Counts up on every render that can change ANY row - a new filter, other columns, another
      * theme, a different selection, a rebuilt tree. A state change does NOT count it up: it only
      * concerns the rows whose value changed. Together with `rowStateVersion` this is the memo key
-     * of a row (see `renderItem`), so a value that ticks every second no longer rebuilds the whole
-     * table
+     * of a row (see `renderRow`), so a value that ticks every second no longer rebuilds the whole
+     * table.
+     *
+     * Whether a render concerns every row is decided in `render` and not by a flag that the caller
+     * sets: React may batch the render of a state change with a `setState` (a click) or with new
+     * props, and a flag would then keep every row as it was, although the selection has changed.
      */
     renderEpoch: number = 0;
 
-    /** The next render was triggered by state changes only */
-    private stateOnlyRender: boolean = false;
+    /**
+     * Set by every `forceUpdate()`: something changed that is not visible in `state` or `props` (a
+     * rebuilt tree, other column widths), so every row has to be built again. Only
+     * `updateRowsOnly` renders without it
+     */
+    private rowsInvalid: boolean = true;
 
-    /** The next render was triggered by scrolling: only the window of rendered rows moved */
-    private windowOnlyRender: boolean = false;
+    /** `state` and `props` of the last render: a render with the same two cannot concern every row */
+    private lastRenderedState: ObjectBrowserState | null = null;
+    private lastRenderedProps: ObjectBrowserProps | null = null;
+
+    /**
+     * row id -> the states the row showed when it was built last: its own value and the status
+     * states of a device (online, offline, error). The subscriptions that are still needed are
+     * collected from the rows of the window (see `checkUnsubscribes`) - a row that is served from
+     * the memo is not built again, but its entry here is still valid
+     */
+    readonly rowStates: Record<string, Set<string>> = {};
+
+    /**
+     * state id -> the rows that show this state although it is not their own: a device shows the
+     * status of its `statusStates`. A change of such a state has to render those rows as well
+     */
+    private readonly stateDependents: Record<string, Set<string>> = {};
 
     /**
      * Rows that are rendered above and below the visible area, so that scrolling does not run into
@@ -136,6 +159,9 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
      * one is the height of the whole table
      */
     private rowOffsets: number[] = [0];
+
+    /** A row measured another height than `rowOffsets` expected: calculate them again */
+    private rowOffsetsInvalid: boolean = false;
 
     /** id -> the height the row really had. Only rows that are not `ROW_HEIGHT` high end up here */
     private readonly measuredHeights: Record<string, number> = {};
@@ -220,7 +246,6 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     } = {};
     changedIds: null | string[] = null;
     contextMenu: null | { item: any; ts: number } = null;
-    recordStates: Set<string> = new Set();
     styles: {
         cellIdIconFolder?: React.CSSProperties;
         cellIdIconDocument?: React.CSSProperties;
@@ -1083,14 +1108,34 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         }
     }
 
+    /**
+     * Remember that a row shows a state. Called while the row is built (see `renderLeaf`)
+     *
+     * @param rowId the row
+     * @param stateId the state it shows: its own or one of its status states
+     */
+    recordState(rowId: string, stateId: string): void {
+        (this.rowStates[rowId] ||= new Set()).add(stateId);
+        if (stateId !== rowId) {
+            (this.stateDependents[stateId] ||= new Set()).add(rowId);
+        }
+    }
+
     private checkUnsubscribes(): void {
+        // Only the states of the rows in the window are needed. Rows that scrolled away are not
+        // rendered anymore, so their states are unsubscribed as well
+        const needed = new Set<string>();
+        for (let i = this.windowFirst; i < this.windowLast; i++) {
+            const rowId = this.flatRows[i]?.item.data.id;
+            this.rowStates[rowId]?.forEach(id => needed.add(id));
+        }
         // Remove unused subscriptions
         for (const id of [...this.subscribes]) {
-            if (!this.recordStates.has(id)) {
+            if (!needed.has(id)) {
                 this.unsubscribe(id);
+                delete this.stateDependents[id];
             }
         }
-        this.recordStates.clear();
     }
 
     /**
@@ -1153,15 +1198,16 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         } else {
             delete this.states[id];
         }
-        // only this row has to be rendered again
-        this.rowStateVersion[id] = ++this.stateVersionCounter;
+        // only this row has to be rendered again - and the rows that show this state as their status
+        const version = ++this.stateVersionCounter;
+        this.rowStateVersion[id] = version;
+        this.stateDependents[id]?.forEach(rowId => (this.rowStateVersion[rowId] = version));
 
         if (!this.pausedSubscribes) {
             if (!this.statesUpdateTimer) {
                 this.statesUpdateTimer = setTimeout(() => {
                     this.statesUpdateTimer = null;
-                    this.stateOnlyRender = true;
-                    this.forceUpdate();
+                    this.updateRowsOnly();
                 }, 300);
             }
         } else if (this.statesUpdateTimer) {
@@ -2479,8 +2525,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         this.viewportHeight = viewportHeight;
         const { first, last } = this.getWindow();
         if (first !== this.windowFirst || last !== this.windowLast) {
-            this.windowOnlyRender = true;
-            this.forceUpdate();
+            this.updateRowsOnly();
         }
     }
 
@@ -2521,6 +2566,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     /** All rows in the order in which they are shown, and where each of them begins */
     private buildFlatRows(): void {
         this.flatRows = this.root ? leaf.flattenItems(this, this.root) : [];
+        this.calculateRowOffsets();
+    }
+
+    /** Where every row begins - again after a row measured another height than was expected */
+    private calculateRowOffsets(): void {
+        this.rowOffsetsInvalid = false;
         const offsets: number[] = new Array(this.flatRows.length + 1);
         offsets[0] = 0;
         for (let i = 0; i < this.flatRows.length; i++) {
@@ -2579,8 +2630,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             const { first, last } = this.getWindow();
             if (first !== this.windowFirst || last !== this.windowLast) {
                 // scrolling changes no row, so the rows that stay in the window keep their output
-                this.windowOnlyRender = true;
-                this.forceUpdate();
+                this.updateRowsOnly();
             }
         });
     };
@@ -2597,23 +2647,33 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         if (!container) {
             return;
         }
-        let changed = false;
-        for (const child of Array.from(container.children)) {
-            // with drag and drop enabled the row sits inside a wrapper
-            const row = (child.id ? child : child.firstElementChild) as HTMLElement | null;
-            if (!row?.id) {
+        const heights: Record<string, number> = {};
+        for (const child of Array.from(container.children) as HTMLElement[]) {
+            // the details panel of the narrow view follows its row and belongs to its height
+            const detailsOf = child.dataset.detailsOf;
+            if (detailsOf) {
+                if (heights[detailsOf]) {
+                    heights[detailsOf] += child.offsetHeight;
+                }
                 continue;
             }
-            const height = row.offsetHeight;
-            if (height && Math.abs((this.measuredHeights[row.id] || ROW_HEIGHT) - height) > 0.5) {
-                this.measuredHeights[row.id] = height;
+            // with drag and drop enabled the row sits inside a wrapper
+            const row = (child.id ? child : child.firstElementChild) as HTMLElement | null;
+            if (row?.id && row.offsetHeight) {
+                heights[row.id] = row.offsetHeight;
+            }
+        }
+        let changed = false;
+        for (const id of Object.keys(heights)) {
+            if (Math.abs((this.measuredHeights[id] || ROW_HEIGHT) - heights[id]) > 0.5) {
+                this.measuredHeights[id] = heights[id];
                 changed = true;
             }
         }
         if (changed) {
             // the rows kept their content, only the calculated positions move
-            this.windowOnlyRender = true;
-            this.forceUpdate();
+            this.rowOffsetsInvalid = true;
+            this.updateRowsOnly();
         }
     }
 
@@ -3051,28 +3111,39 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     }
 
     /**
+     * Renders the browser and every row again: whoever calls it has changed something that is not
+     * visible in `state` or `props`, so the rows cannot keep their output
+     */
+    override forceUpdate(callback?: () => void): void {
+        this.rowsInvalid = true;
+        super.forceUpdate(callback);
+    }
+
+    /**
+     * Renders the browser, but keeps the output of every row that did not change: a state changed
+     * (see `rowStateVersion`), the table was scrolled or a row measured another height
+     */
+    private updateRowsOnly(): void {
+        super.forceUpdate();
+    }
+
+    /**
      * The rendering method of this component.
      */
     render(): JSX.Element {
-        // A render that was triggered by state changes only touches the rows whose value changed:
-        // the set of rendered rows cannot have changed, so the recorded subscriptions stay as they
-        // are (a row that is not rendered again does not record itself, and `checkUnsubscribes`
-        // would take that for "not needed anymore" and unsubscribe it)
-        const stateOnlyRender = this.stateOnlyRender;
-        // A render that was triggered by scrolling does not change any row either: the rows that
-        // stay in the window keep their output, and a row that keeps its output does not record
-        // its subscription - so the recorded subscriptions are left alone here as well. The
-        // subscriptions of rows that scrolled away are cleaned up with the next full render
-        const windowOnlyRender = this.windowOnlyRender;
-        this.stateOnlyRender = false;
-        this.windowOnlyRender = false;
-        const fullRender = !stateOnlyRender && !windowOnlyRender;
+        // Every row is built again, if anything changed that concerns all of them: `state`, `props`
+        // or whatever a `forceUpdate()` stands for. Otherwise the render only moved the window or
+        // showed new values, and the rows keep their output (see `renderRow`)
+        const fullRender =
+            this.rowsInvalid || this.state !== this.lastRenderedState || this.props !== this.lastRenderedProps;
+        this.rowsInvalid = false;
+        this.lastRenderedState = this.state;
+        this.lastRenderedProps = this.props;
         if (fullRender) {
             this.renderEpoch++;
-            this.recordStates.clear();
-            if (this.unsubscribeTimer) {
-                clearTimeout(this.unsubscribeTimer);
-            }
+        }
+        if (this.unsubscribeTimer) {
+            clearTimeout(this.unsubscribeTimer);
         }
 
         if (this.styleTheme !== this.props.themeType) {
@@ -3105,12 +3176,10 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             this.styleTheme = this.props.themeType;
         }
 
-        if (fullRender) {
-            this.unsubscribeTimer = setTimeout(() => {
-                this.unsubscribeTimer = null;
-                this.checkUnsubscribes();
-            }, 200);
-        }
+        this.unsubscribeTimer = setTimeout(() => {
+            this.unsubscribeTimer = null;
+            this.checkUnsubscribes();
+        }, 200);
 
         if (this.expertMode !== !!this.state.filter.expertMode) {
             this.expertMode = !!this.state.filter.expertMode;
@@ -3136,6 +3205,8 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         if (fullRender || !this.flatRows.length) {
             // a state change cannot add or remove a row, and scrolling does not either
             this.buildFlatRows();
+        } else if (this.rowOffsetsInvalid) {
+            this.calculateRowOffsets();
         }
         const { first, last } = this.getWindow();
         this.windowFirst = first;

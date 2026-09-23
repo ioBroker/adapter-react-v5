@@ -351,13 +351,13 @@ export function renderColumnValue(
     if (!that.states[id]) {
         if (obj.type === 'state') {
             // we are waiting for state
-            that.recordStates.add(id);
+            that.recordState(id, id);
             that.states[id] = { val: null } as ioBroker.State;
             that.subscribe(id);
         }
         return null;
     }
-    that.recordStates.add(id);
+    that.recordState(id, id);
 
     const state = that.states[id];
 
@@ -596,6 +596,8 @@ export function renderLeaf(
 ): { row: JSX.Element; details: JSX.Element | null } {
     const id = item.data.id;
     isExpanded = isExpanded === undefined ? that.state.expanded.includes(id) : isExpanded;
+    // the row records the states it shows anew (see `ObjectBrowserClass.recordState`)
+    delete that.rowStates[id];
 
     // icon
     let iconFolder;
@@ -861,12 +863,12 @@ export function renderLeaf(
 
             if (!that.states[_id]) {
                 if (that.objects[_id]?.type === 'state') {
-                    that.recordStates.add(_id);
+                    that.recordState(id, _id);
                     that.states[_id] = { val: null } as ioBroker.State;
                     that.subscribe(_id);
                 }
             } else {
-                that.recordStates.add(_id);
+                that.recordState(id, _id);
             }
         });
         // calculate color
@@ -1499,6 +1501,8 @@ export function renderLeaf(
             <Paper
                 // `renderItem` pushes this panel into the array of rows, so it needs its own key
                 key={`details_${id}`}
+                // the table adds the height of the panel to the height of its row
+                data-details-of={id}
                 elevation={0}
                 sx={styles.cellDetails}
             >
@@ -1658,7 +1662,10 @@ interface ObjectBrowserRowProps {
     build: () => JSX.Element;
     /** See `ObjectBrowserClass.renderEpoch` - changes when anything but a state has changed */
     epoch: number;
-    /** See `ObjectBrowserClass.rowStateVersion` - changes when the state of THIS row has changed */
+    /**
+     * See `ObjectBrowserClass.rowStateVersion` - changes when the state of THIS row has changed, or
+     * one of the status states it shows (online, offline, error)
+     */
     stateVersion: number;
     /** An open folder looks different from a closed one */
     isExpanded: boolean | undefined;
@@ -1674,8 +1681,9 @@ interface ObjectBrowserRowProps {
  * blocked the main thread for a fifth of a second per value, and on an installation whose adapters
  * report all the time the table never stood still.
  *
- * The memo keeps the row as it is unless its own state changed or something happened that concerns
- * every row (filter, columns, theme, selection, a rebuilt tree - all of which count up the epoch).
+ * The memo keeps the row as it is unless one of the states it shows changed or something happened
+ * that concerns every row (filter, columns, theme, selection, a rebuilt tree - all of which count up
+ * the epoch).
  */
 const ObjectBrowserRow = React.memo(
     function ObjectBrowserRow(props: ObjectBrowserRowProps): JSX.Element {
