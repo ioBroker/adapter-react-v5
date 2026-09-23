@@ -351,13 +351,13 @@ export function renderColumnValue(
     if (!that.states[id]) {
         if (obj.type === 'state') {
             // we are waiting for state
-            that.recordStates.add(id);
+            that.recordState(id, id);
             that.states[id] = { val: null } as ioBroker.State;
             that.subscribe(id);
         }
         return null;
     }
-    that.recordStates.add(id);
+    that.recordState(id, id);
 
     const state = that.states[id];
 
@@ -588,11 +588,16 @@ export function renderLeaf(
     that: ObjectBrowserClass,
     item: TreeItem,
     isExpanded: boolean | undefined,
-    counter: { count: number },
+    /**
+     * Kept for the public `ObjectBrowserClass.renderLeaf`. `renderItem` counts the items now, so
+     * that a row which is served from the memo is counted as well
+     */
+    _counter?: { count: number },
 ): { row: JSX.Element; details: JSX.Element | null } {
     const id = item.data.id;
-    counter.count++;
     isExpanded = isExpanded === undefined ? that.state.expanded.includes(id) : isExpanded;
+    // the row records the states it shows anew (see `ObjectBrowserClass.recordState`)
+    delete that.rowStates[id];
 
     // icon
     let iconFolder;
@@ -858,12 +863,12 @@ export function renderLeaf(
 
             if (!that.states[_id]) {
                 if (that.objects[_id]?.type === 'state') {
-                    that.recordStates.add(_id);
+                    that.recordState(id, _id);
                     that.states[_id] = { val: null } as ioBroker.State;
                     that.subscribe(_id);
                 }
             } else {
-                that.recordStates.add(_id);
+                that.recordState(id, _id);
             }
         });
         // calculate color
@@ -1496,6 +1501,8 @@ export function renderLeaf(
             <Paper
                 // `renderItem` pushes this panel into the array of rows, so it needs its own key
                 key={`details_${id}`}
+                // the table adds the height of the panel to the height of its row
+                data-details-of={id}
                 elevation={0}
                 sx={styles.cellDetails}
             >
@@ -1650,8 +1657,105 @@ export function renderLeaf(
     return { row, details: colDetails };
 }
 
+interface ObjectBrowserRowProps {
+    /** Builds the row. Called only when the memo lets the component render */
+    build: () => JSX.Element;
+    /** See `ObjectBrowserClass.renderEpoch` - changes when anything but a state has changed */
+    epoch: number;
+    /**
+     * See `ObjectBrowserClass.rowStateVersion` - changes when the state of THIS row has changed, or
+     * one of the status states it shows (online, offline, error)
+     */
+    stateVersion: number;
+    /** An open folder looks different from a closed one */
+    isExpanded: boolean | undefined;
+}
+
 /**
- * Renders an item.
+ * One row of the table.
+ *
+ * Building a row is expensive: it assembles up to a dozen cells and merges its styles for every
+ * one of them (`Utils.getStyle` returns a fresh object each time, which the style engine has to
+ * serialize anew). Until now a single state change rebuilt EVERY open row, because the browser
+ * answers a value with `forceUpdate()` on the whole table - with a few hundred rows open that
+ * blocked the main thread for a fifth of a second per value, and on an installation whose adapters
+ * report all the time the table never stood still.
+ *
+ * The memo keeps the row as it is unless one of the states it shows changed or something happened
+ * that concerns every row (filter, columns, theme, selection, a rebuilt tree - all of which count up
+ * the epoch).
+ */
+const ObjectBrowserRow = React.memo(
+    function ObjectBrowserRow(props: ObjectBrowserRowProps): JSX.Element {
+        return props.build();
+    },
+    (prev, next) =>
+        prev.epoch === next.epoch && prev.stateVersion === next.stateVersion && prev.isExpanded === next.isExpanded,
+);
+
+/**
+ * Renders ONE row - without its children.
+ *
+ * The table renders only the rows around the visible area (see `ObjectBrowserClass.getWindow`), so
+ * the row of an item is built on its own and not as a part of the recursion over the tree.
+ */
+export function renderRow(that: ObjectBrowserClass, root: TreeItem, isExpanded: boolean | undefined): JSX.Element {
+    const id = root.data.id;
+    const DragWrapper = that.props.DragWrapper;
+
+    // Everything the row needs is built inside the memo: it does not run while the row is reused
+    const build = (): JSX.Element => {
+        const result = renderLeaf(that, root, isExpanded);
+        let leaf: JSX.Element;
+        if (that.props.dragEnabled && DragWrapper) {
+            if (root.data.sumVisibility) {
+                leaf = (
+                    <DragWrapper
+                        key={id}
+                        item={root}
+                        style={styles.draggable}
+                    >
+                        {result.row}
+                    </DragWrapper>
+                );
+            } else {
+                // change cursor
+                leaf = (
+                    <div
+                        key={id}
+                        style={styles.nonDraggable}
+                    >
+                        {result.row}
+                    </div>
+                );
+            }
+        } else {
+            leaf = result.row;
+        }
+        return (
+            <>
+                {id ? leaf : null}
+                {result.details}
+            </>
+        );
+    };
+
+    return (
+        <ObjectBrowserRow
+            key={id || '__root__'}
+            build={build}
+            epoch={that.renderEpoch}
+            stateVersion={that.rowStateVersion[id] || 0}
+            isExpanded={isExpanded === undefined ? binarySearch(that.state.expanded, id) : isExpanded}
+        />
+    );
+}
+
+/**
+ * Renders an item and all its expanded children.
+ *
+ * Kept for the public `ObjectBrowserClass.renderLeaf`. The table itself walks the flat list of
+ * `flattenItems` and renders only the rows of the window.
  */
 export function renderItem(
     that: ObjectBrowserClass,
@@ -1661,40 +1765,9 @@ export function renderItem(
 ): (JSX.Element | null)[] {
     const items: (JSX.Element | null)[] = [];
     counter = counter || { count: 0 };
-    const result = renderLeaf(that, root, isExpanded, counter);
-    let leaf: JSX.Element;
-    const DragWrapper = that.props.DragWrapper;
-    if (that.props.dragEnabled && DragWrapper) {
-        if (root.data.sumVisibility) {
-            leaf = (
-                <DragWrapper
-                    key={root.data.id}
-                    item={root}
-                    style={styles.draggable}
-                >
-                    {result.row}
-                </DragWrapper>
-            );
-        } else {
-            // change cursor
-            leaf = (
-                <div
-                    key={root.data.id}
-                    style={styles.nonDraggable}
-                >
-                    {result.row}
-                </div>
-            );
-        }
-    } else {
-        leaf = result.row;
-    }
-    if (root.data.id && leaf) {
-        items.push(leaf);
-    }
-    if (result.details) {
-        items.push(result.details);
-    }
+    counter.count++;
+
+    items.push(renderRow(that, root, isExpanded));
 
     isExpanded = isExpanded === undefined ? binarySearch(that.state.expanded, root.data.id) : isExpanded;
 
@@ -1748,4 +1821,62 @@ export function renderItem(
     }
 
     return items;
+}
+
+/** One row of the table, in the order in which the table shows it */
+export interface FlatItem {
+    item: TreeItem;
+    /** An open folder looks different from a closed one, and only an open one shows its children */
+    isExpanded: boolean;
+}
+
+/**
+ * Walks the tree in EXACTLY the order in which `renderItem` renders it and returns the rows as one
+ * flat list.
+ *
+ * The table needs that list to render only the rows around the visible area and to know where a row
+ * that is not rendered at the moment would be - `scrollToItem` and the keyboard navigation used to
+ * read that from the DOM. Every change of the order in `renderItem` belongs here as well.
+ */
+export function flattenItems(
+    that: ObjectBrowserClass,
+    root: TreeItem,
+    result?: FlatItem[],
+    counter?: { count: number },
+): FlatItem[] {
+    result = result || [];
+    counter = counter || { count: 0 };
+    counter.count++;
+
+    const isExpanded = binarySearch(that.state.expanded, root.data.id);
+    result.push({ item: root, isExpanded });
+
+    if ((!root.data.id || isExpanded) && root.children) {
+        // do not render too many items in column editor mode
+        const allowed = (item: TreeItem): boolean =>
+            (!that.state.columnsSelectorShow || counter.count < 15) && !!item.data.sumVisibility;
+
+        if (!that.state.foldersFirst) {
+            for (const item of root.children) {
+                if (allowed(item)) {
+                    flattenItems(that, item, result, counter);
+                }
+            }
+        } else {
+            // first only folders
+            for (const item of root.children) {
+                if (item.children && allowed(item)) {
+                    flattenItems(that, item, result, counter);
+                }
+            }
+            // then items
+            for (const item of root.children) {
+                if (!item.children && allowed(item)) {
+                    flattenItems(that, item, result, counter);
+                }
+            }
+        }
+    }
+
+    return result;
 }

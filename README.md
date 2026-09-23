@@ -877,6 +877,11 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@krobipd) Improved: the object browser renders the rows around the visible area instead of every open row of the tree. Selecting a row, applying a filter or folding a node rebuilt every open row, and that cost grows with the size of the tree: measured with 4003 rows open, one click on a row blocked the main thread for 3.9 seconds and a filter for 2.6 seconds - with 603 rows it was 0.4 seconds each. Now it is 0 ms in both cases, and the table holds 38 rows instead of 4003 (1985 instead of 164652 DOM nodes). Scrolling, scrolling to a row and the keyboard navigation reach every row as before
+- (@krobipd) Improved: a value that changes no longer rebuilds every open row of the object browser. Until now one state answered with a render of the whole table, and with a few hundred rows open that blocked the main thread for about a fifth of a second per value - on an installation whose adapters report all the time the table never stood still. A row is kept as it is unless its own state changed or something happened that concerns every row (filter, columns, theme, selection, a rebuilt tree). Measured in the admin with 542 open rows and ten state changes: 1937 ms of blocked main thread before, none after, with the new values shown in every case
+
 ### 10.3.2 (2026-09-22)
 
 - (@GermanBluefox) Updated packages
