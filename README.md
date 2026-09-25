@@ -877,6 +877,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+
+- (@GermanBluefox) Added function `findObjectIcon`
+
 ### 10.3.4 (2026-09-23)
 
 - (@GermanBluefox) Fixed: the schedule wizard threw the time of day away. A schedule with an exact time was saved as `{"time":{"exactTime":true}}` without the time itself, so it ran at 00:00 and the dialog showed `--:--` and "every day at undefined" when it was opened again (ioBroker.javascript#2386). A saved schedule that lacks a setting now also falls back to the default of that setting instead of `undefined`

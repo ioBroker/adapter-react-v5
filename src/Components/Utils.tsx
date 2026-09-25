@@ -10,6 +10,7 @@ import type { Types } from '@iobroker/type-detector';
 import { copy } from './CopyToClipboard';
 import { I18n } from '../i18n';
 import type { IobTheme, ThemeName, ThemeType } from '../types';
+import { Connection } from '@iobroker/socket-client';
 
 const NAMESPACE = 'material';
 /** All themes that are rendered with a dark background */
@@ -503,6 +504,39 @@ export class Utils {
         }
 
         return null;
+    }
+
+    /**
+     * Finds the icon for the given object id, searching up the hierarchy if necessary.
+     *
+     * @param id The object id to find the icon for.
+     * @param socket The socket connection to use for fetching objects.
+     * @param objects Optional pre-fetched objects to avoid redundant socket calls.
+     */
+    static async findObjectIcon(
+        id: string,
+        socket: Connection,
+        objects?: Record<string, ioBroker.Object>,
+    ): Promise<string | null> {
+        objects ||= {};
+        if (objects[id]?.common?.icon) {
+            return Promise.resolve(Utils.getObjectIcon(id, objects[id]));
+        }
+        const state = await socket.getObject(id);
+        if (state && (state.type === 'state' || state.type === 'channel' || state.type === 'device')) {
+            objects[id] = state;
+        } else {
+            return Promise.resolve(null);
+        }
+
+        if (state.common?.icon) {
+            return Promise.resolve(Utils.getObjectIcon(id, state));
+        }
+        if (state.type === 'state' || state.type === 'channel') {
+            const parentId = id.substring(0, id.lastIndexOf('.'));
+            return Utils.findObjectIcon(parentId, socket, objects);
+        }
+        return Promise.resolve(null);
     }
 
     /**
