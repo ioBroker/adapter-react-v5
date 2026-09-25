@@ -1,16 +1,16 @@
 /**
- * Copyright 2018-2024 Denis Haev <dogafox@gmail.com>
+ * Copyright 2018-2026 Denis Haev <dogafox@gmail.com>
  *
  * MIT License
  *
  */
 import React from 'react';
 import type { Types } from '@iobroker/type-detector';
+import type { Connection } from '../Connection';
 
 import { copy } from './CopyToClipboard';
 import { I18n } from '../i18n';
 import type { IobTheme, ThemeName, ThemeType } from '../types';
-import { Connection } from '@iobroker/socket-client';
 
 const NAMESPACE = 'material';
 /** All themes that are rendered with a dark background */
