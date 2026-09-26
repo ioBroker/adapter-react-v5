@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.3.5",
+        "@iobroker/gui-components": "^10.3.6",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,8 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-
-### **WORK IN PROGRESS**
+### 10.3.6 (2026-09-26)
 
 - (@GermanBluefox) Fixed: `Router.doNavigate` wrote the ID into the URL hash as it was, while `Router.getLocation` reads the hash by splitting it at "/" and decoding every part. An ID that contains a "/" - e.g. `ocpp.0./TACW1142021G1543.1.meterValues.Power_Active_Import` - was therefore cut off at its first slash on the way back, and its remainder landed in `arg`. The ID segment is URL-encoded now, so it survives the round trip, including the one a dialog makes when it only changes its tab (ioBroker.admin#3634). **Callers must pass the raw ID**: one that is already encoded is now encoded twice
 - (@GermanBluefox) Changed: without the expert mode, the object browser no longer offers to delete an object of an adapter - neither the button in the row nor the entry in the context menu nor the `Delete` key. Deleting such an object can stop the adapter from working, and it is created again on the next start anyway. What a user creates themselves (`0_userdata.*`, `alias.*`) can still be deleted without the expert mode, and with the expert mode everything can be deleted as before (ioBroker.admin#3639)
