@@ -366,7 +366,11 @@ export function renderContextMenu(that: ObjectBrowserClass): JSX.Element | null 
         },
         DELETE: {
             key: 'Delete',
-            visibility: !!(that.props.onObjectDelete && (item.children?.length || (obj && !obj.common?.dontDelete))),
+            visibility: !!(
+                that.props.onObjectDelete &&
+                (item.children?.length || (obj && !obj.common?.dontDelete)) &&
+                that.isDeleteAllowed(id)
+            ),
             icon: (
                 <IconDelete
                     fontSize="small"

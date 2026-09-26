@@ -152,7 +152,7 @@ export function renderColumnButtons(
                         <div style={{ height: 15 }}>---</div>
                     </IconButton>
                 ) : null}
-                {that.props.onObjectDelete && item.children?.length ? (
+                {that.props.onObjectDelete && item.children?.length && that.isDeleteAllowed(id) ? (
                     <IconButton
                         sx={{
                             ...styles.cellButtonsButton,
@@ -256,7 +256,9 @@ export function renderColumnButtons(
             />
         ),
 
-        that.props.onObjectDelete && (item.children?.length || !item.data.obj.common?.dontDelete) ? (
+        that.props.onObjectDelete &&
+        (item.children?.length || !item.data.obj.common?.dontDelete) &&
+        that.isDeleteAllowed(id) ? (
             <IconButton
                 key="delete"
                 sx={styles.cellButtonsButton}

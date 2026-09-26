@@ -23,6 +23,23 @@ export class Router<P = {}, S = {}> extends Component<P, S> {
     }
 
     /**
+     * Put a free-form part of the route into the hash.
+     *
+     * {@link Router.getLocation} splits the hash at "/" and decodes every part, so everything written
+     * here has to be encoded: an object ID may contain a "/" (e.g.
+     * `ocpp.0./TACW1142021G1543.1.meterValues.Power_Active_Import`) and a file ID always does.
+     * Without this, such an ID is cut off at its first slash when the route is read back, and the
+     * rest of it lands in `arg`.
+     *
+     * Callers pass the raw ID; they must not encode it themselves, or it is encoded twice.
+     *
+     * @param part the value to write into one segment of the hash
+     */
+    private static encodeSegment(part: string): string {
+        return encodeURIComponent(part);
+    }
+
+    /**
      * Gets the location object.
      */
     static getLocation(): { tab: string; dialog: string; id: string; arg: string } {
@@ -74,9 +91,12 @@ export class Router<P = {}, S = {}> extends Component<P, S> {
                 hash += `/${dialog}`;
 
                 if (id) {
-                    hash += `/${id}`;
+                    // `id` and `arg` carry free-form values - an ID with a "/" in it would otherwise
+                    // be read back as two segments. `tab` and `dialog` are fixed names of the
+                    // application and are left as they are.
+                    hash += `/${Router.encodeSegment(id)}`;
                     if (arg !== undefined) {
-                        hash += `/${arg}`;
+                        hash += `/${arg === null ? arg : Router.encodeSegment(arg)}`;
                     }
                 }
             }

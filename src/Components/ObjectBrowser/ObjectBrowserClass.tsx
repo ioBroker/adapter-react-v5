@@ -73,6 +73,12 @@ declare module '@mui/material/Button' {
 
 let objectsAlreadyLoaded = false;
 
+/**
+ * The namespaces whose objects a user creates themselves. Only these may be deleted without the
+ * expert mode; see {@link ObjectBrowserClass.isDeleteAllowed}.
+ */
+const USER_OWNED_NAMESPACES = ['0_userdata.', 'alias.'];
+
 export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrowserState> {
     // do not define the type as null to save the performance, so we must check it every time
     info: TreeInfo = {
@@ -950,10 +956,27 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     }
 
     /**
+     * May this object be deleted without the expert mode?
+     *
+     * Deleting an object of an adapter can stop that adapter from working, and the adapter creates it
+     * again on the next start anyway. So outside the expert mode only the objects a user makes
+     * themselves can be deleted - those in `0_userdata.*` and `alias.*` (ioBroker.admin#3639).
+     *
+     * @param id ID of the object
+     */
+    isDeleteAllowed(id: string): boolean {
+        return this.state.filter.expertMode || USER_OWNED_NAMESPACES.some(prefix => id.startsWith(prefix));
+    }
+
+    /**
      * Show the deletion dialog for a given object
      */
     showDeleteDialog(options: { id: string; obj: ioBroker.Object; item: TreeItem }): void {
         const { id, obj, item } = options;
+
+        if (!this.isDeleteAllowed(id)) {
+            return;
+        }
 
         // calculate the number of children
         const keys = Object.keys(this.objects);
@@ -1035,11 +1058,13 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     onSelect(toggleItem: string, isDouble?: boolean, cb?: () => void): void {
         this.localStorage.setItem(`${this.props.dialogName || 'App'}.focused`, toggleItem);
 
+        // `objects` only exists once the tree has been read. A selection can arrive before that -
+        // from the URL, through `navigateTo` - and must not throw; such an ID is treated like one
+        // that is not in the tree, and `applyInitialNavigateTo` selects it properly after the load.
+        const obj = this.objects?.[toggleItem];
+
         if (!this.props.multiSelect) {
-            if (
-                this.objects[toggleItem] &&
-                (!this.props.types || this.props.types.includes(this.objects[toggleItem].type))
-            ) {
+            if (obj && (!this.props.types || this.props.types.includes(obj.type))) {
                 this.localStorage.removeItem(`${this.props.dialogName || 'App'}.selectedNonObject`);
                 if (this.state.selected[0] !== toggleItem) {
                     this.setState({ selected: [toggleItem], selectedNonObject: '', focused: toggleItem }, () => {
@@ -1060,10 +1085,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                     }
                 });
             }
-        } else if (
-            this.objects[toggleItem] &&
-            (!this.props.types || this.props.types.includes(this.objects[toggleItem].type))
-        ) {
+        } else if (obj && (!this.props.types || this.props.types.includes(obj.type))) {
             this.localStorage.removeItem(`${this.props.dialogName || 'App'}.selectedNonObject`);
 
             const selected = [...this.state.selected];
@@ -2926,6 +2948,11 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
 
     /** Apply a navigation target coming from the parent (`navigateTo`): select + open the dialog. */
     private applyNavigateTo(nav: ObjectBrowserNavigation | null): void {
+        if (!this.objects) {
+            // The tree is still being read. `applyInitialNavigateTo` runs once it is there and takes
+            // the target from the props again, so nothing is lost by waiting here.
+            return;
+        }
         this.applyingNav = true;
         const done = (): void => {
             this.applyingNav = false;
