@@ -877,6 +877,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Improved Statistics card
+
 ### 10.3.6 (2026-09-26)
 
 - (@GermanBluefox) Fixed: `Router.doNavigate` wrote the ID into the URL hash as it was, while `Router.getLocation` reads the hash by splitting it at "/" and decoding every part. An ID that contains a "/" - e.g. `ocpp.0./TACW1142021G1543.1.meterValues.Power_Active_Import` - was therefore cut off at its first slash on the way back, and its remainder landed in `arg`. The ID segment is URL-encoded now, so it survives the round trip, including the one a dialog makes when it only changes its tab (ioBroker.admin#3634). **Callers must pass the raw ID**: one that is already encoded is now encoded twice

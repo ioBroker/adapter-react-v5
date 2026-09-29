@@ -91,22 +91,32 @@ interface CardTitleProps {
     title: string;
     /** Optional link on the right, e.g. "Show all" */
     action?: { text: string; onClick: () => void };
+    /**
+     * Anything else that belongs on the right, e.g. an icon button that collapses the card. Shown
+     * behind `action` when both are given.
+     */
+    actions?: ReactNode;
 }
 
 /** Heading of a content card, with an optional action on the right */
-export function CardTitle({ title, action }: CardTitleProps): JSX.Element {
+export function CardTitle({ title, action, actions }: CardTitleProps): JSX.Element {
     return (
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 2 }}>
             <Typography sx={{ fontSize: '1rem', fontWeight: 600 }}>{title}</Typography>
-            {action ? (
-                <Link
-                    component="button"
-                    underline="none"
-                    sx={{ fontSize: '0.8125rem' }}
-                    onClick={action.onClick}
-                >
-                    {action.text}
-                </Link>
+            {action || actions ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                    {action ? (
+                        <Link
+                            component="button"
+                            underline="none"
+                            sx={{ fontSize: '0.8125rem' }}
+                            onClick={action.onClick}
+                        >
+                            {action.text}
+                        </Link>
+                    ) : null}
+                    {actions}
+                </Box>
             ) : null}
         </Box>
     );
