@@ -877,6 +877,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Added: CTRL+ENTER confirms the dialogs of the object browser - the export ("Only selected"), the rooms/functions of a row and "Edit object field" of a custom column. The confirming button of every one of these dialogs carries the hint as a tooltip
+
 ### 10.3.7 (2026-09-29)
 - (@GermanBluefox) Improved Statistics card
 

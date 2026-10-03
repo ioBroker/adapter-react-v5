@@ -29,10 +29,11 @@ import {
     Snackbar,
     Switch,
     TextField,
+    Tooltip,
 } from '@mui/material';
 import { Check as IconCheck, Close as IconClose } from '@mui/icons-material';
 import { IconExpert } from '../../icons/IconExpert';
-import { getCustomValue, getName, getSelectIdIconFromObjects } from './utils';
+import { getCustomValue, getName, getSelectIdIconFromObjects, onCtrlEnter } from './utils';
 import { type ObjectBrowserPossibleColumns } from './types';
 import { styles } from './styles';
 import { DEFAULT_DATE_FORMAT } from './constants';
@@ -269,10 +270,24 @@ export function renderExportDialog(that: ObjectBrowserClass): JSX.Element | null
     if (that.state.showExportDialog === false) {
         return null;
     }
+
+    /** The "Only selected" button and CTRL+ENTER end up here */
+    const onExportSelected = (): void =>
+        that.setState({ showExportDialog: false, showAllExportOptions: false }, () =>
+            that._exportObjects({
+                isAll: false,
+                noStatesByExportImport: that.state.noStatesByExportImport,
+                beautify: that.state.beautifyJsonExport,
+                excludeSystemRepositories: that.state.excludeSystemRepositoriesFromExport,
+                excludeTranslations: that.state.excludeTranslations,
+            }),
+        );
+
     return (
         <Dialog
             open={!0}
             maxWidth="lg"
+            onKeyDown={e => onCtrlEnter(e, onExportSelected)}
         >
             <DialogTitle>{that.props.t('ra_Select type of export')}</DialogTitle>
             <DialogContent>
@@ -358,25 +373,17 @@ export function renderExportDialog(that: ObjectBrowserClass): JSX.Element | null
                         {that.props.t('ra_Advanced options')}
                     </Button>
                 )}
-                <Button
-                    color="primary"
-                    variant="contained"
-                    autoFocus
-                    onClick={() =>
-                        that.setState({ showExportDialog: false, showAllExportOptions: false }, () =>
-                            that._exportObjects({
-                                isAll: false,
-                                noStatesByExportImport: that.state.noStatesByExportImport,
-                                beautify: that.state.beautifyJsonExport,
-                                excludeSystemRepositories: that.state.excludeSystemRepositoriesFromExport,
-                                excludeTranslations: that.state.excludeTranslations,
-                            }),
-                        )
-                    }
-                >
-                    <span style={{ marginRight: 8 }}>{that.props.t('ra_Only selected')}</span>(
-                    {that.state.showExportDialog})
-                </Button>
+                <Tooltip title={that.props.t('ra_Press CTRL+ENTER to confirm')}>
+                    <Button
+                        color="primary"
+                        variant="contained"
+                        autoFocus
+                        onClick={onExportSelected}
+                    >
+                        <span style={{ marginRight: 8 }}>{that.props.t('ra_Only selected')}</span>(
+                        {that.state.showExportDialog})
+                    </Button>
+                </Tooltip>
                 <Button
                     color="grey"
                     variant="contained"
@@ -462,10 +469,20 @@ export function renderEnumDialog(that: ObjectBrowserClass): JSX.Element | null {
 
     // const hasIcons = !!enums.find(item => item.icon);
 
+    /** The button in the title and CTRL+ENTER end up here */
+    const onApplyEnums = (): void => {
+        if (enumsOriginal !== JSON.stringify(itemEnums)) {
+            void that
+                .syncEnum(item.data.id, type, itemEnums)
+                .then(() => that.setState({ enumDialog: null, enumDialogEnums: null }));
+        }
+    };
+
     return (
         <Dialog
             sx={{ '& .MuiPaper-root': styles.enumDialog }}
             onClose={() => that.setState({ enumDialog: null })}
+            onKeyDown={e => onCtrlEnter(e, onApplyEnums)}
             aria-labelledby="enum-dialog-title"
             open={!0} // true
         >
@@ -481,18 +498,18 @@ export function renderEnumDialog(that: ObjectBrowserClass): JSX.Element | null {
                 }}
             >
                 {type === 'func' ? that.props.t('ra_Define functions') : that.props.t('ra_Define rooms')}
-                <Fab
-                    color="primary"
-                    disabled={enumsOriginal === JSON.stringify(itemEnums)}
-                    size="small"
-                    onClick={() =>
-                        that
-                            .syncEnum(item.data.id, type, itemEnums)
-                            .then(() => that.setState({ enumDialog: null, enumDialogEnums: null }))
-                    }
-                >
-                    <IconCheck />
-                </Fab>
+                <Tooltip title={that.props.t('ra_Press CTRL+ENTER to confirm')}>
+                    <span>
+                        <Fab
+                            color="primary"
+                            disabled={enumsOriginal === JSON.stringify(itemEnums)}
+                            size="small"
+                            onClick={onApplyEnums}
+                        >
+                            <IconCheck />
+                        </Fab>
+                    </span>
+                </Tooltip>
             </DialogTitle>
             <List sx={{ '&.MuiList-root': styles.enumList }}>
                 {enums.map(_item => {
@@ -593,6 +610,13 @@ export function renderColumnsEditCustomDialog(that: ObjectBrowserClass): JSX.Ele
     return (
         <Dialog
             onClose={() => that.setState({ columnsEditCustomDialog: null })}
+            onKeyDown={e =>
+                onCtrlEnter(e, () => {
+                    if (that.state.customColumnDialogValueChanged) {
+                        that.onColumnsEditCustomDialogClose(true);
+                    }
+                })
+            }
             maxWidth="md"
             aria-labelledby="custom-dialog-title"
             open={!0}
@@ -659,15 +683,19 @@ export function renderColumnsEditCustomDialog(that: ObjectBrowserClass): JSX.Ele
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
-                <Button
-                    variant="contained"
-                    onClick={() => that.onColumnsEditCustomDialogClose(true)}
-                    disabled={!that.state.customColumnDialogValueChanged}
-                    color="primary"
-                    startIcon={<IconCheck />}
-                >
-                    {that.props.t('ra_Update')}
-                </Button>
+                <Tooltip title={that.props.t('ra_Press CTRL+ENTER to confirm')}>
+                    <span>
+                        <Button
+                            variant="contained"
+                            onClick={() => that.onColumnsEditCustomDialogClose(true)}
+                            disabled={!that.state.customColumnDialogValueChanged}
+                            color="primary"
+                            startIcon={<IconCheck />}
+                        >
+                            {that.props.t('ra_Update')}
+                        </Button>
+                    </span>
+                </Tooltip>
                 <Button
                     color="grey"
                     variant="contained"
