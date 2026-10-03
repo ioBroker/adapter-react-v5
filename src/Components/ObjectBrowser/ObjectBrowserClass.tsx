@@ -268,6 +268,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         contextMenuACL?: React.CSSProperties;
         contextMenuRoom?: React.CSSProperties;
         contextMenuRole?: React.CSSProperties;
+        contextMenuName?: React.CSSProperties;
         contextMenuDelete?: React.CSSProperties;
         filterInput?: React.CSSProperties;
         iconCopy?: React.CSSProperties;
@@ -469,6 +470,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             showExportDialog: false,
             showImportDialog: false,
             showImportMenu: null,
+            showNameDialog: null,
             showRenameDialog: null,
             statesView,
             toast: '',
@@ -1036,6 +1038,32 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
      */
     renderErrorDialog(): JSX.Element | null {
         return dialogs.renderErrorDialog(this);
+    }
+
+    /**
+     * Writes `common.name` of an object - the context menu entry "Edit name" ends here.
+     *
+     * A name that is translated keeps its other languages: only the language of the GUI is written.
+     * Replacing the whole thing with a plain string, as the "Edit object" dialog does, would throw
+     * away every translation the adapter delivered with the object.
+     */
+    async setObjectName(id: string, name: string): Promise<void> {
+        try {
+            const obj = await this.props.socket.getObject(id);
+            if (!obj) {
+                this.showError(`Object "${id}" not found`);
+                return;
+            }
+            obj.common ||= {} as ioBroker.ObjectCommon;
+            if (obj.common.name && typeof obj.common.name === 'object') {
+                obj.common.name = { ...obj.common.name, [this.props.lang]: name };
+            } else {
+                obj.common.name = name;
+            }
+            await this.props.socket.setObject(id, obj);
+        } catch (e) {
+            this.showError(e);
+        }
     }
 
     /**
@@ -3190,6 +3218,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 contextMenuACL: Utils.getStyle(this.props.theme, styles.contextMenuACL),
                 contextMenuRoom: Utils.getStyle(this.props.theme, styles.contextMenuRoom),
                 contextMenuRole: Utils.getStyle(this.props.theme, styles.contextMenuRole),
+                contextMenuName: Utils.getStyle(this.props.theme, styles.contextMenuName),
                 contextMenuDelete: Utils.getStyle(this.props.theme, styles.contextMenuDelete),
                 filterInput: Utils.getStyle(this.props.theme, styles.headerCellInput, styles.filterInput),
                 iconCopy: Utils.getStyle(
@@ -3314,6 +3343,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                 {dialogs.renderAliasEditorDialog(this)}
                 {dialogs.renderEditRoleDialog(this)}
                 {dialogs.renderEnumDialog(this)}
+                {dialogs.renderNameDialog(this)}
                 {this.renderErrorDialog()}
                 {this.renderExportDialog()}
                 {this.renderRenameDialog()}

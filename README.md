@@ -877,6 +877,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Added: the context menu of the object browser has an entry "Edit name" (Alt+9). Giving an object a name is an everyday operation, so it needs neither the expert mode nor the big "Edit object" dialog, which the expert mode hides - it stands next to "Edit function" and "Edit room" and is offered wherever those are. A name that is translated keeps its other languages: only the language of the GUI is written, and the dialog says which languages stay untouched (ioBroker.admin#3640)
+
 ### 10.3.8 (2026-10-03)
 - (@GermanBluefox) Added: CTRL+ENTER confirms the dialogs of the object browser - the export ("Only selected"), the rooms/functions of a row and "Edit object field" of a custom column. The confirming button of every one of these dialogs carries the hint as a tooltip
 

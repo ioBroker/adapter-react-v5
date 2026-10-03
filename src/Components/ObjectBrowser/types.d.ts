@@ -499,5 +499,13 @@ export interface ObjectBrowserState {
         id: string;
         childrenIds: string[];
     } | null;
+    /** Show the dialog that changes `common.name` of an object */
+    showNameDialog: {
+        id: string;
+        /** The name in the language of the GUI as the dialog found it */
+        originalName: string;
+        /** The name while it is edited */
+        name: string;
+    } | null;
     showImportMenu: HTMLButtonElement | null;
 }

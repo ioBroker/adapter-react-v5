@@ -742,6 +742,9 @@ export const styles: Record<string, any> = {
     contextMenuRole: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.mode === 'dark' ? '#ffdb43' : '#562d00',
     }),
+    contextMenuName: (theme: IobTheme): React.CSSProperties => ({
+        color: theme.palette.mode === 'dark' ? '#74b7ff' : '#00417a',
+    }),
     contextMenuDelete: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.mode === 'dark' ? '#ff4f4f' : '#cf0000',
     }),

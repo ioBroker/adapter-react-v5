@@ -21,11 +21,12 @@ import {
     Link as IconLink,
     Settings as IconConfig,
     DriveFileRenameOutline,
+    Title as IconName,
 } from '@mui/icons-material';
 import { IconChannel } from '../../icons/IconChannel';
 import { IconDevice } from '../../icons/IconDevice';
 import { IconState } from '../../icons/IconState';
-import { findEnumsForObjectAsIds, isNonExpertId } from './utils';
+import { findEnumsForObjectAsIds, getName, isNonExpertId } from './utils';
 import { type ContextMenuItem } from './types';
 import { styles } from './styles';
 import type { ObjectBrowserClass } from './ObjectBrowserClass';
@@ -105,6 +106,27 @@ export function renderContextMenu(that: ObjectBrowserClass): JSX.Element | null 
             label: that.texts.editObject,
             onClick: () =>
                 that.setState({ editObjectDialog: item.data.id, showContextMenu: null, editObjectAlias: false }),
+        },
+        NAME: {
+            key: '9',
+            // Giving an object a name is an everyday operation, so it is not bound to the expert mode:
+            // whoever may put the object into a room or a function may name it as well. Until now it
+            // was only reachable through "Edit object", which the expert mode hides
+            visibility: !!enumEditable,
+            icon: (
+                <IconName
+                    fontSize="small"
+                    style={that.styles.contextMenuName}
+                />
+            ),
+            label: that.props.t('ra_Edit name'),
+            onClick: () => {
+                const name = getName(obj?.common?.name || '', that.props.lang);
+                that.setState({
+                    showContextMenu: null,
+                    showNameDialog: { id: item.data.id, originalName: name, name },
+                });
+            },
         },
         EDIT_VALUE: {
             key: '1',

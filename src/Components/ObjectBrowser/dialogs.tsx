@@ -416,6 +416,102 @@ export function renderRenameDialog(that: ObjectBrowserClass): JSX.Element | null
     );
 }
 
+/**
+ * The dialog that changes `common.name` of an object.
+ *
+ * It writes nothing but the name, so it needs neither the expert mode nor the big "Edit object"
+ * dialog, where the name used to be hidden.
+ *
+ * A name that is translated stays translated: only the language of the GUI is written and everything
+ * the adapter delivered in the other languages is kept.
+ */
+export function renderNameDialog(that: ObjectBrowserClass): JSX.Element | null {
+    if (!that.state.showNameDialog) {
+        return null;
+    }
+    const { id, originalName, name } = that.state.showNameDialog;
+    const changed = name !== originalName;
+
+    const onApply = (): void => {
+        if (!changed) {
+            return;
+        }
+        that.setState({ showNameDialog: null }, () => void that.setObjectName(id, name));
+    };
+
+    const currentName = that.objects[id]?.common?.name;
+    const otherLanguages =
+        currentName && typeof currentName === 'object'
+            ? Object.keys(currentName).filter(
+                  language => language !== that.props.lang && (currentName as Record<string, string>)[language],
+              )
+            : [];
+
+    return (
+        <Dialog
+            key="nameDialog"
+            open={!0} // true
+            maxWidth="sm"
+            fullWidth
+            onClose={() => that.setState({ showNameDialog: null })}
+            onKeyDown={e => onCtrlEnter(e, onApply)}
+            aria-labelledby="name-dialog-title"
+        >
+            <DialogTitle id="name-dialog-title">{that.props.t('ra_Edit name')}</DialogTitle>
+            <DialogContent>
+                <TextField
+                    variant="standard"
+                    fullWidth
+                    autoFocus
+                    label={that.texts.name}
+                    value={name}
+                    helperText={
+                        otherLanguages.length
+                            ? that.props.t('ra_The name in %s stays unchanged', otherLanguages.join(', '))
+                            : id
+                    }
+                    onChange={e => that.setState({ showNameDialog: { id, originalName, name: e.target.value } })}
+                    slotProps={{
+                        input: {
+                            endAdornment: name ? (
+                                <IconButton
+                                    size="small"
+                                    onClick={() => that.setState({ showNameDialog: { id, originalName, name: '' } })}
+                                >
+                                    <IconClose />
+                                </IconButton>
+                            ) : null,
+                        },
+                    }}
+                />
+            </DialogContent>
+            <DialogActions>
+                <Tooltip title={that.props.t('ra_Press CTRL+ENTER to confirm')}>
+                    <span>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            disabled={!changed}
+                            onClick={onApply}
+                            startIcon={<IconCheck />}
+                        >
+                            {that.props.t('ra_Save')}
+                        </Button>
+                    </span>
+                </Tooltip>
+                <Button
+                    variant="contained"
+                    color="grey"
+                    onClick={() => that.setState({ showNameDialog: null })}
+                    startIcon={<IconClose />}
+                >
+                    {that.props.t('ra_Cancel')}
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+}
+
 export function renderInputJsonDialog(that: ObjectBrowserClass): JSX.Element | null {
     if (!that.state.showImportDialog) {
         return null;
