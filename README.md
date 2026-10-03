@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.3.7",
+        "@iobroker/gui-components": "^10.3.8",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,7 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.3.8 (2026-10-03)
 - (@GermanBluefox) Added: CTRL+ENTER confirms the dialogs of the object browser - the export ("Only selected"), the rooms/functions of a row and "Edit object field" of a custom column. The confirming button of every one of these dialogs carries the hint as a tooltip
 
 ### 10.3.7 (2026-09-29)
