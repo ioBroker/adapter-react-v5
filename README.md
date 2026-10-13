@@ -877,6 +877,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Fixed: the labels of the device types `rgb` and `rgbSingle`/`rgbwSingle` were swapped - `rgb` is now "R,G,B light - separate states" and `rgbSingle`/`rgbwSingle` are "RGB(W) light - single state"
+
 ### 10.3.9 (2026-10-03)
 - (@GermanBluefox) Added: the context menu of the object browser has an entry "Edit name" (Alt+9). Giving an object a name is an everyday operation, so it needs neither the expert mode nor the big "Edit object" dialog, which the expert mode hides - it stands next to "Edit function" and "Edit room" and is offered wherever those are. A name that is translated keeps its other languages: only the language of the GUI is written, and the dialog says which languages stay untouched (ioBroker.admin#3640)
 
