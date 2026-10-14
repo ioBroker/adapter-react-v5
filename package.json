@@ -34,6 +34,9 @@
   },
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
+  "sideEffects": [
+    "*.css"
+  ],
   "keywords": [
     "iobroker",
     "adapter",
@@ -58,7 +61,7 @@
     "@iobroker/js-controller-common": "^7.2.5",
     "@iobroker/js-controller-common-db": "^7.2.5",
     "@iobroker/socket-client": "^5.4.1",
-    "@iobroker/type-detector": "^6.0.1",
+    "@iobroker/type-detector": "^6.0.3",
     "@iobroker/types": "^7.2.5",
     "@sentry/browser": "^11.7.0",
     "cronstrue": "^3.32.0",
@@ -89,14 +92,14 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "ajv": "^8.20.0",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "ts-node": "^10.9.2",
     "typescript": "~6.0.3"
   },
   "overrides": {
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0"
   }

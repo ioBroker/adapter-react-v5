@@ -6,7 +6,6 @@
  */
 import React, { type JSX } from 'react';
 import { PROGRESS, Connection, type AdminConnection } from '@iobroker/socket-client';
-import * as Sentry from '@sentry/browser';
 
 import { Snackbar, IconButton } from '@mui/material';
 
@@ -318,24 +317,28 @@ export class GenericApp<
             onReady: (/* objects, scripts */) => {
                 I18n.setLanguage(this.socket.systemLang);
 
-                // subscribe because of language and expert mode
-                this.socket
-                    .subscribeObject('system.config', this.onSystemConfigChanged)
-                    .then(() => this.getSystemConfig())
-                    .then(obj => {
+                // All of this is asked for at once. It used to be four round trips one after the other, plus a
+                // fifth for Sentry, and the app only got its turn (`onConnectionReady`) after all of them - which
+                // is what a remote connection pays most for.
+                Promise.all([
+                    // subscribe because of language and expert mode
+                    this.socket.subscribeObject('system.config', this.onSystemConfigChanged),
+                    this.getSystemConfig(),
+                    this.socket.getObject(this.instanceId),
+                    this.socket.getState(`${this.instanceId}.plugins.sentry.enabled`),
+                ])
+                    .then(([, systemConfig, obj, sentryState]) => {
                         this._secret =
-                            (typeof obj !== 'undefined' && obj.native && obj.native.secret) || 'Zgfr56gFe87jJOM';
-                        this._systemConfig = obj?.common || ({} as ioBroker.SystemConfigCommon);
-                        return this.socket.getObject(this.instanceId);
-                    })
-                    .then(async obj => {
-                        let waitPromise;
+                            (typeof systemConfig !== 'undefined' &&
+                                systemConfig.native &&
+                                systemConfig.native.secret) ||
+                            'Zgfr56gFe87jJOM';
+                        this._systemConfig = systemConfig?.common || ({} as ioBroker.SystemConfigCommon);
+
                         const instanceObj: ioBroker.InstanceObject | null | undefined = obj as
                             ioBroker.InstanceObject | null | undefined;
 
-                        const sentryPluginEnabled = (
-                            await this.socket.getState(`${this.instanceId}.plugins.sentry.enabled`)
-                        )?.val;
+                        const sentryPluginEnabled = sentryState?.val;
 
                         const sentryEnabled =
                             sentryPluginEnabled !== false &&
@@ -347,55 +350,30 @@ export class GenericApp<
                             !instanceObj.common.disableDataReporting &&
                             window.location.host !== 'localhost:3000';
 
-                        // activate sentry plugin
-                        if (!this.sentryStarted && this.sentryDSN && sentryEnabled) {
-                            this.sentryStarted = true;
-
-                            Sentry.init({
-                                dsn: this.sentryDSN,
-                                release: `iobroker.${instanceObj.common.name}@${instanceObj.common.version}`,
-                                integrations: [Sentry.dedupeIntegration()],
-                            });
-
-                            console.log('Sentry initialized');
-                        }
-
-                        // read UUID and init sentry with it.
-                        // for backward compatibility it will be processed separately from the above logic: some adapters could still have this.sentryDSN as undefined
                         if (!this.sentryInited && sentryEnabled) {
                             this.sentryInited = true;
-
-                            waitPromise = this.socket.getObject('system.meta.uuid').then(uuidObj => {
-                                if (uuidObj && uuidObj.native && uuidObj.native.uuid) {
-                                    const scope = Sentry.getCurrentScope();
-                                    scope.setUser({ id: uuidObj.native.uuid });
-                                }
-                            });
+                            this.startSentry(instanceObj);
                         }
 
-                        waitPromise = waitPromise instanceof Promise ? waitPromise : Promise.resolve();
-
-                        void waitPromise.then(() => {
-                            if (instanceObj) {
-                                this.common = instanceObj?.common;
-                                this.onPrepareLoad(instanceObj.native, instanceObj.encryptedNative); // decode all secrets
-                                this.savedNative = JSON.parse(JSON.stringify(instanceObj.native));
-                                this.setState(
-                                    { native: instanceObj.native, loaded: true, expertMode: this.getExpertMode() },
-                                    () => this.onConnectionReady && this.onConnectionReady(),
-                                );
-                            } else {
-                                console.warn('Cannot load instance settings');
-                                this.setState(
-                                    {
-                                        native: {},
-                                        loaded: true,
-                                        expertMode: this.getExpertMode(),
-                                    },
-                                    () => this.onConnectionReady && this.onConnectionReady(),
-                                );
-                            }
-                        });
+                        if (instanceObj) {
+                            this.common = instanceObj?.common;
+                            this.onPrepareLoad(instanceObj.native, instanceObj.encryptedNative); // decode all secrets
+                            this.savedNative = JSON.parse(JSON.stringify(instanceObj.native));
+                            this.setState(
+                                { native: instanceObj.native, loaded: true, expertMode: this.getExpertMode() },
+                                () => this.onConnectionReady && this.onConnectionReady(),
+                            );
+                        } else {
+                            console.warn('Cannot load instance settings');
+                            this.setState(
+                                {
+                                    native: {},
+                                    loaded: true,
+                                    expertMode: this.getExpertMode(),
+                                },
+                                () => this.onConnectionReady && this.onConnectionReady(),
+                            );
+                        }
                     })
                     .catch(e => window.alert(`Cannot settings: ${e}`));
             },
@@ -404,6 +382,42 @@ export class GenericApp<
                 this.showError(err);
             },
         });
+    }
+
+    /**
+     * Report the errors of this app to Sentry.
+     *
+     * The SDK is loaded only here: it is 180 KB, and every app would otherwise load it before its first frame,
+     * whether the instance reports anything or not. Nothing waits for it - the errors of the first moment go
+     * unreported, as they did while the identification of the system was still being read.
+     *
+     * @param instanceObj the object of the instance this app belongs to
+     */
+    private startSentry(instanceObj: ioBroker.InstanceObject): void {
+        void import('@sentry/browser')
+            .then(async Sentry => {
+                // activate sentry plugin
+                if (!this.sentryStarted && this.sentryDSN) {
+                    this.sentryStarted = true;
+
+                    Sentry.init({
+                        dsn: this.sentryDSN,
+                        release: `iobroker.${instanceObj.common.name}@${instanceObj.common.version}`,
+                        integrations: [Sentry.dedupeIntegration()],
+                    });
+
+                    console.log('Sentry initialized');
+                }
+
+                // read UUID and init sentry with it.
+                // for backward compatibility it will be processed separately from the above logic: some adapters could still have this.sentryDSN as undefined
+                const uuidObj = await this.socket.getObject('system.meta.uuid');
+                if (uuidObj?.native?.uuid) {
+                    const scope = Sentry.getCurrentScope();
+                    scope.setUser({ id: uuidObj.native.uuid });
+                }
+            })
+            .catch(e => console.warn(`Cannot start Sentry: ${e}`));
     }
 
     /**
