@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.3.10",
+        "@iobroker/gui-components": "^10.3.11",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,7 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.3.11 (2026-10-14)
 - (@GermanBluefox) Changed: `GenericApp` asks for the system configuration, the instance object and the state of the Sentry plugin at once instead of one after the other, and does not wait for the UUID of the system anymore before `onConnectionReady()` - three round trips less before an app gets its turn, which a remote connection pays most for
 - (@GermanBluefox) Changed: the Sentry SDK (180 KB) is only loaded when the instance really reports errors. It was part of every app before its first frame. Errors of the very first moment of an app are not reported anymore, as they were not before the UUID was read either
 - (@GermanBluefox) Added: `"sideEffects": ["*.css"]` in package.json. Without it a bundler had to keep every module of the package that runs anything at its top level as soon as one export was used - the object browser, the file browser, the cron editor, the icon library. In vis-2 that was 1.5 MB in a runtime that uses ten exports
