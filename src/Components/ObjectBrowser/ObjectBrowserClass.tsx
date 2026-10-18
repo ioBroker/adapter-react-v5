@@ -3080,10 +3080,16 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
      * into the middle of the table by scrolling there.
      */
     scrollToItem(id: string): void {
-        this.selectFirst = '';
+        // Another row is wanted now: forget the pre-selected one. The pre-selected row itself stays
+        // pending until it is found - on the first render after loading its parents are not expanded
+        // yet (see `expandAllSelected`), so it is not in `flatRows`, and `componentDidUpdate` tries again
+        if (this.selectFirst !== id) {
+            this.selectFirst = '';
+        }
 
         const node = window.document.getElementById(id);
         if (node) {
+            this.selectFirst = '';
             node.scrollIntoView({
                 behavior: 'auto',
                 block: 'center',
@@ -3097,6 +3103,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         if (!container || index === -1) {
             return;
         }
+        this.selectFirst = '';
         const middle = this.rowOffsets[index] - Math.max(0, (this.viewportHeight - ROW_HEIGHT) / 2);
         container.scrollTop = Math.max(0, middle);
         // the scroll event moves the window, and the row is rendered with the next frame

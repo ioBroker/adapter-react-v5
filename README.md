@@ -877,6 +877,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Fixed: the object browser did not scroll to the pre-selected object when its folders were not expanded yet, e.g. the first time an ID of a Blockly block was opened in the dialog: https://github.com/ioBroker/ioBroker.javascript/issues/2410
+
 ### 10.3.11 (2026-10-14)
 - (@GermanBluefox) Changed: `GenericApp` asks for the system configuration, the instance object and the state of the Sentry plugin at once instead of one after the other, and does not wait for the UUID of the system anymore before `onConnectionReady()` - three round trips less before an app gets its turn, which a remote connection pays most for
 - (@GermanBluefox) Changed: the Sentry SDK (180 KB) is only loaded when the instance really reports errors. It was part of every app before its first frame. Errors of the very first moment of an app are not reported anymore, as they were not before the UUID was read either
