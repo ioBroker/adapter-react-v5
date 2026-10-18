@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.3.11",
+        "@iobroker/gui-components": "^10.3.12",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,7 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.3.12 (2026-10-18)
 - (@GermanBluefox) Fixed: the object browser did not scroll to the pre-selected object when its folders were not expanded yet, e.g. the first time an ID of a Blockly block was opened in the dialog: https://github.com/ioBroker/ioBroker.javascript/issues/2410
 
 ### 10.3.11 (2026-10-14)
