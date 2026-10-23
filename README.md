@@ -877,6 +877,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Fixed: the object browser showed an object twice and copied its row while scrolling, if a sibling ID began with the same text followed by a space (e.g., `BLE_Steckdose` and `BLE_Steckdose 2`): https://github.com/ioBroker/ioBroker.admin/issues/3693
+
 ### 10.3.12 (2026-10-18)
 - (@GermanBluefox) Fixed: the object browser did not scroll to the pre-selected object when its folders were not expanded yet, e.g. the first time an ID of a Blockly block was opened in the dialog: https://github.com/ioBroker/ioBroker.javascript/issues/2410
 

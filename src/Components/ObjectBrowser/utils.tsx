@@ -1103,6 +1103,11 @@ export function buildTree(
 
     let cRoot: TreeItem = root;
 
+    // `info.ids` is not sorted for a binary search: a generated level follows the ID that created it, and the
+    // sorting above ('.' as '!!!') is not the plain string order. A missed level was created a second time:
+    // two nodes with the same ID (https://github.com/ioBroker/ioBroker.admin/issues/3693)
+    const knownIds = new Set<string>();
+
     for (let i = 0; i < ids.length; i++) {
         const id = ids[i];
         if (!id) {
@@ -1168,6 +1173,7 @@ export function buildTree(
         }
 
         info.ids.push(id);
+        knownIds.add(id);
 
         let repeat;
 
@@ -1184,7 +1190,7 @@ export function buildTree(
                     for (let k = currentPathLen; k < parts.length - 1; k++) {
                         curPath += (curPath ? '.' : '') + parts[k];
                         // level does not exist
-                        if (!binarySearch(info.ids, curPath)) {
+                        if (!knownIds.has(curPath)) {
                             const _cRoot: TreeItem = {
                                 data: {
                                     name: parts[k],
@@ -1207,7 +1213,8 @@ export function buildTree(
                             cRoot.children ||= [];
                             cRoot.children.push(_cRoot);
                             cRoot = _cRoot;
-                            info.ids.push(curPath); // IDs will be added by alphabet
+                            info.ids.push(curPath);
+                            knownIds.add(curPath);
                         } else if (cRoot.children) {
                             cRoot = cRoot.children.find(item => item.data.name === parts[k])!;
                             if (!cRoot) {
