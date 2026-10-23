@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.3.12",
+        "@iobroker/gui-components": "^10.3.13",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,7 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.3.13 (2026-10-23)
 - (@GermanBluefox) Fixed: the object browser showed an object twice and copied its row while scrolling, if a sibling ID began with the same text followed by a space (e.g., `BLE_Steckdose` and `BLE_Steckdose 2`): https://github.com/ioBroker/ioBroker.admin/issues/3693
 
 ### 10.3.12 (2026-10-18)
