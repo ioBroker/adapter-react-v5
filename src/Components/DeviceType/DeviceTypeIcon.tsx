@@ -19,6 +19,7 @@ import {
     FaVolumeUp as TypeIconVolumeGroup,
     FaFan as TypeIconAC,
     FaWrench as TypeIconInstance,
+    FaTv as TypeIconTv,
 } from 'react-icons/fa';
 
 import {
@@ -129,6 +130,7 @@ const TYPE_ICONS: Record<TypesExtended, React.FC<IconPropsSVG>> = {
     [Types.socket]: TypeIconSocket,
     [Types.temperature]: TypeIconTemperature,
     [Types.thermostat]: TypeIconThermostat,
+    [Types.tv]: TypeIconTv,
     // [Types.valve]: TypeIconValve,
     [Types.vacuumCleaner]: TypeIconVacuumCleaner,
     [Types.volume]: TypeIconVolume,

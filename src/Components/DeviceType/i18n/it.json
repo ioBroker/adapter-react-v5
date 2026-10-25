@@ -44,6 +44,7 @@
     "type-socket": "PRESA",
     "type-temperature": "temperatura",
     "type-thermostat": "termostato",
+    "type-tv": "televisore",
     "type-unknown": "Sconosciuto",
     "type-vacuumCleaner": "Aspirapolvere",
     "type-volume": "volume",

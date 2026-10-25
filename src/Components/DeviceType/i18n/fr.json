@@ -44,6 +44,7 @@
     "type-socket": "douille",
     "type-temperature": "température",
     "type-thermostat": "thermostat",
+    "type-tv": "téléviseur",
     "type-unknown": "Inconnu",
     "type-vacuumCleaner": "Aspirateur",
     "type-volume": "volume",

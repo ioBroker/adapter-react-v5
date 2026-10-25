@@ -44,6 +44,7 @@
     "type-socket": "enchufe",
     "type-temperature": "temperatura",
     "type-thermostat": "termostato",
+    "type-tv": "televisor",
     "type-unknown": "Desconocido",
     "type-vacuumCleaner": "Aspiradora",
     "type-volume": "volumen",

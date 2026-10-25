@@ -44,6 +44,7 @@
     "type-socket": "Steckdose",
     "type-temperature": "Temperatur",
     "type-thermostat": "Thermostat",
+    "type-tv": "Fernseher",
     "type-unknown": "Unbekannt",
     "type-vacuumCleaner": "Staubsauger",
     "type-volume": "Lautstärke",

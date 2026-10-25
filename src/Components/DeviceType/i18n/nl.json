@@ -44,6 +44,7 @@
     "type-socket": "stopcontact",
     "type-temperature": "temperatuur",
     "type-thermostat": "thermostaat",
+    "type-tv": "televisie",
     "type-unknown": "Onbekend",
     "type-vacuumCleaner": "Stofzuiger",
     "type-volume": "volume",

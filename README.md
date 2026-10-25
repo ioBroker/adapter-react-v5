@@ -877,6 +877,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Added Icons and texts for new type: TV
+
 ### 10.3.13 (2026-10-23)
 - (@GermanBluefox) Fixed: the object browser showed an object twice and copied its row while scrolling, if a sibling ID began with the same text followed by a space (e.g., `BLE_Steckdose` and `BLE_Steckdose 2`): https://github.com/ioBroker/ioBroker.admin/issues/3693
 

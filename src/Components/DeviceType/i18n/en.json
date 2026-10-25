@@ -44,6 +44,7 @@
     "type-socket": "Socket",
     "type-temperature": "Temperature",
     "type-thermostat": "Thermostat",
+    "type-tv": "TV",
     "type-unknown": "Unknown",
     "type-vacuumCleaner": "Vacuum cleaner",
     "type-volume": "Volume",
