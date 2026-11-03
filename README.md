@@ -877,6 +877,13 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Added: animated icons `IconPlayPause`, `IconStatusLed`, `IconResult`, `IconRefresh`, `IconBell`, `IconMenuArrow`, `IconTrash`, `IconConnectionState`, `IconExpertMode` and `IconFolder` (CSS/SVG)
+- (@GermanBluefox) Changed: the object browser uses the animated reload and delete icons
+- (@GermanBluefox) Changed: new expert mode symbol (mortarboard) in the object and file browser
+- (@GermanBluefox) Changed: object browser: folders open with an animation, the children slide out from under the row
+- (@GermanBluefox) Changed: new loading screen `LoaderCommunity` with the props `status`, `done` and `onFinished`; the previous one is `LoaderCommunityLegacy`
+
 ### 10.3.14 (2026-10-25)
 - (@GermanBluefox) Added Icons and texts for new type: TV
 

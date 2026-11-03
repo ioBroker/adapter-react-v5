@@ -9,7 +9,6 @@ import React, { type JSX } from 'react';
 import { Utils } from '../Utils';
 import { Box, Checkbox, Grid, IconButton, Paper, Switch, Tooltip } from '@mui/material';
 import {
-    Delete as IconDelete,
     Edit as IconEdit,
     Error as IconError,
     Settings as IconConfig,
@@ -19,9 +18,9 @@ import {
 import { IconCopy } from '../../icons/IconCopy';
 import { IconDocument } from '../../icons/IconDocument';
 import { IconDocumentReadOnly } from '../../icons/IconDocumentReadOnly';
-import { IconClosed } from '../../icons/IconClosed';
-import { IconOpen } from '../../icons/IconOpen';
 import { Icon } from '../Icon';
+import { IconTrash } from '../AnimatedIcons/IconTrash';
+import { IconFolder } from '../AnimatedIcons/IconFolder';
 import {
     ButtonIcon,
     colGrow,
@@ -180,7 +179,7 @@ export function renderColumnButtons(
                             }
                         }}
                     >
-                        <IconDelete style={styles.cellButtonsButtonIcon} />
+                        <IconTrash style={styles.cellButtonsButtonIcon} />
                     </IconButton>
                 ) : null}
             </div>
@@ -287,7 +286,7 @@ export function renderColumnButtons(
                 }}
                 title={that.texts.deleteObject}
             >
-                <IconDelete style={styles.cellButtonsButtonIcon} />
+                <IconTrash style={styles.cellButtonsButtonIcon} />
             </IconButton>
         ) : null,
 
@@ -613,13 +612,9 @@ export function renderLeaf(
         itemType === 'channel' ||
         itemType === 'meta'
     ) {
-        iconFolder = isExpanded ? (
-            <IconOpen
-                style={that.styles.cellIdIconFolder}
-                onClick={() => that.toggleExpanded(id)}
-            />
-        ) : (
-            <IconClosed
+        iconFolder = (
+            <IconFolder
+                open={!!isExpanded}
                 style={that.styles.cellIdIconFolder}
                 onClick={() => that.toggleExpanded(id)}
             />

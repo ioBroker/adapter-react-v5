@@ -66,7 +66,8 @@ All translations are flat key-value JSON. English (`en.json`) is the source of t
 
 - TypeScript with `"jsx": "react"` (not `react-jsx`). Uses `tsc` directly, no bundler.
 - MUI 9 + Emotion for styling. No CSS modules or styled-components.
-- Components are mostly single-file `.tsx` (not directory-per-component), except `ObjectBrowser/`, `DeviceType/`, `SimpleCron/`, and `Loaders/`.
+- Components are mostly single-file `.tsx` (not directory-per-component), except `ObjectBrowser/`, `DeviceType/`, `SimpleCron/`, `Loaders/` and `AnimatedIcons/`.
+- `Components/AnimatedIcons/` — icons with CSS/SVG animations (`IconPlayPause`, `IconStatusLed`, `IconResult`, `IconRefresh`, `IconBell`, `IconMenuArrow`, `IconTrash`, `IconConnectionState`, `IconExpertMode`, `IconFolder`). The unfold/fold animation of the object browser rows is in `ObjectBrowser/rowAnimation.ts` (only `transform`/`clip-path`, so `measureRenderedRows` keeps the real heights). One style sheet for all of them in `common.tsx` (injected with `useInsertionEffect`), one-time animations with the Web Animations API. They use `currentColor`, have the MUI icon sizes and respect `prefers-reduced-motion`.
 - Icons in `src/icons/` are React components wrapping inline SVG paths — not imported SVG files.
 - The `tsconfig.build.json` extends `tsconfig.json` with `strict: false` and `checkJs: false` for less restrictive production builds.
 - The `package.json` `files` field controls what gets published to npm: `build/`, `i18n/`, root-level `index.css`, `modulefederation.admin.config.js/.d.ts`.

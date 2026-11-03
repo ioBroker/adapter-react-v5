@@ -65,9 +65,9 @@ import { Utils } from './Utils';
 import { DialogTextInput } from '../Dialogs/TextInput';
 
 // Custom Icons
-import { IconExpert } from '../icons/IconExpert';
+import { IconExpertMode } from './AnimatedIcons/IconExpertMode';
+import { IconFolder } from './AnimatedIcons/IconFolder';
 import { IconClosed } from '../icons/IconClosed';
-import { IconOpen } from '../icons/IconOpen';
 import { IconNoIcon } from '../icons/IconNoIcon';
 import { Icon } from './Icon';
 
@@ -1330,7 +1330,6 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
         ) {
             return null;
         }
-        const IconEl = expanded ? IconOpen : IconClosed;
         const padding = this.state.viewType === TABLE ? item.level * this.levelPadding : 0;
         const isUserData = item.name === USER_DATA;
         const isSpecialData = isUserData || item.name === 'vis.0' || item.name === 'vis-2.0';
@@ -1362,7 +1361,8 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
                     item.temp ? styles.itemFolderTemp : {},
                 )}
             >
-                <IconEl
+                <IconFolder
+                    open={!!expanded}
                     style={iconStyle}
                     onClick={
                         this.state.viewType === TABLE ? (e: React.MouseEvent) => this.toggleFolder(item, e) : undefined
@@ -1862,7 +1862,7 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
                         onClick={() => this.setState({ expertMode: !this.state.expertMode })}
                         size="small"
                     >
-                        <IconExpert />
+                        <IconExpertMode active={!!this.state.expertMode} />
                     </IconButton>
                 ) : null}
                 {this.props.showViewTypeButton ? (

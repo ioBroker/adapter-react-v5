@@ -30,6 +30,8 @@ import {
     Icon,
     IconExpert,
     LoaderHA,
+    LoaderCommunity,
+    LoaderCommunityLegacy,
     ToggleThemeMenu,
     FileBrowser,
     FileViewer,
@@ -46,6 +48,7 @@ import CronDemo from './demos/CronDemo';
 import IconsDemo from './demos/IconsDemo';
 
 /** Themes that can be cycled through with the theme button */
+import { AnimatedIconsDemo } from './AnimatedIconsDemo';
 const THEMES: ThemeName[] = ['light', 'dark', 'modernLight', 'modernDark'];
 
 interface AppState {
@@ -54,6 +57,9 @@ interface AppState {
     tab:
         | 'ObjectBrowser'
         | 'LoaderHA'
+        | 'LoaderCommunity'
+        | 'LoaderCommunityLegacy'
+        | 'AnimatedIcons'
         | 'Icon'
         | 'FileBrowser'
         | 'ThemeDemo'
@@ -70,6 +76,9 @@ interface AppState {
     inputTextDialogValue: string;
     color: string;
     colorHex: string;
+    loaderDone?: boolean;
+    loaderGone?: boolean;
+    loaderKey?: number;
     colorNoAlpha: string;
     colorBar: string;
     tableData: Record<string, any>[];
@@ -251,6 +260,52 @@ export default class App extends Component<object, AppState> {
 
     renderLoaderHA(): React.JSX.Element {
         return <LoaderHA themeType={this.state.theme.palette.mode} />;
+    }
+
+    /** New community loader: "Done" plays the closing animation, "Restart" mounts it again */
+    renderLoaderCommunity(): React.JSX.Element {
+        return (
+            <div style={{ position: 'relative', height: 'calc(100vh - 120px)' }}>
+                <div style={{ padding: 24, fontSize: 24 }}>Application below the loader</div>
+                {this.state.loaderGone ? null : (
+                    <LoaderCommunity
+                        key={this.state.loaderKey}
+                        themeName={this.state.themeName}
+                        themeType={this.state.theme.palette.mode}
+                        status="Connecting to the server"
+                        done={this.state.loaderDone}
+                        onFinished={() => this.setState({ loaderGone: true })}
+                    />
+                )}
+                <div style={{ position: 'absolute', right: 16, bottom: 16, display: 'flex', gap: 8, zIndex: 1 }}>
+                    <Button
+                        variant="contained"
+                        id="loader-done"
+                        disabled={this.state.loaderDone}
+                        onClick={() => this.setState({ loaderDone: true })}
+                    >
+                        Done
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        id="loader-restart"
+                        onClick={() =>
+                            this.setState({
+                                loaderDone: false,
+                                loaderGone: false,
+                                loaderKey: (this.state.loaderKey || 0) + 1,
+                            })
+                        }
+                    >
+                        Restart
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    renderLoaderCommunityLegacy(): React.JSX.Element {
+        return <LoaderCommunityLegacy themeName={this.state.themeName} />;
     }
 
     renderIcon(): React.JSX.Element {
@@ -482,6 +537,18 @@ export default class App extends Component<object, AppState> {
                                 value="LoaderHA"
                             />
                             <Tab
+                                label="Loader"
+                                value="LoaderCommunity"
+                            />
+                            <Tab
+                                label="Loader legacy"
+                                value="LoaderCommunityLegacy"
+                            />
+                            <Tab
+                                label="Animated icons"
+                                value="AnimatedIcons"
+                            />
+                            <Tab
                                 label="Icon"
                                 value="Icon"
                             />
@@ -541,11 +608,20 @@ export default class App extends Component<object, AppState> {
                             </IconButton>
                         </Tabs>
                         {this.state.tab === 'ThemeDemo' && this.renderThemeDemo()}
+                        {this.state.tab === 'AnimatedIcons' && (
+                            <div style={{ height: 'calc(100vh - 48px)', overflow: 'auto' }}>
+                                <AnimatedIconsDemo themeType={this.state.theme.palette.mode} />
+                            </div>
+                        )}
                         {!this.state.loaded && this.state.tab !== 'ThemeDemo' && (
                             <div style={{ color: 'white' }}>Loading...</div>
                         )}
                         {this.state.loaded && this.state.tab === 'ObjectBrowser' && this.renderObjectBrowser()}
                         {this.state.loaded && this.state.tab === 'LoaderHA' && this.renderLoaderHA()}
+                        {this.state.loaded && this.state.tab === 'LoaderCommunity' && this.renderLoaderCommunity()}
+                        {this.state.loaded &&
+                            this.state.tab === 'LoaderCommunityLegacy' &&
+                            this.renderLoaderCommunityLegacy()}
                         {this.state.loaded && this.state.tab === 'Icon' && this.renderIcon()}
                         {this.state.loaded && this.state.tab === 'FileBrowser' && this.renderFileBrowser()}
                         {this.state.loaded && this.state.tab === 'ColorPicker' && this.renderColorPicker()}

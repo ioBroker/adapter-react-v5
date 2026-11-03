@@ -32,7 +32,7 @@ import {
     Tooltip,
 } from '@mui/material';
 import { Check as IconCheck, Close as IconClose } from '@mui/icons-material';
-import { IconExpert } from '../../icons/IconExpert';
+import { IconExpertMode } from '../AnimatedIcons/IconExpertMode';
 import { getCustomValue, getName, getSelectIdIconFromObjects, onCtrlEnter } from './utils';
 import { type ObjectBrowserPossibleColumns } from './types';
 import { styles } from './styles';
@@ -367,7 +367,7 @@ export function renderExportDialog(that: ObjectBrowserClass): JSX.Element | null
                     <Button
                         color="grey"
                         variant="outlined"
-                        startIcon={<IconExpert />}
+                        startIcon={<IconExpertMode active />}
                         onClick={() => that.setState({ showAllExportOptions: true })}
                     >
                         {that.props.t('ra_Advanced options')}

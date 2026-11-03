@@ -53,6 +53,7 @@ import * as dialogs from './dialogs';
 import * as toolbar from './toolbar';
 import * as leaf from './renderLeaf';
 import * as contextMenu from './contextMenu';
+import * as rowAnimation from './rowAnimation';
 import {
     DEFAULT_DATE_FORMAT,
     DEFAULT_FILTER,
@@ -182,6 +183,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
 
     /** id -> how often the state of this row has changed. Part of the memo key of the row */
     readonly rowStateVersion: Record<string, number> = {};
+
+    /** The running animations of an unfolded or folding node (see `rowAnimation.ts`) */
+    private rowAnimations: Animation[] = [];
+    /** The node whose children slide under its row at the moment; they are removed when that ends */
+    private foldingId: string | null = null;
+    private foldTimer: ReturnType<typeof setTimeout> | null = null;
 
     private stateVersionCounter: number = 0;
     private selectFirst: string;
@@ -924,6 +931,15 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             window.cancelAnimationFrame(this.scrollFrame);
             this.scrollFrame = null;
         }
+
+        // a fold animation must not update the state after the component was destroyed
+        this.foldingId = null;
+        if (this.foldTimer) {
+            clearTimeout(this.foldTimer);
+            this.foldTimer = null;
+        }
+        this.rowAnimations.forEach(animation => animation.cancel());
+        this.rowAnimations = [];
 
         // the timers must not fire after the component was destroyed
         if (this.unsubscribeTimer) {
@@ -2073,7 +2089,10 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     }
 
     toggleExpanded(id: string): void {
-        const expanded: string[] = JSON.parse(JSON.stringify(this.state.expanded));
+        // a node that is still folding is folded now, this toggle builds on it
+        const folding = this.foldingId;
+        this.finishRowAnimations();
+        const expanded = this.state.expanded.filter(item => item !== folding);
         const pos = expanded.indexOf(id);
         if (pos === -1) {
             expanded.push(id);
@@ -2084,7 +2103,53 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
 
         this.localStorage.setItem(`${this.props.dialogName || 'App'}.objectExpanded`, JSON.stringify(expanded));
 
-        this.setState({ expanded });
+        if (pos === -1) {
+            // the children are rendered after this update: let them slide out from under the row
+            this.setState({ expanded }, () => {
+                this.rowAnimations = rowAnimation.unfold(this.tableRef.current, id);
+            });
+            return;
+        }
+        const animations = rowAnimation.fold(this.tableRef.current, id, () => this.applyFold());
+        if (animations) {
+            // the children slide under the row first and are removed when the animation ends
+            this.rowAnimations = animations;
+            this.foldingId = id;
+            // a hidden tab does not run animations: fold anyway
+            this.foldTimer = setTimeout(() => this.applyFold(), 600);
+        } else {
+            this.setState({ expanded });
+        }
+    }
+
+    /** The fold animation ended (or is cut short): remove the children of the node now */
+    private applyFold(): void {
+        const id = this.foldingId;
+        if (id === null) {
+            return;
+        }
+        this.foldingId = null;
+        if (this.foldTimer) {
+            clearTimeout(this.foldTimer);
+            this.foldTimer = null;
+        }
+        const animations = this.rowAnimations;
+        this.rowAnimations = [];
+        // the animations hold the rows in their end position until the children are really gone
+        this.setState(
+            state => ({ expanded: state.expanded.filter(item => item !== id) }),
+            () => animations.forEach(animation => animation.cancel()),
+        );
+    }
+
+    /** Ends a running fold or unfold animation at once */
+    private finishRowAnimations(): void {
+        if (this.foldingId !== null) {
+            this.applyFold();
+        } else {
+            this.rowAnimations.forEach(animation => animation.cancel());
+            this.rowAnimations = [];
+        }
     }
 
     onCopy(e: React.MouseEvent, text: string | undefined): void {

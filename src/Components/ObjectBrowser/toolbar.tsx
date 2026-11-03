@@ -13,18 +13,18 @@ import {
     Close as IconClose,
     LooksOne as LooksOneIcon,
     Publish as PublishIcon,
-    Refresh as RefreshIcon,
     TextFields as TextFieldsIcon,
     ViewColumn as IconColumns,
     ContentPaste,
     UploadFile,
 } from '@mui/icons-material';
 import { Utils } from '../Utils';
-import { IconExpert } from '../../icons/IconExpert';
+import { IconExpertMode } from '../AnimatedIcons/IconExpertMode';
 import { IconClosed } from '../../icons/IconClosed';
 import { IconOpen } from '../../icons/IconOpen';
 import { IconClearFilter } from '../../icons/IconClearFilter';
 import { Icon } from '../Icon';
+import { IconRefresh } from '../AnimatedIcons/IconRefresh';
 import {
     colGrow,
     colWidth,
@@ -208,7 +208,7 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                             disabled={that.state.updating}
                             size="large"
                         >
-                            <RefreshIcon />
+                            <IconRefresh loading={!!that.state.updating} />
                         </IconButton>
                     </div>
                 </Tooltip>
@@ -236,7 +236,7 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                             }}
                             size="large"
                         >
-                            <IconExpert />
+                            <IconExpertMode active={!!that.state.filter.expertMode} />
                         </IconButton>
                     </Tooltip>
                 )}
