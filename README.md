@@ -877,6 +877,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Added: object browser shows an arrow up/down next to a changed number; a changed boolean flips
+- (@GermanBluefox) Added: `SaveCloseButtons` shows a check mark after saving
+
 ### 10.3.15 (2026-11-03)
 - (@GermanBluefox) Added: animated icons `IconPlayPause`, `IconStatusLed`, `IconResult`, `IconRefresh`, `IconBell`, `IconMenuArrow`, `IconTrash`, `IconConnectionState`, `IconExpertMode` and `IconFolder` (CSS/SVG)
 - (@GermanBluefox) Changed: the object browser uses the animated reload and delete icons

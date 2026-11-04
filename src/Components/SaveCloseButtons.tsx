@@ -7,6 +7,7 @@ import { Save as IconSave, Close as IconClose } from '@mui/icons-material';
 
 import { I18n } from '../i18n';
 import type { IobTheme } from '../types';
+import { IconResult } from './AnimatedIcons/IconResult';
 
 const styles: Record<string, React.CSSProperties> = {
     buttonIcon: {
@@ -33,8 +34,19 @@ interface SaveCloseButtonsProps {
     error?: boolean;
 }
 
-export class SaveCloseButtons extends React.Component<SaveCloseButtonsProps> {
+interface SaveCloseButtonsState {
+    /** How often the settings were saved; a check mark is drawn on the save button after each save */
+    savedCount: number;
+    showSaved: boolean;
+}
+
+export class SaveCloseButtons extends React.Component<SaveCloseButtonsProps, SaveCloseButtonsState> {
     private readonly isIFrame: boolean;
+
+    /** The save button was pressed and the settings are not stored yet */
+    private saving: ReturnType<typeof setTimeout> | null = null;
+
+    private savedTimer: ReturnType<typeof setTimeout> | null = null;
 
     constructor(props: SaveCloseButtonsProps) {
         super(props);
@@ -49,6 +61,41 @@ export class SaveCloseButtons extends React.Component<SaveCloseButtonsProps> {
                 this.isIFrame = !newReact;
             }
         }
+        this.state = { savedCount: 0, showSaved: false };
+    }
+
+    componentDidUpdate(prevProps: Readonly<SaveCloseButtonsProps>): void {
+        // the settings are stored, when nothing is changed anymore after a click on "Save"
+        if (this.saving && prevProps.changed && !this.props.changed) {
+            clearTimeout(this.saving);
+            this.saving = null;
+            if (this.savedTimer) {
+                clearTimeout(this.savedTimer);
+            }
+            this.savedTimer = setTimeout(() => {
+                this.savedTimer = null;
+                this.setState({ showSaved: false });
+            }, 2000);
+            this.setState({ savedCount: this.state.savedCount + 1, showSaved: true });
+        }
+    }
+
+    componentWillUnmount(): void {
+        if (this.saving) {
+            clearTimeout(this.saving);
+        }
+        if (this.savedTimer) {
+            clearTimeout(this.savedTimer);
+        }
+    }
+
+    onSave(): void {
+        if (this.saving) {
+            clearTimeout(this.saving);
+        }
+        // if saving fails, the settings stay changed: forget the click after a while
+        this.saving = setTimeout(() => (this.saving = null), 10000);
+        this.props.onSave(false);
     }
 
     render(): JSX.Element {
@@ -82,10 +129,18 @@ export class SaveCloseButtons extends React.Component<SaveCloseButtonsProps> {
                     variant="extended"
                     aria-label="Save"
                     disabled={!this.props.changed || this.props.error}
-                    onClick={() => this.props.onSave(false)}
+                    onClick={() => this.onSave()}
                     style={buttonStyle}
                 >
-                    <IconSave style={!noTextOnButtons ? styles.buttonIcon : undefined} />
+                    {this.state.showSaved ? (
+                        <IconResult
+                            type="success"
+                            replay={this.state.savedCount}
+                            style={!noTextOnButtons ? styles.buttonIcon : undefined}
+                        />
+                    ) : (
+                        <IconSave style={!noTextOnButtons ? styles.buttonIcon : undefined} />
+                    )}
                     {!noTextOnButtons && I18n.t('ra_Save')}
                 </Fab>
                 <Fab

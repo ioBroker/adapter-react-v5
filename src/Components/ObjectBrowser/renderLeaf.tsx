@@ -41,6 +41,7 @@ import {
     COLOR_NAME_SYSTEM,
     COLOR_NAME_SYSTEM_ADAPTER,
     ROW_HEIGHT,
+    TREND_DURATION,
 } from './utils';
 import { type AdapterColumn, type TreeItem } from './types';
 import { styles } from './styles';
@@ -320,6 +321,38 @@ export function renderColumnButtons(
     ];
 }
 
+const TREND_ARROW = {
+    up: 'M12 3L20.5 12.5H15V21H9V12.5H3.5Z',
+    down: 'M12 21L20.5 11.5H15V3H9V11.5H3.5Z',
+};
+
+/** The arrow of a row that is mounted again (e.g. after scrolling) continues where it was */
+function continueTrendAnimation(el: HTMLSpanElement | null): void {
+    if (el) {
+        el.style.animationDelay = `${Number(el.dataset.shown) - Date.now()}ms`;
+    }
+}
+
+/**
+ * Returns the last change of a number or a boolean of this state, if it is still to be shown
+ */
+function getValueTrend(that: ObjectBrowserClass, id: string): ObjectBrowserClass['valueTrends'][string] | undefined {
+    const trend = that.valueTrends[id];
+    if (!trend) {
+        return undefined;
+    }
+    const now = Date.now();
+    if (trend.shown === undefined) {
+        trend.shown = now;
+    }
+    // A change of a row that was not visible is not shown later
+    if (now - trend.shown > TREND_DURATION || now - trend.ts > TREND_DURATION + 1000) {
+        delete that.valueTrends[id];
+        return undefined;
+    }
+    return trend;
+}
+
 /**
  * This function renders the value in different forms in the table
  *
@@ -361,9 +394,12 @@ export function renderColumnValue(
     that.recordState(id, id);
 
     const state = that.states[id];
+    const trend = getValueTrend(that, id);
 
     let info = item.data.state;
     if (!info) {
+        // A boolean that just changed flips, like a switch
+        const flip = trend?.dir === 'toggle' && Date.now() - trend.ts < 1000 ? ' iob-ob-flip' : '';
         const { valText } = formatValue({
             state,
             obj: obj as ioBroker.StateObject,
@@ -379,7 +415,7 @@ export function renderColumnValue(
 
         valTextRx.push(
             <span
-                className={`newValueBrowser-${that.props.themeType || 'light'}`}
+                className={`newValueBrowser-${that.props.themeType || 'light'}${flip}`}
                 key={`${valText.v.toString()}valText`}
                 style={{
                     whiteSpace: 'nowrap',
@@ -464,6 +500,25 @@ export function renderColumnValue(
                 />,
             ];
         }
+    }
+
+    // A number that just changed shows for some seconds, if it went up or down
+    if (val && val === info.valTextRx && (trend?.dir === 'up' || trend?.dir === 'down')) {
+        const arrow = (
+            <span
+                key={`trend${trend.ts}`}
+                ref={continueTrendAnimation}
+                data-shown={trend.shown}
+                className={`iob-ob-trend iob-ob-trend-${trend.dir}`}
+                aria-hidden="true"
+            >
+                <svg viewBox="0 0 24 24">
+                    <path d={TREND_ARROW[trend.dir]} />
+                </svg>
+            </span>
+        );
+        const copyIndex = val.findIndex(el => el.key === 'cc');
+        val = copyIndex === -1 ? [...val, arrow] : [...val.slice(0, copyIndex), arrow, ...val.slice(copyIndex)];
     }
 
     return (

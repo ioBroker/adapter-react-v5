@@ -49,6 +49,8 @@ export function onCtrlEnter(e: React.KeyboardEvent, onConfirm: () => void): void
 
 export const ICON_SIZE = 24;
 export const ROW_HEIGHT = 32;
+/** How long the arrow next to a changed number is shown (ms) */
+export const TREND_DURATION = 3000;
 
 export const COLOR_NAME_USERDATA = (themeType: ThemeType): string => (themeType === 'dark' ? '#62ff25' : '#37c400');
 export const COLOR_NAME_ALIAS = (themeType: ThemeType): string => (themeType === 'dark' ? '#ee56ff' : '#a204b4');

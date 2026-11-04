@@ -21,6 +21,7 @@ import { TabContent } from '../TabContent';
 import { TabHeader } from '../TabHeader';
 import {
     ROW_HEIGHT,
+    TREND_DURATION,
     applyFilter,
     buildTree,
     findNode,
@@ -183,6 +184,12 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
 
     /** id -> how often the state of this row has changed. Part of the memo key of the row */
     readonly rowStateVersion: Record<string, number> = {};
+
+    /**
+     * id -> last change of a number (arrow up or down) or of a boolean (the value flips), see `renderColumnValue`.
+     * `shown` is the time the row showed it first, so a row that is rendered again continues the animation.
+     */
+    readonly valueTrends: Record<string, { dir: 'up' | 'down' | 'toggle'; ts: number; shown?: number }> = {};
 
     /** The running animations of an unfolded or folding node (see `rowAnimation.ts`) */
     private rowAnimations: Animation[] = [];
@@ -1258,6 +1265,15 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
             if (item?.data.state) {
                 item.data.state = undefined;
             }
+        }
+        const oldVal = oldState?.val;
+        const newVal = state?.val;
+        if (typeof oldVal === 'number' && typeof newVal === 'number' && oldVal !== newVal) {
+            if (!Number.isNaN(oldVal) && !Number.isNaN(newVal)) {
+                this.valueTrends[id] = { dir: newVal > oldVal ? 'up' : 'down', ts: Date.now() };
+            }
+        } else if (typeof oldVal === 'boolean' && typeof newVal === 'boolean' && oldVal !== newVal) {
+            this.valueTrends[id] = { dir: 'toggle', ts: Date.now() };
         }
         if (state) {
             this.states[id] = state;
@@ -3380,6 +3396,59 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
 }
 .newValueBrowser-light {
     animation: newValueAnimation-light 2s ease-in-out;
+}
+.iob-ob-trend {
+    display: inline-flex;
+    align-self: center;
+    flex-shrink: 0;
+    width: 0.85em;
+    height: 0.85em;
+    margin-left: 4px;
+    opacity: 0;
+    animation: iob-ob-trend-up ${TREND_DURATION}ms ease-out forwards;
+}
+.iob-ob-trend svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+.iob-ob-trend-up {
+    color: ${this.props.themeType === 'dark' ? '#66bb6a' : '#2e7d32'};
+}
+.iob-ob-trend-down {
+    color: ${this.props.themeType === 'dark' ? '#ef5350' : '#c62828'};
+    animation-name: iob-ob-trend-down;
+}
+@keyframes iob-ob-trend-up {
+    0% { opacity: 0; transform: translateY(45%); }
+    12% { opacity: 1; transform: none; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+@keyframes iob-ob-trend-down {
+    0% { opacity: 0; transform: translateY(-45%); }
+    12% { opacity: 1; transform: none; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+.newValueBrowser-dark.iob-ob-flip {
+    animation: iob-ob-flip 0.32s cubic-bezier(0.3, 1.4, 0.5, 1), newValueAnimation-dark 2s ease-in-out;
+}
+.newValueBrowser-light.iob-ob-flip {
+    animation: iob-ob-flip 0.32s cubic-bezier(0.3, 1.4, 0.5, 1), newValueAnimation-light 2s ease-in-out;
+}
+@keyframes iob-ob-flip {
+    0% { transform: perspective(60px) rotateX(90deg); opacity: 0.3; }
+    100% { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .iob-ob-trend { animation-name: iob-ob-trend-fade; }
+    .newValueBrowser-dark.iob-ob-flip { animation: newValueAnimation-dark 2s ease-in-out; }
+    .newValueBrowser-light.iob-ob-flip { animation: newValueAnimation-light 2s ease-in-out; }
+    @keyframes iob-ob-trend-fade {
+        0%, 80% { opacity: 1; }
+        100% { opacity: 0; }
+    }
 }
 .highlight-link .iob-link {
     text-decoration: underline;
