@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.3.16",
+        "@iobroker/gui-components": "^10.4.0",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,7 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.4.0 (2026-11-04)
 - (@GermanBluefox) Changed: the animated trash can is used for all delete buttons: file browser, `TreeTable`, `ColorPicker`, `DialogComplexCron` and the context menu of the object browser. The lid stays open while the delete confirmation is shown
 - (@GermanBluefox) Changed: file browser: the reload button turns while the files are read
 - (@GermanBluefox) Changed: object browser: the online/offline symbol of the devices is animated, when the state changes
