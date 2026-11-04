@@ -2,13 +2,18 @@ import React, { type JSX } from 'react';
 
 import { IconButton, Tooltip } from '@mui/material';
 
-import {
-    Brightness4 as Brightness4Icon,
-    Brightness5 as Brightness5Icon,
-    Brightness6 as Brightness6Icon,
-    Brightness7 as Brightness7Icon,
-} from '@mui/icons-material';
+import { IconThemeMode, type IconThemeModeProps } from './AnimatedIcons/IconThemeMode';
 import type { ThemeName } from '../types';
+
+function getMode(themeName: ThemeName): IconThemeModeProps['mode'] {
+    if (themeName === 'dark' || themeName === 'modernDark') {
+        return 'dark';
+    }
+    if (themeName === 'blue' || themeName === 'colored') {
+        return themeName;
+    }
+    return 'light';
+}
 
 interface ToggleThemeMenuProps {
     themeName: ThemeName;
@@ -40,13 +45,11 @@ export function ToggleThemeMenu({
                     onClick={() => toggleTheme()}
                     size={size || 'medium'}
                 >
-                    {(themeName === 'dark' || themeName === 'modernDark') && <Brightness4Icon className={className} />}
-                    {themeName === 'blue' && <Brightness5Icon className={className} />}
-                    {themeName === 'colored' && <Brightness6Icon className={className} />}
-                    {themeName !== 'dark' &&
-                        themeName !== 'modernDark' &&
-                        themeName !== 'blue' &&
-                        themeName !== 'colored' && <Brightness7Icon className={className} />}
+                    {/* one icon for all themes, so that the change is animated */}
+                    <IconThemeMode
+                        mode={getMode(themeName)}
+                        className={className}
+                    />
                 </IconButton>
             </Tooltip>
         </div>

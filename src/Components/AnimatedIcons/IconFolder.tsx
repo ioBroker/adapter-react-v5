@@ -18,6 +18,11 @@ const FRONT =
 export interface IconFolderProps extends AnimatedIconProps {
     /** The folder is open: its front flap folds down */
     open: boolean;
+    /**
+     * Shows the other state while the mouse is over the icon or over its button, e.g. a closed folder opens
+     * on the button "expand all" and an open folder closes on "collapse all"
+     */
+    toggleOnHover?: boolean;
     /** Click on the icon, e.g. to open or close the folder */
     onClick?: (e: React.MouseEvent<HTMLSpanElement>) => void;
 }
@@ -28,13 +33,17 @@ export interface IconFolderProps extends AnimatedIconProps {
  *
  * ```tsx
  * <IconFolder open={expanded} onClick={() => toggle(id)} />
+ * <IconButton onClick={() => expandAll()}><IconFolder open={false} toggleOnHover /></IconButton>
  * ```
  */
 export function IconFolder(props: IconFolderProps): React.JSX.Element {
     useAnimatedIconStyles();
     return (
         <span
-            {...rootProps(props, `iob-ani-folder${props.open ? ' iob-ani-folder-open' : ''}`)}
+            {...rootProps(
+                props,
+                `iob-ani-folder${props.open ? ' iob-ani-folder-open' : ''}${props.toggleOnHover ? ' iob-ani-folder-hover' : ''}`,
+            )}
             onClick={props.onClick}
         >
             <svg viewBox="0 0 650 512">

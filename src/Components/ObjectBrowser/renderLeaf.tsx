@@ -8,19 +8,14 @@
 import React, { type JSX } from 'react';
 import { Utils } from '../Utils';
 import { Box, Checkbox, Grid, IconButton, Paper, Switch, Tooltip } from '@mui/material';
-import {
-    Edit as IconEdit,
-    Error as IconError,
-    Settings as IconConfig,
-    Wifi as IconConnection,
-    WifiOff as IconDisconnected,
-} from '@mui/icons-material';
-import { IconCopy } from '../../icons/IconCopy';
+import { Edit as IconEdit, Error as IconError, Settings as IconConfig } from '@mui/icons-material';
 import { IconDocument } from '../../icons/IconDocument';
 import { IconDocumentReadOnly } from '../../icons/IconDocumentReadOnly';
 import { Icon } from '../Icon';
 import { IconTrash } from '../AnimatedIcons/IconTrash';
 import { IconFolder } from '../AnimatedIcons/IconFolder';
+import { IconConnectionState } from '../AnimatedIcons/IconConnectionState';
+import { IconCopyToClipboard } from '../AnimatedIcons/IconCopyToClipboard';
 import {
     ButtonIcon,
     colGrow,
@@ -42,6 +37,7 @@ import {
     COLOR_NAME_SYSTEM_ADAPTER,
     ROW_HEIGHT,
     TREND_DURATION,
+    ACK_DURATION,
 } from './utils';
 import { type AdapterColumn, type TreeItem } from './types';
 import { styles } from './styles';
@@ -326,7 +322,7 @@ const TREND_ARROW = {
     down: 'M12 21L20.5 11.5H15V3H9V11.5H3.5Z',
 };
 
-/** The arrow of a row that is mounted again (e.g. after scrolling) continues where it was */
+/** The arrow or check mark of a row that is mounted again (e.g. after scrolling) continues where it was */
 function continueTrendAnimation(el: HTMLSpanElement | null): void {
     if (el) {
         el.style.animationDelay = `${Number(el.dataset.shown) - Date.now()}ms`;
@@ -334,23 +330,28 @@ function continueTrendAnimation(el: HTMLSpanElement | null): void {
 }
 
 /**
- * Returns the last change of a number or a boolean of this state, if it is still to be shown
+ * Returns the last change of a number or a boolean of this state (`valueTrends`) or the last confirmation of
+ * a command (`valueAcks`), if it is still to be shown
  */
-function getValueTrend(that: ObjectBrowserClass, id: string): ObjectBrowserClass['valueTrends'][string] | undefined {
-    const trend = that.valueTrends[id];
-    if (!trend) {
+function getRecentChange<T extends { ts: number; shown?: number }>(
+    changes: Record<string, T>,
+    id: string,
+    duration: number,
+): T | undefined {
+    const change = changes[id];
+    if (!change) {
         return undefined;
     }
     const now = Date.now();
-    if (trend.shown === undefined) {
-        trend.shown = now;
+    if (change.shown === undefined) {
+        change.shown = now;
     }
     // A change of a row that was not visible is not shown later
-    if (now - trend.shown > TREND_DURATION || now - trend.ts > TREND_DURATION + 1000) {
-        delete that.valueTrends[id];
+    if (now - change.shown > duration || now - change.ts > duration + 1000) {
+        delete changes[id];
         return undefined;
     }
-    return trend;
+    return change;
 }
 
 /**
@@ -394,7 +395,8 @@ export function renderColumnValue(
     that.recordState(id, id);
 
     const state = that.states[id];
-    const trend = getValueTrend(that, id);
+    const trend = getRecentChange(that.valueTrends, id, TREND_DURATION);
+    const ack = getRecentChange(that.valueAcks, id, ACK_DURATION);
 
     let info = item.data.state;
     if (!info) {
@@ -452,7 +454,7 @@ export function renderColumnValue(
         if (!narrowStyleWithDetails) {
             const copyText = valText.c !== undefined ? valText.c : valText.v || '';
             valTextRx.push(
-                <IconCopy
+                <IconCopyToClipboard
                     className="copyButton"
                     style={that.styles.iconCopy}
                     onClick={e => that.onCopy(e, copyText)}
@@ -502,23 +504,48 @@ export function renderColumnValue(
         }
     }
 
-    // A number that just changed shows for some seconds, if it went up or down
-    if (val && val === info.valTextRx && (trend?.dir === 'up' || trend?.dir === 'down')) {
-        const arrow = (
-            <span
-                key={`trend${trend.ts}`}
-                ref={continueTrendAnimation}
-                data-shown={trend.shown}
-                className={`iob-ob-trend iob-ob-trend-${trend.dir}`}
-                aria-hidden="true"
-            >
-                <svg viewBox="0 0 24 24">
-                    <path d={TREND_ARROW[trend.dir]} />
-                </svg>
-            </span>
-        );
-        const copyIndex = val.findIndex(el => el.key === 'cc');
-        val = copyIndex === -1 ? [...val, arrow] : [...val.slice(0, copyIndex), arrow, ...val.slice(copyIndex)];
+    if (val && val === info.valTextRx) {
+        const marks: JSX.Element[] = [];
+        // A number that just changed shows for some seconds, if it went up or down
+        if (trend?.dir === 'up' || trend?.dir === 'down') {
+            marks.push(
+                <span
+                    key={`trend${trend.ts}`}
+                    ref={continueTrendAnimation}
+                    data-shown={trend.shown}
+                    className={`iob-ob-trend iob-ob-trend-${trend.dir}`}
+                    aria-hidden="true"
+                >
+                    <svg viewBox="0 0 24 24">
+                        <path d={TREND_ARROW[trend.dir]} />
+                    </svg>
+                </span>,
+            );
+        }
+        // A command (ack=false) that the adapter just confirmed (ack=true) gets a check mark
+        if (ack) {
+            marks.push(
+                <span
+                    key={`ack${ack.ts}`}
+                    ref={continueTrendAnimation}
+                    data-shown={ack.shown}
+                    className="iob-ob-ack"
+                    aria-hidden="true"
+                >
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M5 12.5l4.5 4.5L19 7.5"
+                            pathLength={1}
+                        />
+                    </svg>
+                </span>,
+            );
+        }
+        if (marks.length) {
+            const copyIndex = val.findIndex(el => el.key === 'cc');
+            val =
+                copyIndex === -1 ? [...val, ...marks] : [...val.slice(0, copyIndex), ...marks, ...val.slice(copyIndex)];
+        }
     }
 
     return (
@@ -539,6 +566,8 @@ export function renderColumnValue(
                 sx={{
                     ...styles.cellValueText,
                     height: narrowStyleWithDetails ? undefined : ROW_HEIGHT,
+                    // the color of a not confirmed command changes smoothly to the normal one
+                    transition: 'color 0.4s',
                     '& .admin-button:active': {
                         transform: 'translate(0, 2px)',
                     },
@@ -939,90 +968,31 @@ export function renderLeaf(
             );
         }
 
+        // onlineId has priority over offlineId
+        let online: boolean | null = null;
         if (ids.onlineId && that.states[ids.onlineId]) {
-            if (!colorSet) {
-                if (that.states[ids.onlineId].val) {
-                    checkColor =
-                        that.props.themeType === 'dark' ? COLOR_NAME_CONNECTED_DARK : COLOR_NAME_CONNECTED_LIGHT;
-                    invertBackground = false;
-                    icons.push(
-                        <IconConnection
-                            key="conn"
-                            // title={that.texts.deviceError}
-                            style={that.styles.iconDeviceConnected}
-                        />,
-                    );
-                } else {
-                    checkColor =
-                        that.props.themeType === 'dark' ? COLOR_NAME_DISCONNECTED_DARK : COLOR_NAME_DISCONNECTED_LIGHT;
-                    invertBackground = false;
-                    icons.push(
-                        <IconDisconnected
-                            key="disc"
-                            // title={that.texts.deviceError}
-                            style={that.styles.iconDeviceDisconnected}
-                        />,
-                    );
-                }
-            } else if (that.states[ids.onlineId].val) {
-                icons.push(
-                    <IconConnection
-                        key="conn"
-                        // title={that.texts.deviceError}
-                        style={that.styles.iconDeviceConnected}
-                    />,
-                );
-            } else {
-                icons.push(
-                    <IconDisconnected
-                        key="disc"
-                        // title={that.texts.deviceError}
-                        style={that.styles.iconDeviceDisconnected}
-                    />,
-                );
-            }
+            online = !!that.states[ids.onlineId].val;
         } else if (ids.offlineId && that.states[ids.offlineId]) {
+            online = !that.states[ids.offlineId].val;
+        }
+        if (online !== null) {
             if (!colorSet) {
-                if (that.states[ids.offlineId].val) {
-                    checkColor =
-                        that.props.themeType === 'dark' ? COLOR_NAME_DISCONNECTED_DARK : COLOR_NAME_DISCONNECTED_LIGHT;
-                    invertBackground = false;
-                    icons.push(
-                        <IconDisconnected
-                            key="disc"
-                            // title={that.texts.deviceError}
-                            style={that.styles.iconDeviceDisconnected}
-                        />,
-                    );
+                if (that.props.themeType === 'dark') {
+                    checkColor = online ? COLOR_NAME_CONNECTED_DARK : COLOR_NAME_DISCONNECTED_DARK;
                 } else {
-                    checkColor =
-                        that.props.themeType === 'dark' ? COLOR_NAME_CONNECTED_DARK : COLOR_NAME_CONNECTED_LIGHT;
-                    invertBackground = false;
-                    icons.push(
-                        <IconConnection
-                            key="conn"
-                            // title={that.texts.deviceError}
-                            style={that.styles.iconDeviceConnected}
-                        />,
-                    );
+                    checkColor = online ? COLOR_NAME_CONNECTED_LIGHT : COLOR_NAME_DISCONNECTED_LIGHT;
                 }
-            } else if (that.states[ids.offlineId].val) {
-                icons.push(
-                    <IconDisconnected
-                        key="disc"
-                        // title={that.texts.deviceError}
-                        style={that.styles.iconDeviceDisconnected}
-                    />,
-                );
-            } else {
-                icons.push(
-                    <IconConnection
-                        key="conn"
-                        // title={that.texts.deviceError}
-                        style={that.styles.iconDeviceConnected}
-                    />,
-                );
+                invertBackground = false;
             }
+            // one element for both states, so that a change is animated: the slash draws itself or disappears
+            icons.push(
+                <IconConnectionState
+                    key="conn"
+                    fontSize={20}
+                    state={online ? 'connected' : 'disconnected'}
+                    style={online ? that.styles.iconDeviceConnected : that.styles.iconDeviceDisconnected}
+                />,
+            );
         }
     }
 
@@ -1098,7 +1068,7 @@ export function renderLeaf(
             </Grid>
             {that.width !== 'xs' ? (
                 <div style={{ flexShrink: 0 }}>
-                    <IconCopy
+                    <IconCopyToClipboard
                         className={narrowStyleWithDetails ? '' : 'copyButton'}
                         style={styles.cellCopyButton}
                         onClick={e => that.onCopy(e, id)}
@@ -1125,7 +1095,7 @@ export function renderLeaf(
                 {name}
                 {!narrowStyleWithDetails && item.data?.title ? (
                     <Box style={{ color: checkColor }}>
-                        <IconCopy
+                        <IconCopyToClipboard
                             className="copyButton"
                             style={styles.cellCopyButton}
                             onClick={e => that.onCopy(e, item.data?.title)}
@@ -1540,7 +1510,8 @@ export function renderLeaf(
         );
 
         const copyTitle = that.props.t('ra_Copy to clipboard');
-        const copyIcon = <IconCopy style={styles.cellDetailsIcon} />;
+        // the check mark is shown after a click on the button around it
+        const copyIcon = <IconCopyToClipboard style={styles.cellDetailsIcon} />;
         const editIcon = <IconEdit style={styles.cellDetailsIcon} />;
 
         if (!colCustom?.length) {

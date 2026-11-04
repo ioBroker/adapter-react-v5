@@ -10,7 +10,9 @@ import React, { Component, type JSX } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
-import { Check as IconCheck, ErrorOutlined as IconError } from '@mui/icons-material';
+import { Check as IconCheck } from '@mui/icons-material';
+
+import { IconResult } from '../Components/AnimatedIcons/IconResult';
 
 import { I18n } from '../i18n';
 
@@ -68,7 +70,11 @@ export class DialogError extends Component<DialogErrorProps> {
                     id="ar_alert_dialog_title"
                     sx={styles.title}
                 >
-                    <IconError />
+                    {/* draws itself and shakes once; the color of the title */}
+                    <IconResult
+                        type="error"
+                        style={{ color: 'inherit' }}
+                    />
                     {this.props.title || I18n.t('ra_Error')}
                 </DialogTitle>
                 <DialogContent sx={styles.content}>

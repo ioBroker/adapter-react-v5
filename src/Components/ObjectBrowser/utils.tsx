@@ -51,6 +51,8 @@ export const ICON_SIZE = 24;
 export const ROW_HEIGHT = 32;
 /** How long the arrow next to a changed number is shown (ms) */
 export const TREND_DURATION = 3000;
+/** How long the check mark is shown, when a command (ack=false) was confirmed (ack=true) (ms) */
+export const ACK_DURATION = 1800;
 
 export const COLOR_NAME_USERDATA = (themeType: ThemeType): string => (themeType === 'dark' ? '#62ff25' : '#37c400');
 export const COLOR_NAME_ALIAS = (themeType: ThemeType): string => (themeType === 'dark' ? '#ee56ff' : '#a204b4');

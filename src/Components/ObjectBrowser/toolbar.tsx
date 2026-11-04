@@ -10,9 +10,7 @@ import { Badge, Box, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, typ
 import {
     Add as AddIcon,
     Build as BuildIcon,
-    Close as IconClose,
     LooksOne as LooksOneIcon,
-    Publish as PublishIcon,
     TextFields as TextFieldsIcon,
     ViewColumn as IconColumns,
     ContentPaste,
@@ -20,9 +18,9 @@ import {
 } from '@mui/icons-material';
 import { Utils } from '../Utils';
 import { IconExpertMode } from '../AnimatedIcons/IconExpertMode';
-import { IconClosed } from '../../icons/IconClosed';
-import { IconOpen } from '../../icons/IconOpen';
-import { IconClearFilter } from '../../icons/IconClearFilter';
+import { IconFilter } from '../AnimatedIcons/IconFilter';
+import { IconFolder } from '../AnimatedIcons/IconFolder';
+import { IconUpload } from '../AnimatedIcons/IconUpload';
 import { Icon } from '../Icon';
 import { IconRefresh } from '../AnimatedIcons/IconRefresh';
 import {
@@ -265,7 +263,12 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                             onClick={() => that.onExpandAll()}
                             size="large"
                         >
-                            <IconOpen />
+                            {/* the folder opens on hover: it shows what the button does */}
+                            <IconFolder
+                                open={false}
+                                toggleOnHover
+                                fontSize={20}
+                            />
                         </IconButton>
                     </Tooltip>
                 )}
@@ -278,7 +281,11 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                         onClick={() => that.onCollapseAll()}
                         size="large"
                     >
-                        <IconClosed />
+                        <IconFolder
+                            open
+                            toggleOnHover
+                            fontSize={20}
+                        />
                     </IconButton>
                 </Tooltip>
                 {that.width !== 'xs' && (
@@ -304,7 +311,11 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                                     },
                                 })}
                             >
-                                <IconOpen />
+                                <IconFolder
+                                    open={false}
+                                    toggleOnHover
+                                    fontSize={20}
+                                />
                             </Badge>
                         </IconButton>
                     </Tooltip>
@@ -332,7 +343,11 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                                 badgeContent={that.state.depth}
                                 color="secondary"
                             >
-                                <IconClosed />
+                                <IconFolder
+                                    open
+                                    toggleOnHover
+                                    fontSize={20}
+                                />
                             </Badge>
                         </IconButton>
                     </Tooltip>
@@ -407,7 +422,7 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                             }}
                             size="large"
                         >
-                            <PublishIcon />
+                            <IconUpload />
                         </IconButton>
                     </Tooltip>
                 )}
@@ -440,7 +455,8 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                             onClick={() => that.setState({ showExportDialog: that._getSelectedIdsForExport().length })}
                             size="large"
                         >
-                            <PublishIcon style={{ transform: 'rotate(180deg)' }} />
+                            {/* turned: the arrow goes down into the bar on hover */}
+                            <IconUpload style={{ transform: 'rotate(180deg)' }} />
                         </IconButton>
                     </Tooltip>
                 )}
@@ -506,16 +522,20 @@ export function renderHandleRight(that: ObjectBrowserClass): JSX.Element {
 export function renderHeader(that: ObjectBrowserClass): JSX.Element {
     let filterClearInValue = null;
 
-    if (!that.columnsVisibility.buttons && !that.isFilterEmpty()) {
+    if (!that.columnsVisibility.buttons) {
+        // The button stays in the page without a filter (invisible), so that its cross can jump away
+        const filterSet = !that.isFilterEmpty();
         filterClearInValue = (
             <IconButton
                 onClick={() => that.clearFilter()}
-                style={styles.buttonClearFilter}
+                style={{
+                    ...styles.buttonClearFilter,
+                    ...(filterSet ? styles.buttonClearFilterVisible : styles.buttonClearFilterHidden),
+                }}
                 title={that.props.t('ra_Clear filter')}
                 size="large"
             >
-                <IconClearFilter />
-                <IconClose style={styles.buttonClearFilterIcon} />
+                <IconFilter active={filterSet} />
             </IconButton>
         );
     }

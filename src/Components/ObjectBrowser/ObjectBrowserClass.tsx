@@ -11,7 +11,7 @@
 /* eslint-disable react/no-unused-class-component-methods -- the members are used by the sibling modules of this directory */
 import React, { Component, createRef, type JSX } from 'react';
 
-import { Box, LinearProgress } from '@mui/material';
+import { Box } from '@mui/material';
 
 // own
 import { Connection } from '../../Connection';
@@ -22,6 +22,7 @@ import { TabHeader } from '../TabHeader';
 import {
     ROW_HEIGHT,
     TREND_DURATION,
+    ACK_DURATION,
     applyFilter,
     buildTree,
     findNode,
@@ -55,6 +56,7 @@ import * as toolbar from './toolbar';
 import * as leaf from './renderLeaf';
 import * as contextMenu from './contextMenu';
 import * as rowAnimation from './rowAnimation';
+import { renderSkeleton } from './skeleton';
 import {
     DEFAULT_DATE_FORMAT,
     DEFAULT_FILTER,
@@ -190,6 +192,9 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
      * `shown` is the time the row showed it first, so a row that is rendered again continues the animation.
      */
     readonly valueTrends: Record<string, { dir: 'up' | 'down' | 'toggle'; ts: number; shown?: number }> = {};
+
+    /** id -> last confirmation of a command: the state was written with ack=false and then got ack=true */
+    readonly valueAcks: Record<string, { ts: number; shown?: number }> = {};
 
     /** The running animations of an unfolded or folding node (see `rowAnimation.ts`) */
     private rowAnimations: Animation[] = [];
@@ -1297,6 +1302,10 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         } else if (typeof oldVal === 'boolean' && typeof newVal === 'boolean' && oldVal !== newVal) {
             this.valueTrends[id] = { dir: 'toggle', ts: Date.now() };
         }
+        // the placeholder of a state that is not loaded yet has no `ack`, so only a real command counts
+        if (oldState?.ack === false && state?.ack === true) {
+            this.valueAcks[id] = { ts: Date.now() };
+        }
         if (state) {
             this.states[id] = state;
         } else {
@@ -1605,8 +1614,9 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         }
     }
 
+    /** True if no filter is set */
     isFilterEmpty(): boolean {
-        return (
+        return !(
             !!this.state.filter.id ||
             !!this.state.filter.name ||
             !!this.state.filter.room?.length ||
@@ -3353,7 +3363,7 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         }
 
         if (!this.state.loaded) {
-            return <LinearProgress key={`${this.props.dialogName}_c`} />;
+            return renderSkeleton(this);
         }
 
         // the container was resized into another width class => other columns are visible, and the
@@ -3463,7 +3473,41 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     0% { transform: perspective(60px) rotateX(90deg); opacity: 0.3; }
     100% { transform: none; opacity: 1; }
 }
+.iob-ob-ack {
+    display: inline-flex;
+    align-self: center;
+    flex-shrink: 0;
+    width: 0.9em;
+    height: 0.9em;
+    margin-left: 4px;
+    color: ${this.props.themeType === 'dark' ? '#66bb6a' : '#2e7d32'};
+    animation: iob-ob-ack ${ACK_DURATION}ms ease-out forwards;
+}
+.iob-ob-ack svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.iob-ob-ack path {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+    animation: iob-ob-ack-draw 0.35s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+    /* a row that is mounted again continues the drawing too, see continueTrendAnimation */
+    animation-delay: inherit;
+}
+@keyframes iob-ob-ack {
+    0%, 75% { opacity: 1; }
+    100% { opacity: 0; }
+}
+@keyframes iob-ob-ack-draw {
+    to { stroke-dashoffset: 0; }
+}
 @media (prefers-reduced-motion: reduce) {
+    .iob-ob-ack path { animation: none; stroke-dashoffset: 0; }
     .iob-ob-trend { animation-name: iob-ob-trend-fade; }
     .newValueBrowser-dark.iob-ob-flip { animation: newValueAnimation-dark 2s ease-in-out; }
     .newValueBrowser-light.iob-ob-flip { animation: newValueAnimation-light 2s ease-in-out; }

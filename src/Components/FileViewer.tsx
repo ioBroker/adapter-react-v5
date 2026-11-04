@@ -5,12 +5,7 @@ import React, { Component, type JSX } from 'react';
 import { TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 
 // Icons
-import {
-    Close as CloseIcon,
-    Save as SaveIcon,
-    Brightness6 as Brightness5Icon,
-    ContentCopy as CopyIcon,
-} from '@mui/icons-material';
+import { Close as CloseIcon, Save as SaveIcon, Brightness6 as Brightness5Icon } from '@mui/icons-material';
 
 import type { Connection } from '@iobroker/socket-client';
 
@@ -19,6 +14,7 @@ import { withWidth } from './withWidth';
 import { Utils } from './Utils';
 import type { ThemeType, Translate } from '../types';
 import { Icon } from './Icon';
+import { IconCopyToClipboard } from './AnimatedIcons/IconCopyToClipboard';
 
 const styles: Record<string, React.CSSProperties> = {
     dialog: {
@@ -346,7 +342,7 @@ export class FileViewerClass extends Component<FileViewerProps, FileViewerState>
                                 e.preventDefault();
                                 Utils.copyToClipboard(this.state.text || this.state.code || '');
                             }}
-                            startIcon={<CopyIcon />}
+                            startIcon={<IconCopyToClipboard />}
                         >
                             {this.props.t('Copy content')}
                         </Button>

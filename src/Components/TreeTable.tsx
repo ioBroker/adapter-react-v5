@@ -19,7 +19,6 @@ import {
 
 import {
     Edit as IconEdit,
-    Delete as IconDelete,
     NavigateNext as IconExpand,
     Check as IconCheck,
     Close as IconClose,
@@ -33,6 +32,8 @@ import { DialogSelectID } from '../Dialogs/SelectID';
 import { ColorPicker, parseColor } from './ColorPicker';
 import { I18n } from '../i18n';
 import { Utils } from './Utils';
+import { IconTrash } from './AnimatedIcons/IconTrash';
+import { foldRows, measureRows, unfoldRows, type RowParts } from './ObjectBrowser/rowAnimation';
 import type { IobTheme, ThemeType } from '../types';
 
 function getAttr(obj: Record<string, any>, attr: string | string[], lookup?: Record<string, string>): any {
@@ -348,6 +349,18 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
 
     private updateTimeout: ReturnType<typeof setTimeout> | null = null;
 
+    private readonly containerRef = React.createRef<HTMLDivElement>();
+
+    private readonly bodyRef = React.createRef<HTMLTableSectionElement>();
+
+    /** The running animations of an opened or closing item (see `ObjectBrowser/rowAnimation.ts`) */
+    private rowAnimations: Animation[] = [];
+
+    /** The item whose children slide under its row at the moment; they are removed when that ends */
+    private foldingId: string | null = null;
+
+    private foldTimer: ReturnType<typeof setTimeout> | null = null;
+
     constructor(props: TreeTableProps) {
         super(props);
 
@@ -377,6 +390,104 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
         if (this.updateTimeout) {
             clearTimeout(this.updateTimeout);
             this.updateTimeout = null;
+        }
+        // a fold animation must not update the state after the component was destroyed
+        this.foldingId = null;
+        if (this.foldTimer) {
+            clearTimeout(this.foldTimer);
+            this.foldTimer = null;
+        }
+        this.rowAnimations.forEach(animation => animation.cancel());
+        this.rowAnimations = [];
+    }
+
+    /** The rendered rows of an item, of its children and the rows below them */
+    getRowParts(id: string): RowParts | null {
+        const body = this.bodyRef.current;
+        if (!body) {
+            return null;
+        }
+        let nodeRow: HTMLElement | null = null;
+        const block: HTMLElement[] = [];
+        const below: HTMLElement[] = [];
+        for (const row of Array.from(body.children) as HTMLElement[]) {
+            if (!nodeRow) {
+                if (row.dataset.treeId === String(id)) {
+                    nodeRow = row;
+                }
+            } else if (!below.length && row.dataset.treeLevel !== '0') {
+                block.push(row);
+            } else {
+                below.push(row);
+            }
+        }
+        return measureRows(this.containerRef.current, nodeRow, block, below);
+    }
+
+    /** Opens or closes an item: its children slide out from under its row, or back under it */
+    toggleOpened(id: string): void {
+        // an item that is still closing is closed now, this toggle builds on it
+        const folding = this.foldingId;
+        this.finishRowAnimations();
+        const opened = this.state.opened.filter(item => item !== folding);
+        const pos = opened.indexOf(id);
+        if (pos === -1) {
+            opened.push(id);
+            opened.sort();
+        } else {
+            opened.splice(pos, 1);
+        }
+
+        ((window as any)._localStorage || window.localStorage).setItem(
+            this.props.name || 'iob-table',
+            JSON.stringify(opened),
+        );
+
+        if (pos === -1) {
+            this.setState({ opened }, () => {
+                this.rowAnimations = unfoldRows(this.getRowParts(id));
+            });
+            return;
+        }
+        const animations = foldRows(this.getRowParts(id), () => this.applyFold());
+        if (animations) {
+            // the children slide under the row first and are removed when the animation ends
+            this.rowAnimations = animations;
+            this.foldingId = id;
+            // a hidden tab does not run animations: close anyway
+            this.foldTimer = setTimeout(() => this.applyFold(), 600);
+        } else {
+            this.setState({ opened });
+        }
+    }
+
+    /** The fold animation ended (or is cut short): remove the children of the item now */
+    applyFold(): void {
+        const id = this.foldingId;
+        if (id === null) {
+            return;
+        }
+        this.foldingId = null;
+        if (this.foldTimer) {
+            clearTimeout(this.foldTimer);
+            this.foldTimer = null;
+        }
+        const animations = this.rowAnimations;
+        this.rowAnimations = [];
+        // the animations hold the rows in their end position until the children are really gone
+        this.setState(
+            state => ({ opened: state.opened.filter(item => item !== id) }),
+            () => animations.forEach(animation => animation.cancel()),
+        );
+    }
+
+    /** Ends a running fold or unfold animation at once */
+    finishRowAnimations(): void {
+        if (this.foldingId !== null) {
+            this.applyFold();
+        } else {
+            this.rowAnimations.forEach(animation => animation.cancel());
+            this.rowAnimations = [];
         }
     }
 
@@ -719,6 +830,9 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
         const row = (
             <TableRow
                 key={item.id}
+                // for the animation of the children, see `getRowParts`
+                data-tree-id={String(item.id)}
+                data-tree-level={level}
                 className={`table-row-${(item.id || '').toString().replace(/[.$]/g, '_')}`}
                 sx={Utils.getStyle(
                     this.props.theme,
@@ -750,23 +864,7 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
                                 ...(opened ? styles.expandButtonOpened : undefined),
                             }}
                             title={I18n.t(opened ? 'ra_Collapse' : 'ra_Expand')}
-                            onClick={() => {
-                                const _opened = [...this.state.opened];
-                                const pos = _opened.indexOf(item.id);
-                                if (pos === -1) {
-                                    _opened.push(item.id);
-                                    _opened.sort();
-                                } else {
-                                    _opened.splice(pos, 1);
-                                }
-
-                                ((window as any)._localStorage || window.localStorage).setItem(
-                                    this.props.name || 'iob-table',
-                                    JSON.stringify(_opened),
-                                );
-
-                                this.setState({ opened: _opened });
-                            }}
+                            onClick={() => this.toggleOpened(item.id)}
                             size="small"
                         >
                             <IconExpand fontSize="small" />
@@ -904,7 +1002,10 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
                                         onClick={() => this.setState({ deleteMode: i })}
                                         size="small"
                                     >
-                                        <IconDelete fontSize="small" />
+                                        <IconTrash
+                                            fontSize="small"
+                                            open={this.state.deleteMode === i}
+                                        />
                                     </IconButton>
                                 </span>
                             </Tooltip>
@@ -1051,6 +1152,7 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
 
             return (
                 <div
+                    ref={this.containerRef}
                     style={styles.tableContainer}
                     className={this.props.className}
                 >
@@ -1061,7 +1163,7 @@ export class TreeTable extends Component<TreeTableProps, TreeTableState> {
                         stickyHeader
                     >
                         {this.renderHead()}
-                        <TableBody>{table.map(it => this.renderLine(it))}</TableBody>
+                        <TableBody ref={this.bodyRef}>{table.map(it => this.renderLine(it))}</TableBody>
                     </Table>
                     {this.renderSelectIdDialog()}
                 </div>

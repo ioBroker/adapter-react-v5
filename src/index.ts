@@ -123,6 +123,10 @@ export { IconTrash, type IconTrashProps } from './Components/AnimatedIcons/IconT
 export { IconConnectionState, type IconConnectionStateProps } from './Components/AnimatedIcons/IconConnectionState';
 export { IconExpertMode, type IconExpertModeProps } from './Components/AnimatedIcons/IconExpertMode';
 export { IconFolder, type IconFolderProps } from './Components/AnimatedIcons/IconFolder';
+export { IconCopyToClipboard, type IconCopyToClipboardProps } from './Components/AnimatedIcons/IconCopyToClipboard';
+export { IconThemeMode, type IconThemeModeProps } from './Components/AnimatedIcons/IconThemeMode';
+export { IconUpload, type IconUploadProps } from './Components/AnimatedIcons/IconUpload';
+export { IconFilter, type IconFilterProps } from './Components/AnimatedIcons/IconFilter';
 export { type IconProps } from './Components/Icon';
 export { type IconsIconProps } from './icons/types';
 export { IconAdapter } from './icons/IconAdapter';

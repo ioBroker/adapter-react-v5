@@ -2,9 +2,10 @@ import React, { type JSX } from 'react';
 
 import { Button, DialogTitle, DialogContent, DialogActions, Dialog } from '@mui/material';
 
-import { Check as IconOk, Cancel as IconCancel, Delete as IconClear } from '@mui/icons-material';
+import { Check as IconOk, Cancel as IconCancel } from '@mui/icons-material';
 
 import { ComplexCron } from '../Components/ComplexCron';
+import { IconTrash } from '../Components/AnimatedIcons/IconTrash';
 import { DialogConfirm } from '../Dialogs/Confirm';
 
 import { I18n } from '../i18n';
@@ -133,7 +134,7 @@ export class DialogComplexCron extends React.Component<DialogCronProps, DialogCr
                             color="grey"
                             variant="contained"
                             onClick={() => this.handleClear()}
-                            startIcon={<IconClear />}
+                            startIcon={<IconTrash />}
                         >
                             {this.props.clear || I18n.t('ra_Clear')}
                         </Button>

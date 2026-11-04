@@ -29,6 +29,7 @@ import {
     Checkbox,
     FormControlLabel,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
 // MUI Icons
 import {
@@ -40,7 +41,6 @@ import {
     Close as CloseIcon,
     Code as JSIcon,
     CreateNewFolder as AddFolderIcon,
-    Delete as DeleteIcon,
     Description as HtmlIcon,
     Edit as EditIcon,
     FolderOpen as EmptyFilterIcon,
@@ -51,8 +51,6 @@ import {
     KeyboardReturn as EnterIcon,
     List as IconList,
     MusicNote as MusicIcon,
-    Publish as UploadIcon,
-    Refresh as RefreshIcon,
     SaveAlt as DownloadIcon,
     Videocam as TypeIconVideo,
     ViewModule as IconTile,
@@ -67,6 +65,9 @@ import { DialogTextInput } from '../Dialogs/TextInput';
 // Custom Icons
 import { IconExpertMode } from './AnimatedIcons/IconExpertMode';
 import { IconFolder } from './AnimatedIcons/IconFolder';
+import { IconTrash } from './AnimatedIcons/IconTrash';
+import { IconRefresh } from './AnimatedIcons/IconRefresh';
+import { IconUpload } from './AnimatedIcons/IconUpload';
 import { IconClosed } from '../icons/IconClosed';
 import { IconNoIcon } from '../icons/IconNoIcon';
 import { Icon } from './Icon';
@@ -360,6 +361,18 @@ const styles: Record<string, any> = {
         alignItems: 'center',
         justifyContent: 'center',
     }),
+    /** Files are dragged over the drop area: its border pulses */
+    uploadCenterDivDragging: (theme: IobTheme): any => ({
+        borderColor: theme.palette.primary.main,
+        animation: 'iob-fb-drop-pulse 1.2s ease-in-out infinite',
+        '@keyframes iob-fb-drop-pulse': {
+            '0%': { boxShadow: `0 0 0 0 ${alpha(theme.palette.primary.main, 0.4)}` },
+            '70%, 100%': { boxShadow: `0 0 0 14px ${alpha(theme.palette.primary.main, 0)}` },
+        },
+        '@media (prefers-reduced-motion: reduce)': {
+            animation: 'none',
+        },
+    }),
     uploadCenterIcon: {
         width: '25%',
         height: '25%',
@@ -599,6 +612,10 @@ interface FileBrowserState {
     showTypesMenu: HTMLButtonElement | null;
     restrictToFolder: string;
     pathFocus: boolean;
+    /** The reload button was clicked and the folders are being read again */
+    reloading: boolean;
+    /** Dropped files are being uploaded */
+    uploading: boolean;
 }
 
 export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserState> {
@@ -746,6 +763,8 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
             restrictToFolder: props.restrictToFolder || '',
             pathFocus: false,
             suppressDeleteConfirm: false,
+            reloading: false,
+            uploading: false,
         };
 
         this.imagePrefix = this.props.imagePrefix || './files/';
@@ -805,6 +824,15 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
             }
             this.initialReadFinished = true;
         });
+    }
+
+    /** Reads all folders again; the reload button turns meanwhile */
+    reload(): void {
+        this.setState({ folders: {}, reloading: true }, () =>
+            this.loadFolders()
+                .catch(error => console.error(`Cannot load folders: ${error}`))
+                .finally(() => this.mounted && this.setState({ reloading: false })),
+        );
     }
 
     scrollToSelected(): void {
@@ -1425,7 +1453,10 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
                         sx={styles[`itemDeleteButton${this.state.viewType}`]}
                         size="large"
                     >
-                        <DeleteIcon fontSize="small" />
+                        <IconTrash
+                            fontSize="small"
+                            open={this.state.deleteItem === item.id}
+                        />
                     </IconButton>
                 ) : this.state.viewType === TABLE && this.props.allowDelete ? (
                     <Box
@@ -1729,7 +1760,10 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
                         sx={styles[`itemDeleteButton${this.state.viewType}`]}
                         size="large"
                     >
-                        <DeleteIcon fontSize="small" />
+                        <IconTrash
+                            fontSize="small"
+                            open={this.state.deleteItem === item.id}
+                        />
                     </IconButton>
                 ) : this.state.viewType === TABLE && this.props.allowDelete ? (
                     <Box
@@ -1909,10 +1943,14 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
                     style={styles.menuButton}
                     color="inherit"
                     aria-label="reload files"
-                    onClick={() => this.setState({ folders: {} }, () => this.loadFolders())}
+                    disabled={this.state.reloading}
+                    onClick={() => this.reload()}
                     size="small"
                 >
-                    <RefreshIcon fontSize="small" />
+                    <IconRefresh
+                        fontSize="small"
+                        loading={this.state.reloading}
+                    />
                 </IconButton>
                 {this.props.allowCreateFolder ? (
                     <IconButton
@@ -1951,7 +1989,10 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
                         onClick={() => this.setState({ uploadFile: true })}
                         size="small"
                     >
-                        <UploadIcon fontSize="small" />
+                        <IconUpload
+                            fontSize="small"
+                            uploading={this.state.uploading}
+                        />
                     </IconButton>
                 ) : null}
                 {this.props.showTypeSelector && IconType ? (
@@ -2039,7 +2080,10 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
                                 }}
                                 size="small"
                             >
-                                <DeleteIcon fontSize="small" />
+                                <IconTrash
+                                    fontSize="small"
+                                    open={!!this.state.deleteItem && this.state.deleteItem === this.state.selected}
+                                />
                             </IconButton>
                         </span>
                     </Tooltip>
@@ -2274,23 +2318,41 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
                     onDragLeave={() => this.setState({ uploadFile: true })}
                     onDrop={acceptedFiles => {
                         let count = acceptedFiles.length;
+                        if (!count) {
+                            this.setState({ uploadFile: true });
+                            return;
+                        }
+                        this.setState({ uploading: true });
+                        // a file that cannot be read or written does not keep the upload icon moving
+                        const failed = (): void => {
+                            if (!--count) {
+                                this.setState({ uploading: false });
+                            }
+                        };
 
                         acceptedFiles.forEach(file => {
                             const reader = new FileReader();
 
-                            reader.onabort = () => console.log('file reading was aborted');
-                            reader.onerror = () => console.log('file reading has failed');
+                            reader.onabort = () => {
+                                console.log('file reading was aborted');
+                                failed();
+                            };
+                            reader.onerror = () => {
+                                console.log('file reading has failed');
+                                failed();
+                            };
                             reader.onload = () => {
                                 const parentFolder = this.findFirstFolder(this.state.selected);
 
                                 if (!parentFolder) {
                                     window.alert(this.props.t('ra_Invalid parent folder!'));
+                                    failed();
                                 } else {
                                     const id = `${parentFolder}/${file.name}`;
 
                                     void this.uploadFile(id, reader.result as string).then(() => {
                                         if (!--count) {
-                                            this.setState({ uploadFile: false }, () => {
+                                            this.setState({ uploadFile: false, uploading: false }, () => {
                                                 if (this.supportSubscribes) {
                                                     // open current folder
                                                     const expanded = [...this.state.expanded];
@@ -2347,10 +2409,18 @@ export class FileBrowserClass extends Component<FileBrowserProps, FileBrowserSta
                             <input {...getInputProps()} />
                             <Box
                                 component="div"
-                                sx={styles.uploadCenterDiv}
+                                sx={Utils.getStyle(
+                                    this.props.theme,
+                                    styles.uploadCenterDiv,
+                                    this.state.uploadFile === 'dragging' ? styles.uploadCenterDivDragging : undefined,
+                                )}
                             >
                                 <div style={styles.uploadCenterTextAndIcon}>
-                                    <UploadIcon style={styles.uploadCenterIcon} />
+                                    <IconUpload
+                                        style={styles.uploadCenterIcon}
+                                        ready={this.state.uploadFile === 'dragging'}
+                                        uploading={this.state.uploading}
+                                    />
                                     <div style={styles.uploadCenterText}>
                                         {this.state.uploadFile === 'dragging'
                                             ? this.props.t('ra_Drop file here')

@@ -878,6 +878,19 @@ You can find the migration instructions:
 
 ## Changelog
 ### **WORK IN PROGRESS**
+- (@GermanBluefox) Changed: the animated trash can is used for all delete buttons: file browser, `TreeTable`, `ColorPicker`, `DialogComplexCron` and the context menu of the object browser. The lid stays open while the delete confirmation is shown
+- (@GermanBluefox) Changed: file browser: the reload button turns while the files are read
+- (@GermanBluefox) Changed: object browser: the online/offline symbol of the devices is animated, when the state changes
+- (@GermanBluefox) Changed: `DialogError` draws its error symbol
+- (@GermanBluefox) Added: animated icons `IconCopyToClipboard` (check mark after copying), `IconThemeMode` (sun and moon turn into each other), `IconUpload` and `IconFilter`; `IconFolder` got the prop `toggleOnHover`
+- (@GermanBluefox) Changed: object browser: the copy buttons confirm the copy with a check mark, also in `FileViewer`
+- (@GermanBluefox) Changed: object browser: a command (`ack=false`) that the adapter confirms (`ack=true`) gets a check mark next to the value for a moment
+- (@GermanBluefox) Changed: `ToggleThemeMenu` animates the change of the theme
+- (@GermanBluefox) Changed: file browser: the upload arrow moves up while the files are uploaded, the drop area pulses while files are dragged over it
+- (@GermanBluefox) Changed: object browser: the buttons "expand/collapse all" show on hover, what they will do; the import and export buttons have the animated upload symbol
+- (@GermanBluefox) Changed: `TreeTable`: the children slide out from under their row, like in the object browser
+- (@GermanBluefox) Changed: object browser: placeholder rows with a shimmer while the objects are loading, instead of a progress bar
+- (@GermanBluefox) Fixed: object browser: the button "clear filter" in the header of the value column was shown when no filter was set, and hidden when one was set. Now its cross jumps away when the filter is cleared
 - (@GermanBluefox) Fixed: object browser under web: the objects of the types `config`, `user` and `group` were listed under their name instead of their ID, and `config` objects outside of `system.` were missing. With `root`, only the objects below it are read, and the way down to it is expanded
 
 ### 10.3.16 (2026-11-04)

@@ -6,12 +6,14 @@
  * Unfolding and folding of a node in the table: the children slide out from under the row of the node
  * (or back under it), and the rows below them move along. Only `transform` and `clip-path` are animated,
  * so the layout is the final one from the start, and `measureRenderedRows` still reads the real heights.
+ *
+ * `unfoldRows`, `foldRows` and `measureRows` work with any list of rows, e.g. the rows of `TreeTable`.
  */
 import { prefersReducedMotion } from '../AnimatedIcons/common';
 
 const EASING = 'cubic-bezier(0.2, 0, 0, 1)';
 
-interface RowParts {
+export interface RowParts {
     /** Lower edge of the row of the node (and of its details panel) */
     top: number;
     /** The rendered rows of the children (and of their children) */
@@ -31,12 +33,47 @@ function rowIdOf(element: HTMLElement): string | undefined {
     return row?.id || undefined;
 }
 
+/** True if the rows can be animated: the browser can do it, and the user did not ask for less motion */
+function canAnimate(): boolean {
+    return typeof Element !== 'undefined' && !!Element.prototype.animate && !prefersReducedMotion();
+}
+
+/**
+ * Measures the rows of a node that is unfolded or folded
+ *
+ * @param container the scrolling container of the rows; the rows move at most down to its lower edge
+ * @param nodeRow the (last) element of the row of the node
+ * @param block the rendered rows of its children
+ * @param below the rendered rows below the children
+ * @returns null if nothing can be animated
+ */
+export function measureRows(
+    container: HTMLElement | null,
+    nodeRow: HTMLElement | null,
+    block: HTMLElement[],
+    below: HTMLElement[],
+): RowParts | null {
+    if (!container || !nodeRow || !block.length || !canAnimate()) {
+        return null;
+    }
+    const top = nodeRow.getBoundingClientRect().bottom;
+    const blockBottom = below.length
+        ? below[0].getBoundingClientRect().top
+        : block[block.length - 1].getBoundingClientRect().bottom;
+    const distance = Math.min(blockBottom, container.getBoundingClientRect().bottom, window.innerHeight) - top;
+    if (distance < 2) {
+        return null;
+    }
+    return { top, block, below, distance };
+}
+
+/** The rows of the object browser: the children of a node have IDs that begin with the ID of the node */
 function collectParts(container: HTMLElement | null, id: string): RowParts | null {
-    if (!container || !id || typeof Element === 'undefined' || !Element.prototype.animate || prefersReducedMotion()) {
+    if (!container || !id || !canAnimate()) {
         return null;
     }
     const prefix = `${id}.`;
-    let top: number | null = null;
+    let nodeRow: HTMLElement | null = null;
     const block: HTMLElement[] = [];
     const below: HTMLElement[] = [];
     for (const child of Array.from(container.children) as HTMLElement[]) {
@@ -46,8 +83,9 @@ function collectParts(container: HTMLElement | null, id: string): RowParts | nul
             continue;
         }
         if (rowId === id) {
-            top = child.getBoundingClientRect().bottom;
-        } else if (top !== null) {
+            // the row of the node, or its details panel below it
+            nodeRow = child;
+        } else if (nodeRow) {
             if (!below.length && rowId.startsWith(prefix)) {
                 block.push(child);
             } else {
@@ -55,17 +93,7 @@ function collectParts(container: HTMLElement | null, id: string): RowParts | nul
             }
         }
     }
-    if (top === null || !block.length) {
-        return null;
-    }
-    const blockBottom = below.length
-        ? below[0].getBoundingClientRect().top
-        : block[block.length - 1].getBoundingClientRect().bottom;
-    const distance = Math.min(blockBottom, container.getBoundingClientRect().bottom) - top;
-    if (distance < 2) {
-        return null;
-    }
-    return { top, block, below, distance };
+    return measureRows(container, nodeRow, block, below);
 }
 
 /**
@@ -110,8 +138,7 @@ function duration(distance: number): number {
 }
 
 /** The node was unfolded and its children are rendered: let them slide out from under its row */
-export function unfold(container: HTMLElement | null, id: string): Animation[] {
-    const parts = collectParts(container, id);
+export function unfoldRows(parts: RowParts | null): Animation[] {
     if (!parts) {
         return [];
     }
@@ -124,8 +151,7 @@ export function unfold(container: HTMLElement | null, id: string): Animation[] {
  *
  * @returns null if nothing can be animated, then fold at once
  */
-export function fold(container: HTMLElement | null, id: string, onFinished: () => void): Animation[] | null {
-    const parts = collectParts(container, id);
+export function foldRows(parts: RowParts | null, onFinished: () => void): Animation[] | null {
     if (!parts) {
         return null;
     }
@@ -137,4 +163,14 @@ export function fold(container: HTMLElement | null, id: string, onFinished: () =
     });
     animations[0].onfinish = onFinished;
     return animations;
+}
+
+/** Object browser: the node `id` was unfolded, see `unfoldRows` */
+export function unfold(container: HTMLElement | null, id: string): Animation[] {
+    return unfoldRows(collectParts(container, id));
+}
+
+/** Object browser: the node `id` is about to be folded, see `foldRows` */
+export function fold(container: HTMLElement | null, id: string, onFinished: () => void): Animation[] | null {
+    return foldRows(collectParts(container, id), onFinished);
 }

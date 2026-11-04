@@ -8,7 +8,7 @@
  * surrounding text or button, and they have the size of the MUI icons.
  */
 import type React from 'react';
-import { useEffect, useInsertionEffect, useRef, type CSSProperties } from 'react';
+import { useEffect, useId, useInsertionEffect, useRef, type CSSProperties } from 'react';
 
 export interface AnimatedIconProps {
     /** Size like the MUI icons: 'small' (20 px), 'medium' (24 px, default), 'large' (35 px), 'inherit', pixels or e.g. '2em' */
@@ -84,12 +84,12 @@ const styles = `
 .iob-ani-menu-open .iob-ani-menu-b2 { transform: translateX(-0.0417em) scaleX(0.889); }
 .iob-ani-menu-open .iob-ani-menu-b3 { transform: translate(-0.0417em, -0.2083em) rotate(-45deg) scaleX(0.63); }
 
-/* Trash: the lid opens on hover of the icon or of its button */
+/* Trash: the lid opens on hover of the icon or of its button or menu item */
 .iob-ani-trash-lid { transform-origin: 5px 6px; transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.6, 1); }
 .iob-ani-trash-open .iob-ani-trash-lid,
 .iob-ani-trash:hover .iob-ani-trash-lid,
-:is(button, a, [role="button"]):hover .iob-ani-trash .iob-ani-trash-lid,
-:is(button, a, [role="button"]):focus-visible .iob-ani-trash .iob-ani-trash-lid { transform: translateY(-1.5px) rotate(-18deg); }
+:is(button, a, [role="button"], [role="menuitem"]):hover .iob-ani-trash .iob-ani-trash-lid,
+:is(button, a, [role="button"], [role="menuitem"]):focus-visible .iob-ani-trash .iob-ani-trash-lid { transform: translateY(-1.5px) rotate(-18deg); }
 
 /* Expert mode: mortarboard, outlined when off and filled when on */
 .iob-ani-expert-hat { transform-origin: 12px 12px; }
@@ -106,6 +106,58 @@ const styles = `
 .iob-ani-folder-open .iob-ani-folder-front { transform: none; transition: transform 0.32s cubic-bezier(0.3, 1.35, 0.5, 1); }
 .iob-ani-folder-closed { transition: opacity 0.06s linear 0.18s; }
 .iob-ani-folder-open .iob-ani-folder-closed { opacity: 0; transition-delay: 0s; }
+/* toggleOnHover: shows the other state while the mouse is over the icon or its button, e.g. "expand all" */
+.iob-ani-folder-hover:not(.iob-ani-folder-open):hover .iob-ani-folder-front,
+:is(button, a, [role="button"]):is(:hover, :focus-visible) .iob-ani-folder-hover:not(.iob-ani-folder-open) .iob-ani-folder-front { transform: none; transition: transform 0.32s cubic-bezier(0.3, 1.35, 0.5, 1); }
+.iob-ani-folder-hover:not(.iob-ani-folder-open):hover .iob-ani-folder-closed,
+:is(button, a, [role="button"]):is(:hover, :focus-visible) .iob-ani-folder-hover:not(.iob-ani-folder-open) .iob-ani-folder-closed { opacity: 0; transition-delay: 0s; }
+.iob-ani-folder-hover.iob-ani-folder-open:hover .iob-ani-folder-front,
+:is(button, a, [role="button"]):is(:hover, :focus-visible) .iob-ani-folder-hover.iob-ani-folder-open .iob-ani-folder-front { transform: scaleY(1.1667) skewX(29.1deg); transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1); }
+.iob-ani-folder-hover.iob-ani-folder-open:hover .iob-ani-folder-closed,
+:is(button, a, [role="button"]):is(:hover, :focus-visible) .iob-ani-folder-hover.iob-ani-folder-open .iob-ani-folder-closed { opacity: 1; transition-delay: 0.18s; }
+
+/* Copy to clipboard: the copy slides out of the original, then a check mark is drawn in it */
+.iob-ani-copy svg * { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.iob-ani-copy .iob-ani-copy-check { opacity: 0; stroke-width: 2.2; stroke-dasharray: 1 1; stroke-dashoffset: 1; }
+.iob-ani-click { cursor: pointer; }
+
+/* Theme: sun (light), ring (blue), half filled (colored) or moon (dark). The shadow of the moon is a mask. */
+.iob-ani-theme-disc { fill: currentColor; fill-opacity: 1; stroke: currentColor; stroke-width: 2; transform-origin: 12px 12px; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), fill-opacity 0.3s; }
+.iob-ani-theme-half { fill: currentColor; opacity: 0; transition: opacity 0.3s; }
+.iob-ani-theme-rays { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; transform-origin: 12px 12px; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s; }
+.iob-ani-theme-cut { transform: translate(8px, -8px); transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
+.iob-ani-theme-blue .iob-ani-theme-disc, .iob-ani-theme-colored .iob-ani-theme-disc { fill-opacity: 0; }
+.iob-ani-theme-colored .iob-ani-theme-half { opacity: 1; }
+/* the rays are 45 degrees apart: turned by 45 degrees they look the same, but they spin on the change */
+.iob-ani-theme-blue .iob-ani-theme-rays { transform: rotate(45deg); }
+.iob-ani-theme-colored .iob-ani-theme-rays { transform: rotate(90deg); }
+.iob-ani-theme-dark .iob-ani-theme-disc { transform: scale(1.55); }
+.iob-ani-theme-dark .iob-ani-theme-cut { transform: none; transition-delay: 0.08s; }
+.iob-ani-theme-dark .iob-ani-theme-rays { transform: rotate(-90deg) scale(0.4); opacity: 0; }
+
+/* Upload: the arrow moves up into the bar */
+.iob-ani-up path { fill: currentColor; }
+.iob-ani-up-arrow { transition: transform 0.2s ease-out; }
+.iob-ani-up:hover .iob-ani-up-arrow,
+:is(button, a, [role="button"]):is(:hover, :focus-visible) .iob-ani-up .iob-ani-up-arrow { transform: translateY(-2px); }
+.iob-ani-up-ready .iob-ani-up-arrow { animation: iob-ani-up-bob 0.8s ease-in-out infinite; }
+.iob-ani-up-uploading .iob-ani-up-arrow { animation: iob-ani-up-rise 1.1s linear infinite; }
+.iob-ani-up-uploading .iob-ani-up-bar { animation: iob-ani-up-bar 1.1s ease-out infinite; }
+@keyframes iob-ani-up-rise {
+    0% { transform: translateY(15px); animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1); }
+    35%, 50% { transform: translateY(0); animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.4); }
+    100% { transform: translateY(-15px); }
+}
+@keyframes iob-ani-up-bar { 0%, 84% { transform: none; } 92% { transform: translateY(-1.2px); } }
+@keyframes iob-ani-up-bob { 50% { transform: translateY(-2.5px); } }
+
+/* Filter: a red cross shows that a click removes the filter; it jumps away when the filter is cleared */
+.iob-ani-filter-funnel { fill: currentColor; stroke: currentColor; stroke-width: 1; }
+:where(.iob-ani-filter-x) { color: #F44336; }
+.iob-ani-filter-x { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; transform-origin: 19px 16.75px; opacity: 0; transform: translate(3px, -5px) rotate(90deg) scale(0.2); transition: transform 0.3s cubic-bezier(0.5, -0.4, 0.8, 0.6), opacity 0.2s 0.1s; }
+.iob-ani-filter-on .iob-ani-filter-x { opacity: 1; transform: none; transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1), opacity 0.1s; }
+.iob-ani-filter-on:hover .iob-ani-filter-x,
+:is(button, a, [role="button"]):is(:hover, :focus-visible) .iob-ani-filter-on .iob-ani-filter-x { transform: rotate(90deg); }
 
 /* Connection */
 .iob-ani-wifi path { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; transition: opacity 0.3s; }
@@ -125,8 +177,11 @@ const styles = `
 @keyframes iob-ani-shake { 20% { transform: translateX(-1.5px); } 40% { transform: translateX(1.5px); } 60% { transform: translateX(-1px); } 80% { transform: translateX(1px); } }
 
 @media (prefers-reduced-motion: reduce) {
-    .iob-ani-pp-a, .iob-ani-pp-b, .iob-ani-menu-rot, .iob-ani-menu-bar, .iob-ani-trash-lid, .iob-ani-expert-shape, .iob-ani-folder-front, .iob-ani-folder-closed { transition-duration: 0.01ms; transition-delay: 0s; }
+    .iob-ani-pp-a, .iob-ani-pp-b, .iob-ani-menu-rot, .iob-ani-menu-bar, .iob-ani-trash-lid, .iob-ani-expert-shape, .iob-ani-folder-front, .iob-ani-folder-closed,
+    .iob-ani-theme-disc, .iob-ani-theme-half, .iob-ani-theme-rays, .iob-ani-theme-cut, .iob-ani-up-arrow, .iob-ani-filter-x { transition-duration: 0.01ms !important; transition-delay: 0s !important; }
     .iob-ani-pp-pending .iob-ani-pp-ring { animation: iob-ani-breathe 1.2s ease-in-out infinite; }
+    .iob-ani-up-ready .iob-ani-up-arrow, .iob-ani-up-uploading .iob-ani-up-bar { animation: none; }
+    .iob-ani-up-uploading .iob-ani-up-arrow { animation: iob-ani-breathe 1.2s ease-in-out infinite; }
     .iob-ani-res svg, .iob-ani-res svg * { animation: none !important; stroke-dashoffset: 0; }
 }
 `;
@@ -159,6 +214,11 @@ export function rootProps(props: AnimatedIconProps, className: string): React.HT
         'aria-label': props.ariaLabel,
         'aria-hidden': props.ariaLabel ? undefined : true,
     };
+}
+
+/** Unique ID for a mask or a clip path of one icon (the IDs of `useId` contain characters like `:` or `«`) */
+export function useSvgId(name: string): string {
+    return `iob-ani-${name}-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
 }
 
 /** True if the user asked the system for less motion */

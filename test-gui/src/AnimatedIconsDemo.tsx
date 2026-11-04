@@ -10,6 +10,10 @@ import { IconRefresh } from '../../src/Components/AnimatedIcons/IconRefresh';
 import { IconResult } from '../../src/Components/AnimatedIcons/IconResult';
 import { IconStatusLed } from '../../src/Components/AnimatedIcons/IconStatusLed';
 import { IconTrash } from '../../src/Components/AnimatedIcons/IconTrash';
+import { IconCopyToClipboard } from '../../src/Components/AnimatedIcons/IconCopyToClipboard';
+import { IconThemeMode, type IconThemeModeProps } from '../../src/Components/AnimatedIcons/IconThemeMode';
+import { IconUpload } from '../../src/Components/AnimatedIcons/IconUpload';
+import { IconFilter } from '../../src/Components/AnimatedIcons/IconFilter';
 
 const css = `
 .aid {
@@ -440,6 +444,12 @@ function Cards(props: { picked: string[]; onPick: (name: string, picked: boolean
     const [conn, setConn] = useState<ConnState>('connecting');
     const [expert, setExpert] = useState(false);
     const [folderOpen, setFolderOpen] = useState(false);
+    const [folderHover, setFolderHover] = useState(false);
+    const [copyCount, setCopyCount] = useState(0);
+    const [themeMode, setThemeMode] = useState<IconThemeModeProps['mode']>('light');
+    const [uploadReady, setUploadReady] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [filterSet, setFilterSet] = useState(true);
 
     const togglePp = (): void => {
         if (ppPending) {
@@ -714,12 +724,23 @@ function Cards(props: { picked: string[]; onPick: (name: string, picked: boolean
                     >
                         <IconFolder
                             open={folderOpen}
+                            toggleOnHover={folderHover}
                             fontSize={BIG}
                         />
                     </button>
                 }
-                controls={<Btn onClick={() => setFolderOpen(!folderOpen)}>{folderOpen ? 'Schließen' : 'Öffnen'}</Btn>}
-                code={`<IconFolder open={${folderOpen}} />`}
+                controls={
+                    <>
+                        <Btn onClick={() => setFolderOpen(!folderOpen)}>{folderOpen ? 'Schließen' : 'Öffnen'}</Btn>
+                        <Btn
+                            pressed={folderHover}
+                            onClick={() => setFolderHover(!folderHover)}
+                        >
+                            Vorschau beim Überfahren
+                        </Btn>
+                    </>
+                }
+                code={`<IconFolder open={${folderOpen}}${folderHover ? ' toggleOnHover' : ''} />`}
             />
             <Card
                 name="IconConnectionState"
@@ -778,6 +799,128 @@ function Cards(props: { picked: string[]; onPick: (name: string, picked: boolean
                 }
                 controls={<Btn onClick={() => setExpert(!expert)}>{expert ? 'Ausschalten' : 'Einschalten'}</Btn>}
                 code={`<IconExpertMode active={${expert}} />`}
+            />
+            <Card
+                name="IconCopyToClipboard"
+                {...pick('IconCopyToClipboard')}
+                text="Die Kopie gleitet aus dem Original, dann zeichnet sich ein Häkchen hinein. Ohne onClick und copied reagiert das Icon auf den Klick des Buttons drumherum."
+                where="Kopieren im Objektbrowser, Dateiinhalt kopieren"
+                stage={
+                    <button
+                        type="button"
+                        className="aid-ibtn"
+                        aria-label="Kopieren"
+                        onClick={() => setCopyCount(c => c + 1)}
+                    >
+                        <IconCopyToClipboard
+                            copied={copyCount}
+                            fontSize={BIG}
+                        />
+                    </button>
+                }
+                controls={<Btn onClick={() => setCopyCount(c => c + 1)}>Kopieren</Btn>}
+                code="<IconCopyToClipboard onClick={() => Utils.copyToClipboard(text)} />"
+            />
+            <Card
+                name="IconThemeMode"
+                {...pick('IconThemeMode')}
+                text="Sonne und Mond gehen ineinander über: Die Strahlen ziehen sich zurück, der Schatten schiebt sich über die Sonne. Zwischen den hellen Themen drehen sich die Strahlen."
+                where="Theme umschalten in der Kopfleiste"
+                stage={
+                    <button
+                        type="button"
+                        className="aid-ibtn"
+                        aria-label="Theme"
+                        onClick={() => {
+                            const modes: IconThemeModeProps['mode'][] = ['light', 'dark', 'blue', 'colored'];
+                            setThemeMode(modes[(modes.indexOf(themeMode) + 1) % modes.length]);
+                        }}
+                    >
+                        <IconThemeMode
+                            mode={themeMode}
+                            fontSize={BIG}
+                        />
+                    </button>
+                }
+                controls={
+                    <>
+                        {(['light', 'dark', 'blue', 'colored'] as IconThemeModeProps['mode'][]).map(mode => (
+                            <Btn
+                                key={mode}
+                                pressed={themeMode === mode}
+                                onClick={() => setThemeMode(mode)}
+                            >
+                                {mode}
+                            </Btn>
+                        ))}
+                    </>
+                }
+                code={`<IconThemeMode mode="${themeMode}" />`}
+            />
+            <Card
+                name="IconUpload"
+                {...pick('IconUpload')}
+                text="Beim Überfahren hebt sich der Pfeil, beim Ziehen von Dateien wippt er, und beim Hochladen fährt er immer wieder in den Balken."
+                where="Hochladen im Dateibrowser, Ablagefläche"
+                stage={
+                    <button
+                        type="button"
+                        className="aid-ibtn"
+                        aria-label="Hochladen"
+                        onClick={() => {
+                            if (!uploading) {
+                                setUploading(true);
+                                later(() => setUploading(false), 2500);
+                            }
+                        }}
+                    >
+                        <IconUpload
+                            ready={uploadReady}
+                            uploading={uploading}
+                            fontSize={BIG}
+                        />
+                    </button>
+                }
+                controls={
+                    <>
+                        <Btn
+                            pressed={uploadReady}
+                            onClick={() => setUploadReady(!uploadReady)}
+                        >
+                            Dateien ziehen
+                        </Btn>
+                        <Btn
+                            pressed={uploading}
+                            onClick={() => setUploading(!uploading)}
+                        >
+                            Hochladen
+                        </Btn>
+                    </>
+                }
+                code={`<IconUpload ready={${uploadReady}} uploading={${uploading}} />`}
+            />
+            <Card
+                name="IconFilter"
+                {...pick('IconFilter')}
+                text="Solange ein Filter gesetzt ist, springt ein rotes Kreuz neben den Trichter. Beim Überfahren dreht es sich, beim Löschen des Filters springt es weg."
+                where="Filter löschen im Objektbrowser"
+                stage={
+                    <button
+                        type="button"
+                        className="aid-ibtn"
+                        aria-label="Filter löschen"
+                        onClick={() => setFilterSet(!filterSet)}
+                    >
+                        <IconFilter
+                            active={filterSet}
+                            fontSize={BIG}
+                        />
+                    </button>
+                }
+                controls={
+                    <Btn onClick={() => setFilterSet(!filterSet)}>{filterSet ? 'Filter löschen' : 'Filter setzen'}</Btn>
+                }
+                code={`<IconFilter active={${filterSet}} />`}
             />
         </div>
     );
@@ -859,9 +1002,9 @@ export function AnimatedIconsDemo(props: { themeType?: 'dark' | 'light' }): Reac
                         <div className="aid-label">@iobroker/gui-components</div>
                         <h1>Bewegte Icons</h1>
                         <p>
-                            Zehn Icons aus CSS und SVG für admin und alle Adapter. Jede Bewegung sagt etwas: ein Klick
-                            ist angekommen, es wird gewartet, etwas hat sich geändert. Wer im System weniger Bewegung
-                            eingestellt hat, sieht die ruhige Variante.
+                            Vierzehn Icons aus CSS und SVG für admin und alle Adapter. Jede Bewegung sagt etwas: ein
+                            Klick ist angekommen, es wird gewartet, etwas hat sich geändert. Wer im System weniger
+                            Bewegung eingestellt hat, sieht die ruhige Variante.
                         </p>
                     </div>
                     <label className="aid-switch">
@@ -885,7 +1028,7 @@ export function AnimatedIconsDemo(props: { themeType?: 'dark' | 'light' }): Reac
                 </section>
 
                 <section>
-                    <div className="aid-label">Die zehn Icons</div>
+                    <div className="aid-label">Die vierzehn Icons</div>
                     <p style={{ margin: '6px 0 14px', color: 'var(--aid-muted)', maxWidth: '70ch' }}>
                         Alle nutzen die Textfarbe und haben die Größen der MUI-Icons. Merke vor, was in admin kommen
                         soll, und kopiere die Auswahl unten.

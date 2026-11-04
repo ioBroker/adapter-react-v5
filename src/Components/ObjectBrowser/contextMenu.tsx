@@ -14,7 +14,6 @@ import {
     BorderColor,
     Construction,
     CreateNewFolder as IconFolder,
-    Delete as IconDelete,
     Edit as IconEdit,
     FindInPage,
     FormatItalic as IconValueEdit,
@@ -29,6 +28,7 @@ import { IconState } from '../../icons/IconState';
 import { findEnumsForObjectAsIds, getName, isNonExpertId } from './utils';
 import { type ContextMenuItem } from './types';
 import { styles } from './styles';
+import { IconTrash } from '../AnimatedIcons/IconTrash';
 import type { ObjectBrowserClass } from './ObjectBrowserClass';
 
 /**
@@ -394,7 +394,7 @@ export function renderContextMenu(that: ObjectBrowserClass): JSX.Element | null 
                 that.isDeleteAllowed(id)
             ),
             icon: (
-                <IconDelete
+                <IconTrash
                     fontSize="small"
                     style={that.styles.contextMenuDelete}
                 />

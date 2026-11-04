@@ -115,13 +115,16 @@ export const styles: Record<string, any> = {
         float: 'right',
         padding: 0,
     },
-    buttonClearFilterIcon: {
-        zIndex: 2,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        color: '#FF0000',
-        opacity: 0.7,
+    buttonClearFilterVisible: {
+        opacity: 1,
+        visibility: 'visible',
+        transition: 'opacity 0.15s',
+    },
+    /** Without a filter: the cross of the icon jumps away first, then the button fades out */
+    buttonClearFilterHidden: {
+        opacity: 0,
+        visibility: 'hidden',
+        transition: 'opacity 0.2s 0.3s, visibility 0s 0.5s',
     },
 
     // The header is rendered inside this container (see `headerRow`), so it uses the full height
@@ -671,17 +674,19 @@ export const styles: Record<string, any> = {
         color: theme.palette.mode === 'dark' ? COLOR_NAME_CONNECTED_DARK : COLOR_NAME_CONNECTED_LIGHT,
         opacity: 0.8,
         position: 'absolute',
-        top: 4,
+        // IconConnectionState is 20 px high; the error icon (MUI, 20 px wide, 24 px high, top: 4) draws its glyph 2 px lower
+        top: 6,
         right: 32,
-        width: 20,
+        transition: 'color 0.3s',
     }),
     iconDeviceDisconnected: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.mode === 'dark' ? COLOR_NAME_DISCONNECTED_DARK : COLOR_NAME_DISCONNECTED_LIGHT,
         opacity: 0.8,
         position: 'absolute',
-        top: 4,
+        // IconConnectionState is 20 px high; the error icon (MUI, 20 px wide, 24 px high, top: 4) draws its glyph 2 px lower
+        top: 6,
         right: 32,
-        width: 20,
+        transition: 'color 0.3s',
     }),
     iconDeviceError: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.mode === 'dark' ? COLOR_NAME_ERROR_DARK : COLOR_NAME_ERROR_LIGHT,

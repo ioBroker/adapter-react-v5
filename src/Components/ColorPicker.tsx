@@ -18,7 +18,8 @@ import { RgbaColorPicker, RgbColorPicker, type RgbaColor } from 'react-colorful'
 
 import { TextField, Popover, IconButton, Button, Box, Tooltip, MenuItem, Select } from '@mui/material';
 
-import { Delete as IconDelete, Colorize as IconColorize } from '@mui/icons-material';
+import { Colorize as IconColorize } from '@mui/icons-material';
+import { IconTrash } from './AnimatedIcons/IconTrash';
 
 import { I18n } from '../i18n';
 
@@ -846,7 +847,7 @@ export class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
                                 disabled={!textValue}
                                 onClick={this.handleClear}
                             >
-                                <IconDelete fontSize="small" />
+                                <IconTrash fontSize="small" />
                             </IconButton>
                         </span>
                     </Tooltip>
@@ -896,7 +897,7 @@ export class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
                         size="small"
                         style={hasLabel ? styles.delButton : undefined}
                     >
-                        <IconDelete />
+                        <IconTrash />
                     </IconButton>
                 ) : null}
                 <Box
