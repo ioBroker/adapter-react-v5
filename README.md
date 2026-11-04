@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.3.15",
+        "@iobroker/gui-components": "^10.3.16",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,7 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.3.16 (2026-11-04)
 - (@GermanBluefox) Added: object browser shows an arrow up/down next to a changed number; a changed boolean flips
 - (@GermanBluefox) Added: `SaveCloseButtons` shows a check mark after saving
 
