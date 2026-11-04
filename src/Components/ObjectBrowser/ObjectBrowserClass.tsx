@@ -324,6 +324,17 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         } catch {
             expanded = [];
         }
+        // the way down to the root is open: above it, there is nothing to choose
+        if (props.root) {
+            const parts = props.root.split('.');
+            for (let i = 1; i <= parts.length; i++) {
+                const id = parts.slice(0, i).join('.');
+                if (!expanded.includes(id)) {
+                    expanded.push(id);
+                }
+            }
+            expanded.sort();
+        }
 
         let filter: ObjectBrowserFilter;
         const filterStr: string = props.defaultFilters
@@ -630,8 +641,19 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
                     ) {
                         continue;
                     }
-                    const moreObjects = await props.socket.getObjectViewSystem(props.types[i]);
-                    Object.assign(objects || {}, moreObjects as Record<string, ioBroker.Object>);
+                    // Only below the root, if there is one. Else from ' ': with an empty start key the view brings
+                    // the objects under `system.` only.
+                    const moreObjects = await props.socket.getObjectViewSystem(
+                        props.types[i],
+                        props.root || ' ',
+                        props.root ? `${props.root}.\u9999` : '\u9999',
+                    );
+                    // The views `config`, `user` and `group` are keyed by the name of the object, not by its ID
+                    for (const obj of Object.values(moreObjects as Record<string, ioBroker.Object>)) {
+                        if (obj?._id) {
+                            objects[obj._id] = obj;
+                        }
+                    }
                 }
             }
 

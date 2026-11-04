@@ -877,6 +877,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Fixed: object browser under web: the objects of the types `config`, `user` and `group` were listed under their name instead of their ID, and `config` objects outside of `system.` were missing. With `root`, only the objects below it are read, and the way down to it is expanded
+
 ### 10.3.16 (2026-11-04)
 - (@GermanBluefox) Added: object browser shows an arrow up/down next to a changed number; a changed boolean flips
 - (@GermanBluefox) Added: `SaveCloseButtons` shows a check mark after saving
