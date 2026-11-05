@@ -62,6 +62,7 @@ export function renderContextMenu(that: ObjectBrowserClass): JSX.Element | null 
 
     const enumEditable =
         !that.props.notEditable &&
+        !that.props.objectsNotEditable &&
         obj &&
         (that.state.filter.expertMode || obj.type === 'state' || obj.type === 'channel' || obj.type === 'device');
 
@@ -276,6 +277,7 @@ export function renderContextMenu(that: ObjectBrowserClass): JSX.Element | null 
             key: '7',
             visibility: !!(
                 !that.props.notEditable &&
+                !that.props.objectsNotEditable &&
                 that.props.objectBrowserAliasEditor &&
                 that.props.objectBrowserEditObject &&
                 obj?.type === 'state' &&
@@ -365,6 +367,7 @@ export function renderContextMenu(that: ObjectBrowserClass): JSX.Element | null 
             key: '8',
             visibility: !!(
                 !that.props.notEditable &&
+                !that.props.objectsNotEditable &&
                 that.props.objectMoveRenameDialog &&
                 !item.data.id.startsWith('system.') &&
                 item.data.id.split('.').length > 2 &&

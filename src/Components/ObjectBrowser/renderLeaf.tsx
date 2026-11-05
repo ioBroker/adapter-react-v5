@@ -590,7 +590,12 @@ export function renderCustomValue(
 ): JSX.Element | null {
     const text = getCustomValue(obj, it);
     if (text !== null && text !== undefined) {
-        if (it.edit && !that.props.notEditable && (!it.objTypes || it.objTypes.includes(obj.type))) {
+        if (
+            it.edit &&
+            !that.props.notEditable &&
+            !that.props.objectsNotEditable &&
+            (!it.objTypes || it.objTypes.includes(obj.type))
+        ) {
             return (
                 <Box
                     component="div"
@@ -771,6 +776,7 @@ export function renderLeaf(
 
     const enumEditable =
         !that.props.notEditable &&
+        !that.props.objectsNotEditable &&
         that.objects[id] &&
         (that.state.filter.expertMode || itemType === 'state' || itemType === 'channel' || itemType === 'device');
 

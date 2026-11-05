@@ -407,7 +407,7 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                     </Tooltip>
                 ) : null}
 
-                {that.props.objectImportExport && (
+                {that.props.objectImportExport && !that.props.objectsNotEditable && (
                     <Tooltip
                         title={that.props.t('ra_Add objects tree from JSON file')}
                         slotProps={{ popper: { sx: styles.tooltip } }}

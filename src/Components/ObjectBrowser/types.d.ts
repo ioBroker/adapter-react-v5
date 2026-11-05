@@ -358,7 +358,13 @@ export interface ObjectBrowserProps {
     t: Translate;
     lang: ioBroker.Languages;
     multiSelect?: boolean;
+    /** Nothing can be changed: neither the values of the states nor the objects */
     notEditable?: boolean;
+    /**
+     * The objects cannot be changed, the values of the states still can: no names, rooms, functions,
+     * aliases, renaming, import or editable custom columns. E.g. for a user who may write states, but not objects
+     */
+    objectsNotEditable?: boolean;
     foldersFirst?: boolean;
     disableColumnSelector?: boolean;
     isFloatComma?: boolean;
