@@ -877,6 +877,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Fixed: `LoaderCommunity` uses the background of the theme (modernDark/modernLight) or neutral #121212 in dark
+
 ### 10.4.2 (2026-11-05)
 - (@GermanBluefox) Added: `ObjectBrowser` prop `objectsNotEditable`: objects read-only, state values still editable
 - (@GermanBluefox) Added: `ObjectBrowser` checks the rights of each object: no edit or delete where the user may not

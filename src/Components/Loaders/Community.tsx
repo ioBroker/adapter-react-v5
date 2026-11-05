@@ -11,6 +11,7 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import type { ThemeName, ThemeType } from '../../types';
+import { MODERN_DARK, MODERN_LIGHT } from '../../ThemeModern';
 
 declare global {
     interface Window {
@@ -51,7 +52,7 @@ const loaderStyles = `
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden;
     background-color: var(--iob-ld-bg); background-size: cover; background-position: center;
 }
-.iob-ld-dark { --iob-ld-bg: #080B1C; --iob-ld-orbit: rgba(126, 195, 243, 0.16); --iob-ld-node: #1D90CA; --iob-ld-packet: #7EC3F3; --iob-ld-label: #1D90CA; --iob-ld-flash: #E8F6FF; }
+.iob-ld-dark { --iob-ld-bg: #121212; --iob-ld-orbit: rgba(126, 195, 243, 0.16); --iob-ld-node: #1D90CA; --iob-ld-packet: #7EC3F3; --iob-ld-label: #1D90CA; --iob-ld-flash: #E8F6FF; }
 .iob-ld-blue { --iob-ld-bg: #031D38; --iob-ld-orbit: rgba(126, 195, 243, 0.22); --iob-ld-node: #7EC3F3; --iob-ld-packet: #E8F6FF; --iob-ld-label: #7EC3F3; --iob-ld-flash: #E8F6FF; }
 .iob-ld-light { --iob-ld-bg: #FFFFFF; --iob-ld-orbit: rgba(0, 88, 148, 0.14); --iob-ld-node: #1D90CA; --iob-ld-packet: #1D90CA; --iob-ld-label: #005894; --iob-ld-flash: #FFFFFF; }
 .iob-ld-colored { --iob-ld-bg: #E6EEF7; --iob-ld-orbit: rgba(0, 88, 148, 0.16); --iob-ld-node: #005894; --iob-ld-packet: #1D90CA; --iob-ld-label: #005894; --iob-ld-flash: #FFFFFF; }
@@ -211,6 +212,12 @@ export function LoaderCommunity(props: LoaderProps): React.JSX.Element {
               : undefined;
 
     const style: React.CSSProperties & Record<string, string | undefined> = { backgroundImage, backgroundColor };
+    // The modern themes have an own page background: the loader must not bring one more color into play
+    if (themeName === 'modernDark') {
+        style['--iob-ld-bg'] = MODERN_DARK.background;
+    } else if (themeName === 'modernLight') {
+        style['--iob-ld-bg'] = MODERN_LIGHT.background;
+    }
     if (props.size) {
         style['--iob-ld-mark'] = `min(${props.size}px, 30vmin)`;
     }
