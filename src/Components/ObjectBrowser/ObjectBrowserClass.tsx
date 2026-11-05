@@ -1035,8 +1035,17 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
         part: 'object' | 'state' = 'object',
         operation: 'write' | 'delete' = 'write',
     ): boolean {
-        const socket = this.props.socket as Partial<Pick<Connection, 'hasObjectPermission'>> | undefined;
-        // an older socket client does not know the method
+        // `hasObjectPermission` came with @iobroker/socket-client 5.6.0. Described here, so that this
+        // compiles and runs with an older socket client as well - which does not know the method
+        const socket = this.props.socket as unknown as
+            | {
+                  hasObjectPermission?: (
+                      obj: ioBroker.Object | null | undefined,
+                      operation: 'read' | 'write' | 'delete',
+                      part: 'object' | 'state',
+                  ) => boolean;
+              }
+            | undefined;
         return typeof socket?.hasObjectPermission !== 'function' || socket.hasObjectPermission(obj, operation, part);
     }
 
