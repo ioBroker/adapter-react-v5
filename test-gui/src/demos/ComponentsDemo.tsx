@@ -57,6 +57,7 @@ export default function ComponentsDemo(props: { theme: IobTheme; themeType: Them
     const [icon, setIcon] = useState('');
     const [deviceType, setDeviceType] = useState<any>('dimmer');
     const [uploadedIcon, setUploadedIcon] = useState<string | null>(null);
+    const [uploadingIcon, setUploadingIcon] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [modalValue, setModalValue] = useState('Some text');
     const [changed, setChanged] = useState(false);
@@ -237,7 +238,7 @@ export default function ComponentsDemo(props: { theme: IobTheme; themeType: Them
 
             <DemoCard
                 title="UploadImage"
-                hint="drop zone with cropper"
+                hint="drop zone with cropper; the upload is simulated (1.5 s)"
                 wide
                 value={uploadedIcon ? `${uploadedIcon.substring(0, 50)}...` : ''}
             >
@@ -249,7 +250,13 @@ export default function ComponentsDemo(props: { theme: IobTheme; themeType: Them
                         crop
                         icon={uploadedIcon}
                         removeIconFunc={() => setUploadedIcon(null)}
-                        onChange={setUploadedIcon}
+                        uploading={uploadingIcon}
+                        onChange={base64 => {
+                            setUploadedIcon(base64);
+                            // simulates writing the image, e.g. into a file
+                            setUploadingIcon(true);
+                            setTimeout(() => setUploadingIcon(false), 1500);
+                        }}
                     />
                 </Box>
             </DemoCard>

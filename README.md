@@ -877,6 +877,10 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Changed: `UploadImage`: the upload symbol is animated (it bobs while a file is dragged over the drop area and moves up while the file is read), the drop area pulses while a file is dragged over it, also over an existing image, and a new image fades in
+- (@GermanBluefox) Added: `UploadImage` got the props `uploading` and `uploadError`: while the parent uploads the image (e.g. writes it into a file) an upload arrow is shown in the corner of the image, followed by a check mark or a cross
+
 ### 10.4.0 (2026-11-04)
 - (@GermanBluefox) Changed: the animated trash can is used for all delete buttons: file browser, `TreeTable`, `ColorPicker`, `DialogComplexCron` and the context menu of the object browser. The lid stays open while the delete confirmation is shown
 - (@GermanBluefox) Changed: file browser: the reload button turns while the files are read

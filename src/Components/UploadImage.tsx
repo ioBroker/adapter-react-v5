@@ -2,12 +2,19 @@ import React, { Component, createRef, type JSX } from 'react';
 import Dropzone, { type FileRejection } from 'react-dropzone';
 import { Cropper, type ReactCropperElement } from 'react-cropper';
 
-import { Menu, MenuItem, Tooltip, IconButton } from '@mui/material';
+import { Menu, MenuItem, Tooltip, IconButton, Box } from '@mui/material';
+import { alpha, type Theme } from '@mui/material/styles';
 
-import { Close as IconClose, Crop as CropIcon, UploadFileOutlined as UploadIcon } from '@mui/icons-material';
+import { Close as IconClose, Crop as CropIcon } from '@mui/icons-material';
 
 import { I18n } from '../i18n';
 import { Icon } from './Icon';
+import { IconUpload } from './AnimatedIcons/IconUpload';
+import { IconResult } from './AnimatedIcons/IconResult';
+import { play } from './AnimatedIcons/common';
+
+/** How long the result of an upload stays visible */
+const RESULT_DURATION = 2500;
 
 // import 'cropperjs/dist/cropper.css';
 const cropperStyles = `
@@ -331,6 +338,12 @@ const styles: Record<string, React.CSSProperties> = {
         width: '100%',
         height: '100%',
     },
+    /** The new image fades in */
+    imageWrapper: {
+        display: 'flex',
+        width: '100%',
+        height: '100%',
+    },
 
     uploadDiv: {
         position: 'relative',
@@ -346,9 +359,9 @@ const styles: Record<string, React.CSSProperties> = {
         background: 'rgba(128,255,128,0.1)',
     },
 
+    /** The border is set with `dropAreaSx`, so that it can pulse */
     uploadCenterDiv: {
         margin: 5,
-        border: '3px dashed grey',
         borderRadius: 5,
         width: 'calc(100% - 10px)',
         height: 'calc(100% - 10px)',
@@ -356,12 +369,28 @@ const styles: Record<string, React.CSSProperties> = {
         display: 'flex',
     },
     uploadCenterIcon: {
-        paddingTop: 10,
-        width: 48,
-        height: 48,
+        marginTop: 10,
     },
     uploadCenterText: {
         fontSize: 16,
+    },
+    /** A file is dragged over an existing image */
+    dropOverImage: {
+        position: 'absolute',
+        inset: 0,
+        zIndex: 1,
+        pointerEvents: 'none',
+    },
+    /** Upload and its result in the corner of the image */
+    uploadIndicator: {
+        position: 'absolute',
+        top: 8,
+        left: 8,
+        zIndex: 223,
+        display: 'flex',
+        padding: 4,
+        borderRadius: '50%',
+        pointerEvents: 'none',
     },
     uploadCenterTextAndIcon: {
         textAlign: 'center',
@@ -390,11 +419,28 @@ const styles: Record<string, React.CSSProperties> = {
         right: 0,
         top: 50,
     },
-    error: {
-        border: '2px solid red',
-        boxSizing: 'border-box',
-    },
 };
+
+/** Border of the drop area: red on error, and it pulses while a file is dragged over it */
+function dropAreaSx(theme: Theme, error: boolean, dragging: boolean): any {
+    if (error) {
+        return { border: '2px solid red', boxSizing: 'border-box' };
+    }
+    if (!dragging) {
+        return { border: '3px dashed grey' };
+    }
+    return {
+        border: `3px dashed ${theme.palette.primary.main}`,
+        animation: 'iob-upload-image-pulse 1.2s ease-in-out infinite',
+        '@keyframes iob-upload-image-pulse': {
+            '0%': { boxShadow: `0 0 0 0 ${alpha(theme.palette.primary.main, 0.4)}` },
+            '70%, 100%': { boxShadow: `0 0 0 14px ${alpha(theme.palette.primary.main, 0)}` },
+        },
+        '@media (prefers-reduced-motion: reduce)': {
+            animation: 'none',
+        },
+    };
+}
 
 interface UploadImageProps {
     maxSize?: number;
@@ -405,16 +451,31 @@ interface UploadImageProps {
     icon: string | null;
     removeIconFunc: () => void | null;
     accept?: Record<string, string[]>;
+    /**
+     * The parent uploads the image given with `onChange`, e.g. writes it into a file: the upload arrow moves up in
+     * the corner of the image. When it becomes false, a check mark is shown there for a moment.
+     */
+    uploading?: boolean;
+    /** The upload failed: when `uploading` becomes false, a cross is shown instead of the check mark */
+    uploadError?: boolean;
 }
 
 interface UploadImageState {
     uploadFile: boolean | 'dragging';
     anchorEl: HTMLElement | null;
     cropHandler: boolean;
+    /** The dropped file is being read */
+    reading: boolean;
+    /** Result of the last upload of the parent, shown for a moment */
+    result: { type: 'success' | 'error'; count: number } | null;
 }
 
 export class UploadImage extends Component<UploadImageProps, UploadImageState> {
     private readonly cropperRef: React.RefObject<ReactCropperElement | null>;
+
+    private readonly imageRef: React.RefObject<HTMLDivElement | null>;
+
+    private resultTimeout: ReturnType<typeof setTimeout> | null = null;
 
     constructor(props: UploadImageProps) {
         super(props);
@@ -423,8 +484,11 @@ export class UploadImage extends Component<UploadImageProps, UploadImageState> {
             uploadFile: false,
             anchorEl: null,
             cropHandler: false,
+            reading: false,
+            result: null,
         };
         this.cropperRef = createRef();
+        this.imageRef = createRef();
 
         if (!window.document.getElementById('cropper-style-json-component')) {
             const style = window.document.createElement('style');
@@ -434,6 +498,42 @@ export class UploadImage extends Component<UploadImageProps, UploadImageState> {
         }
     }
 
+    componentDidUpdate(prevProps: UploadImageProps): void {
+        if (prevProps.uploading && !this.props.uploading) {
+            this.showResult(this.props.uploadError ? 'error' : 'success');
+        }
+        if (this.props.icon && prevProps.icon !== this.props.icon) {
+            // the new image fades in
+            play(
+                this.imageRef.current,
+                [
+                    { opacity: 0, transform: 'scale(0.92)' },
+                    { opacity: 1, transform: 'scale(1)' },
+                ],
+                { duration: 280, easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)' },
+            );
+        }
+    }
+
+    componentWillUnmount(): void {
+        if (this.resultTimeout) {
+            clearTimeout(this.resultTimeout);
+            this.resultTimeout = null;
+        }
+    }
+
+    /** Shows a check mark or a cross in the corner of the image for a moment */
+    showResult(type: 'success' | 'error'): void {
+        if (this.resultTimeout) {
+            clearTimeout(this.resultTimeout);
+        }
+        this.setState({ result: { type, count: (this.state.result?.count || 0) + 1 } });
+        this.resultTimeout = setTimeout(() => {
+            this.resultTimeout = null;
+            this.setState({ result: null });
+        }, RESULT_DURATION);
+    }
+
     onDrop(acceptedFiles: File[]): void {
         const onChange = this.props.onChange;
         const maxSize = this.props.maxSize || 10 * 1024;
@@ -441,9 +541,17 @@ export class UploadImage extends Component<UploadImageProps, UploadImageState> {
         const file = acceptedFiles[0];
         const reader = new FileReader();
 
-        reader.onabort = () => console.log('file reading was aborted');
-        reader.onerror = () => console.log('file reading has failed');
+        // the upload arrow moves up while the file is read
+        reader.onabort = () => {
+            console.log('file reading was aborted');
+            this.setState({ reading: false });
+        };
+        reader.onerror = () => {
+            console.log('file reading has failed');
+            this.setState({ reading: false });
+        };
         reader.onload = () => {
+            this.setState({ reading: false });
             if (!file || !file.name) {
                 return;
             }
@@ -471,7 +579,31 @@ export class UploadImage extends Component<UploadImageProps, UploadImageState> {
                 }
             }
         };
+        this.setState({ reading: true });
         reader.readAsArrayBuffer(file);
+    }
+
+    /** Upload of the parent and its result in the corner of the image (without image, the big upload symbol shows it) */
+    renderUploadIndicator(): JSX.Element | null {
+        const { result } = this.state;
+        if (!this.props.icon || (!result && !this.props.uploading)) {
+            return null;
+        }
+        return (
+            <Box
+                style={styles.uploadIndicator}
+                sx={{ bgcolor: 'background.paper', color: 'text.primary' }}
+            >
+                {result ? (
+                    <IconResult
+                        type={result.type}
+                        replay={result.count}
+                    />
+                ) : (
+                    <IconUpload uploading />
+                )}
+            </Box>
+        );
     }
 
     render(): JSX.Element {
@@ -479,6 +611,7 @@ export class UploadImage extends Component<UploadImageProps, UploadImageState> {
         const maxSize = this.props.maxSize || 10 * 1024;
         let accept = this.props.accept || { 'image/*': [] };
         const { uploadFile, anchorEl, cropHandler } = this.state;
+        const dragging = uploadFile === 'dragging';
 
         // covert '"image/png"' to { 'image/*': [] }
         if (typeof accept === 'string') {
@@ -521,12 +654,21 @@ export class UploadImage extends Component<UploadImageProps, UploadImageState> {
                         {...getRootProps()}
                     >
                         <input {...getInputProps()} />
-                        <div style={{ ...styles.uploadCenterDiv, ...(error ? styles.error : undefined) }}>
+                        <Box
+                            style={styles.uploadCenterDiv}
+                            sx={(theme: Theme) => dropAreaSx(theme, !!error, dragging)}
+                        >
                             {!icon ? (
                                 <div style={styles.uploadCenterTextAndIcon}>
-                                    <UploadIcon style={styles.uploadCenterIcon} />
+                                    {/* bobs while a file is dragged over it, moves up while it is read or uploaded */}
+                                    <IconUpload
+                                        fontSize={48}
+                                        style={styles.uploadCenterIcon}
+                                        ready={dragging}
+                                        uploading={this.state.reading || !!this.props.uploading}
+                                    />
                                     <div style={styles.uploadCenterText}>
-                                        {uploadFile === 'dragging'
+                                        {dragging
                                             ? I18n.t('ra_Drop file here')
                                             : I18n.t(
                                                   'ra_Place your files here or click here to open the browse dialog',
@@ -603,12 +745,34 @@ export class UploadImage extends Component<UploadImageProps, UploadImageState> {
                                 </div>
                             )}
                             {icon && !cropHandler ? (
-                                <Icon
-                                    src={icon}
-                                    style={styles.image}
-                                    alt="icon"
-                                />
+                                <div
+                                    ref={this.imageRef}
+                                    style={styles.imageWrapper}
+                                >
+                                    <Icon
+                                        src={icon}
+                                        style={styles.image}
+                                        alt="icon"
+                                    />
+                                </div>
                             ) : null}
+                            {icon && dragging ? (
+                                // a new image is dragged over the existing one
+                                <Box
+                                    style={{ ...styles.uploadCenterTextAndIcon, ...styles.dropOverImage }}
+                                    sx={(theme: Theme) => ({
+                                        bgcolor: alpha(theme.palette.background.paper, 0.85),
+                                    })}
+                                >
+                                    <IconUpload
+                                        fontSize={48}
+                                        style={styles.uploadCenterIcon}
+                                        ready
+                                    />
+                                    <div style={styles.uploadCenterText}>{I18n.t('ra_Drop file here')}</div>
+                                </Box>
+                            ) : null}
+                            {this.renderUploadIndicator()}
 
                             {icon && crop && cropHandler ? (
                                 <Cropper
@@ -624,7 +788,7 @@ export class UploadImage extends Component<UploadImageProps, UploadImageState> {
                                     checkOrientation={false}
                                 />
                             ) : null}
-                        </div>
+                        </Box>
                     </div>
                 )}
             </Dropzone>
