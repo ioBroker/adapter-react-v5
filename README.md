@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.4.2",
+        "@iobroker/gui-components": "^10.4.3",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,7 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.4.3 (2026-11-05)
 - (@GermanBluefox) Fixed: `LoaderCommunity` uses the background of the theme (modernDark/modernLight) or neutral #121212 in dark
 
 ### 10.4.2 (2026-11-05)
