@@ -212,7 +212,12 @@ export function renderColumnButtons(
                         ...styles.cellButtonMinWidth,
                         opacity: 1,
                     }}
-                    onClick={() => that.setState({ modalEditOfAccess: true, modalEditOfAccessObjData: item.data })}
+                    // the rights of an object the user may not change are only shown
+                    onClick={
+                        that.mayChange(item.data.obj)
+                            ? () => that.setState({ modalEditOfAccess: true, modalEditOfAccessObjData: item.data })
+                            : undefined
+                    }
                     size="large"
                 >
                     <div style={styles.aclText}>
@@ -254,7 +259,8 @@ export function renderColumnButtons(
 
         that.props.onObjectDelete &&
         (item.children?.length || !item.data.obj.common?.dontDelete) &&
-        that.isDeleteAllowed(id) ? (
+        that.isDeleteAllowed(id) &&
+        that.mayChange(item.data.obj, 'object', 'delete') ? (
             <IconButton
                 key="delete"
                 sx={styles.cellButtonsButton}
@@ -594,7 +600,8 @@ export function renderCustomValue(
             it.edit &&
             !that.props.notEditable &&
             !that.props.objectsNotEditable &&
-            (!it.objTypes || it.objTypes.includes(obj.type))
+            (!it.objTypes || it.objTypes.includes(obj.type)) &&
+            that.mayChange(obj)
         ) {
             return (
                 <Box
@@ -769,7 +776,10 @@ export function renderLeaf(
         ) : null;
 
     let valueEditable =
-        !that.props.notEditable && itemType === 'state' && (that.state.filter.expertMode || common?.write !== false);
+        !that.props.notEditable &&
+        itemType === 'state' &&
+        (that.state.filter.expertMode || common?.write !== false) &&
+        that.mayChange(obj, 'state');
     if (that.props.objectBrowserViewFile && common?.type === 'file') {
         valueEditable = true;
     }
@@ -778,7 +788,8 @@ export function renderLeaf(
         !that.props.notEditable &&
         !that.props.objectsNotEditable &&
         that.objects[id] &&
-        (that.state.filter.expertMode || itemType === 'state' || itemType === 'channel' || itemType === 'device');
+        (that.state.filter.expertMode || itemType === 'state' || itemType === 'channel' || itemType === 'device') &&
+        that.mayChange(that.objects[id]);
 
     const checkVisibleObjectType =
         that.state.statesView && (itemType === 'state' || itemType === 'channel' || itemType === 'device');

@@ -64,7 +64,8 @@ export function renderContextMenu(that: ObjectBrowserClass): JSX.Element | null 
         !that.props.notEditable &&
         !that.props.objectsNotEditable &&
         obj &&
-        (that.state.filter.expertMode || obj.type === 'state' || obj.type === 'channel' || obj.type === 'device');
+        (that.state.filter.expertMode || obj.type === 'state' || obj.type === 'channel' || obj.type === 'device') &&
+        that.mayChange(obj);
 
     const createStateVisible =
         !item.data.obj ||
@@ -138,7 +139,8 @@ export function renderContextMenu(that: ObjectBrowserClass): JSX.Element | null 
                 obj.type === 'state' &&
                 // deprecated from js-controller 6
                 (obj.common?.type as string) !== 'file' &&
-                (that.state.filter.expertMode || obj.common.write !== false)
+                (that.state.filter.expertMode || obj.common.write !== false) &&
+                that.mayChange(obj, 'state')
             ),
             icon: (
                 <IconValueEdit
@@ -369,6 +371,7 @@ export function renderContextMenu(that: ObjectBrowserClass): JSX.Element | null 
                 !that.props.notEditable &&
                 !that.props.objectsNotEditable &&
                 that.props.objectMoveRenameDialog &&
+                that.mayChange(obj, 'object', 'delete') &&
                 !item.data.id.startsWith('system.') &&
                 item.data.id.split('.').length > 2 &&
                 (that.props.expertMode ||
@@ -394,7 +397,8 @@ export function renderContextMenu(that: ObjectBrowserClass): JSX.Element | null 
             visibility: !!(
                 that.props.onObjectDelete &&
                 (item.children?.length || (obj && !obj.common?.dontDelete)) &&
-                that.isDeleteAllowed(id)
+                that.isDeleteAllowed(id) &&
+                that.mayChange(obj, 'object', 'delete')
             ),
             icon: (
                 <IconTrash

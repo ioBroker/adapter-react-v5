@@ -879,6 +879,7 @@ You can find the migration instructions:
 ## Changelog
 ### **WORK IN PROGRESS**
 - (@GermanBluefox) Added: `ObjectBrowser` prop `objectsNotEditable`: objects read-only, state values still editable
+- (@GermanBluefox) Added: `ObjectBrowser` checks the rights of each object: no edit or delete where the user may not
 
 ### 10.4.1 (2026-11-05)
 - (@GermanBluefox) Changed: `UploadImage`: the upload symbol is animated (it bobs while a file is dragged over the drop area and moves up while the file is read), the drop area pulses while a file is dragged over it, also over an existing image, and a new image fades in

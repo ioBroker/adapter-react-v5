@@ -1021,6 +1021,26 @@ export class ObjectBrowserClass extends Component<ObjectBrowserProps, ObjectBrow
     }
 
     /**
+     * May the user change this object (`object`) or the value of this state (`state`)? Asks the
+     * connection, which knows the rights of the group of the user and checks the rights of the object
+     * itself (`obj.acl`) as js-controller does. Without known rights - or with a connection that
+     * cannot tell - the answer is yes and the server decides.
+     *
+     * @param obj the object
+     * @param part `object` for the object itself, `state` for the value of a state
+     * @param operation `delete` to delete the object
+     */
+    mayChange(
+        obj: ioBroker.Object | null | undefined,
+        part: 'object' | 'state' = 'object',
+        operation: 'write' | 'delete' = 'write',
+    ): boolean {
+        const socket = this.props.socket as Partial<Pick<Connection, 'hasObjectPermission'>> | undefined;
+        // an older socket client does not know the method
+        return typeof socket?.hasObjectPermission !== 'function' || socket.hasObjectPermission(obj, operation, part);
+    }
+
+    /**
      * Show the deletion dialog for a given object
      */
     showDeleteDialog(options: { id: string; obj: ioBroker.Object; item: TreeItem }): void {
