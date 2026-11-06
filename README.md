@@ -877,6 +877,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Changed: the welcome message in the browser console (`printPrompt`) shows a colored banner with the logo and the links as chips instead of ASCII art
+
 ### 10.4.3 (2026-11-05)
 - (@GermanBluefox) Fixed: `LoaderCommunity` uses the background of the theme (modernDark/modernLight) or neutral #121212 in dark
 
