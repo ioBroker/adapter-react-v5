@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.4.3",
+        "@iobroker/gui-components": "^10.4.4",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,7 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.4.4 (2026-11-06)
 - (@GermanBluefox) Changed: the welcome message in the browser console (`printPrompt`) shows a colored banner with the logo and the links as chips instead of ASCII art
 
 ### 10.4.3 (2026-11-05)
