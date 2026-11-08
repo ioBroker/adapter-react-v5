@@ -807,7 +807,7 @@ export function applyFilter(
                 if (!common?.role) {
                     filteredOut = true;
                 } else if (typeof customFilter.common.role === 'string') {
-                    if (common.role.startsWith(customFilter.common.role)) {
+                    if (!common.role.startsWith(customFilter.common.role)) {
                         filteredOut = true;
                     }
                 } else if (Array.isArray(customFilter.common.role)) {
@@ -835,7 +835,7 @@ export function applyFilter(
                 } else if (Array.isArray(filterOfCustom)) {
                     // here are ['influxdb.', 'telegram.']
                     const customs = Object.keys(common.custom); // here are ['influxdb.0', 'telegram.2']
-                    if (filterOfCustom.find(cst => customs.find(id => id.startsWith(cst)))) {
+                    if (!filterOfCustom.find(cst => customs.find(id => id.startsWith(cst)))) {
                         filteredOut = true;
                     }
                 } else if (
