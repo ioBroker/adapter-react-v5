@@ -36,7 +36,7 @@ npm create vite@latest src -- --template react-ts
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.4.5",
+        "@iobroker/gui-components": "^10.4.6",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "react": "^19.2.5",
@@ -877,7 +877,7 @@ You can find the migration instructions:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 10.4.6 (2026-11-08)
 - (@GermanBluefox) Added: `SimpleCron` has the new mode "Hourly" for a fixed minute of every hour, e.g. `15 * * * *`
 - (@GermanBluefox) Fixed: `SimpleCron` replaced every schedule that it cannot show with `* * * * *`, or dropped the weekdays, as soon as it was opened. Now the schedule stays unchanged and a hint is shown
 - (@GermanBluefox) Fixed: `SimpleCron` "Interval between" over midnight gave the invalid `22-6`, and the same hour for from and to ran the whole day
