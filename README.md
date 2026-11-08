@@ -877,6 +877,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Fixed: the description of a CRON schedule was shown in English for Portuguese, Dutch and Chinese
+
 ### 10.4.6 (2026-11-08)
 - (@GermanBluefox) Added: `SimpleCron` has the new mode "Hourly" for a fixed minute of every hour, e.g. `15 * * * *`
 - (@GermanBluefox) Fixed: `SimpleCron` replaced every schedule that it cannot show with `* * * * *`, or dropped the weekdays, as soon as it was opened. Now the schedule stays unchanged and a hint is shown

@@ -345,7 +345,7 @@
     "sc_invalid_cron": "CRON inválido",
     "sc_minutes": "minutos",
     "sc_months": "meses",
-    "sc_not_simple": "Estas definições não podem mostrar este agendamento. Permanece inalterado até que uma definição abaixo seja alterada.",
+    "sc_not_simple": "Estas configurações não podem mostrar este agendamento. Ele permanece inalterado até que uma configuração abaixo seja alterada.",
     "sc_once": "uma vez",
     "sc_period": "período",
     "sc_seconds": "segundos",

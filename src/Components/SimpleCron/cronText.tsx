@@ -8,6 +8,13 @@ import 'cronstrue/locales/zh_CN';
 import 'cronstrue/locales/uk';
 import 'cronstrue/locales/pt_BR';
 import 'cronstrue/locales/pl';
+import 'cronstrue/locales/nl';
+
+/** The languages that the description library has under another name */
+const CRON_LOCALES: { [lang in ioBroker.Languages]?: string } = {
+    pt: 'pt_BR',
+    'zh-cn': 'zh_CN',
+};
 
 /** Allowed values of: seconds, minutes, hours, date, month, day of week (7 is Sunday too) */
 const FIELD_RANGES = [
@@ -23,7 +30,7 @@ const FIELD_RANGES = [
 const NUMERIC_PART = /^(\*|(\d+)(?:-(\d+))?)(?:\/(\d*))?$/;
 
 export function convertCronToText(cron: string, lang?: ioBroker.Languages): string {
-    return cronstrue.toString(cron, { locale: lang });
+    return cronstrue.toString(cron, { locale: (lang && CRON_LOCALES[lang]) || lang });
 }
 
 /** Splits the expression into 6 fields: an expression with 5 fields has the seconds at 0. */
