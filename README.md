@@ -877,6 +877,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Fixed: `ObjectBrowser`: `customFilter` with `common.role` as a string and with `common.custom` as an array hid the matching objects and showed all others
+
 ### 10.4.4 (2026-11-06)
 - (@GermanBluefox) Changed: the welcome message in the browser console (`printPrompt`) shows a colored banner with the logo and the links as chips instead of ASCII art
 
