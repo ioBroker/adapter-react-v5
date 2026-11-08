@@ -11,7 +11,7 @@ import {
     type Theme,
 } from '@mui/material';
 
-import { convertCronToText } from './cronText';
+import { convertCronToText, isSameCron, isValidCron } from './cronText';
 
 import { I18n } from '../../i18n';
 
@@ -31,12 +31,19 @@ const styles: Record<string, React.CSSProperties> = {
     formControlPaddingTop: {
         paddingTop: 6.2,
     },
+    notSimple: {
+        marginLeft: 8,
+        marginTop: 8,
+        fontSize: 12,
+        color: 'orange',
+    },
 };
 
-type SimpleCronType = 'once' | 'interval' | 'intervalBetween' | 'specific';
+type SimpleCronType = 'once' | 'interval' | 'hourly' | 'intervalBetween' | 'specific';
 const PERIODIC = {
     once: 'once',
     interval: 'interval',
+    hourly: 'hourly',
     intervalBetween: 'intervalBetween',
     specific: 'specific',
 };
@@ -80,6 +87,8 @@ interface SimpleCronProps {
 interface SimpleCronState {
     extended: boolean;
     cron: string;
+    /** The settings cannot show the given expression: it stays as it is, till the user changes a setting */
+    notSimple: boolean;
     mode: SimpleCronType;
     once: {
         time: string;
@@ -91,6 +100,9 @@ interface SimpleCronState {
         unit: string;
         minutes?: number; // if extended
         hours?: number; // if extended
+    };
+    hourly: {
+        minute: number;
     };
     intervalBetween: {
         period: number;
@@ -147,6 +159,25 @@ function text2weekdays(text: string): number[] {
     return list;
 }
 
+/** `*` => 1, `*\/5` => 5 */
+function text2period(text: string): number | null {
+    if (text === '*') {
+        return 1;
+    }
+    const match = /^\*\/(\d+)$/.exec(text);
+    return match ? parseInt(match[1], 10) : null;
+}
+
+/** `8` => 8-8, `8-17` => 8-17, `22-23,0-6` => 22-6 (over midnight) */
+function text2hours(text: string): { timeFrom: number; timeTo: number } | null {
+    const match = /^(\d+)-23,0-(\d+)$/.exec(text) || /^(\d+)-(\d+)$/.exec(text) || /^(\d+)()$/.exec(text);
+    if (!match) {
+        return null;
+    }
+    const timeFrom = parseInt(match[1], 10);
+    return { timeFrom, timeTo: match[2] ? parseInt(match[2], 10) : timeFrom };
+}
+
 export function cron2state(cron: string, force?: boolean): Partial<SimpleCronState> | null {
     cron = cron.replace(/['"]/g, '').trim();
     const cronParts = cron.split(' ');
@@ -173,6 +204,13 @@ export function cron2state(cron: string, force?: boolean): Partial<SimpleCronSta
         };
     }
 
+    // An interval on some weekdays only is shown as an interval between 00:00 and 00:00
+    const between =
+        text2hours(options.hours) ||
+        (force && options.hours === '*' && options.dow !== '*' ? { timeFrom: 0, timeTo: 24 } : null);
+    const secondsPeriod = options.seconds === null ? null : text2period(options.seconds);
+    const minutesPeriod = text2period(options.minutes);
+
     // * * * * *
     if (
         options.seconds === null &&
@@ -180,7 +218,7 @@ export function cron2state(cron: string, force?: boolean): Partial<SimpleCronSta
         options.hours === '*' &&
         options.date === '*' &&
         options.months === '*' &&
-        (options.dow === '*' || force)
+        options.dow === '*'
     ) {
         state = {
             mode: 'interval',
@@ -197,7 +235,7 @@ export function cron2state(cron: string, force?: boolean): Partial<SimpleCronSta
         options.hours === '*' &&
         options.date === '*' &&
         options.months === '*' &&
-        (options.dow === '*' || force)
+        options.dow === '*'
     ) {
         state = {
             mode: 'interval',
@@ -208,42 +246,40 @@ export function cron2state(cron: string, force?: boolean): Partial<SimpleCronSta
         };
     } else if (
         options.seconds === null &&
-        options.minutes.includes('/') &&
+        minutesPeriod !== null &&
         options.hours === '*' &&
         options.date === '*' &&
         options.months === '*' &&
-        (options.dow === '*' || force)
+        options.dow === '*'
     ) {
         // */n * * * *
         state = {
             mode: 'interval',
             interval: {
-                period: parseInt(options.minutes.split('/')[1], 10),
+                period: minutesPeriod,
                 unit: PERIODIC_TYPES.minutes,
             },
         };
     } else if (
-        options.seconds !== null &&
-        options.seconds.includes('/') &&
+        secondsPeriod !== null &&
         options.minutes === '*' &&
         options.hours === '*' &&
         options.date === '*' &&
         options.months === '*' &&
-        (options.dow === '*' || force)
+        options.dow === '*'
     ) {
         // */n * * * * *
         state = {
             mode: 'interval',
             interval: {
-                period: parseInt(options.seconds.split('/')[1], 10),
+                period: secondsPeriod,
                 unit: PERIODIC_TYPES.seconds,
             },
         };
     } else if (
-        options.seconds !== null &&
-        options.seconds.includes('/') &&
+        secondsPeriod !== null &&
         options.minutes === '*' &&
-        options.hours.includes('-') &&
+        between &&
         options.date === '*' &&
         options.months === '*' &&
         (options.dow === '*' || force)
@@ -252,17 +288,16 @@ export function cron2state(cron: string, force?: boolean): Partial<SimpleCronSta
         state = {
             mode: 'intervalBetween',
             intervalBetween: {
-                period: parseInt(options.seconds.split('/')[1], 10),
+                period: secondsPeriod,
                 unit: PERIODIC_TYPES.seconds,
-                timeFrom: parseInt(options.hours.split('-')[0], 10),
-                timeTo: parseInt(options.hours.split('-')[1], 10),
+                ...between,
                 weekdays: text2weekdays(options.dow),
             },
         };
     } else if (
         options.seconds === null &&
-        options.minutes.includes('/') &&
-        options.hours.includes('-') &&
+        minutesPeriod !== null &&
+        between &&
         options.date === '*' &&
         options.months === '*' &&
         (options.dow === '*' || force)
@@ -271,11 +306,25 @@ export function cron2state(cron: string, force?: boolean): Partial<SimpleCronSta
         state = {
             mode: 'intervalBetween',
             intervalBetween: {
-                period: parseInt(options.minutes.split('/')[1], 10),
+                period: minutesPeriod,
                 unit: PERIODIC_TYPES.minutes,
-                timeFrom: parseInt(options.hours.split('-')[0], 10),
-                timeTo: parseInt(options.hours.split('-')[1], 10),
+                ...between,
                 weekdays: text2weekdays(options.dow),
+            },
+        };
+    } else if (
+        options.seconds === null &&
+        parseInt(options.minutes, 10).toString() === options.minutes &&
+        options.hours === '*' &&
+        options.date === '*' &&
+        options.months === '*' &&
+        options.dow === '*'
+    ) {
+        // m * * * *
+        state = {
+            mode: 'hourly',
+            hourly: {
+                minute: parseInt(options.minutes, 10),
             },
         };
     } else if (
@@ -326,10 +375,14 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
             cron = '';
         }
         const state = cron2state(cron || '* * * * *', true) || DEFAULT_STATE;
+        const stateCron = SimpleCron.state2cron(state as SimpleCronState);
+        // Do not replace a schedule that the settings cannot show: it ran e.g. every minute instead of every month
+        const notSimple = !!cron && !isSameCron(cron, stateCron);
 
         this.state = {
             extended: false,
-            cron: SimpleCron.state2cron(state as SimpleCronState),
+            cron: notSimple ? cron : stateCron,
+            notSimple,
             mode: 'interval',
             once: {
                 time: '00:00',
@@ -338,6 +391,9 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
             interval: {
                 period: 1,
                 unit: PERIODIC_TYPES.minutes,
+            },
+            hourly: {
+                minute: 0,
             },
             intervalBetween: {
                 period: 1,
@@ -439,6 +495,9 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
                         break;
                 }
             }
+        } else if (state.mode === 'hourly') {
+            const minute = state.hourly?.minute;
+            cron = `${minute && minute > 0 ? Math.min(minute, 59) : 0} * * * *`;
         } else if (state.mode === 'intervalBetween') {
             const settings = state.intervalBetween || {
                 period: 1,
@@ -455,8 +514,13 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
             }
             if (settings.timeFrom === 0 && settings.timeTo === 24) {
                 hours = '*';
+            } else if (settings.timeFrom === settings.timeTo) {
+                hours = `${settings.timeFrom}`;
+            } else if (settings.timeFrom > settings.timeTo) {
+                // over midnight: a scheduler does not accept `22-6`
+                hours = `${settings.timeFrom}-23,0-${settings.timeTo}`;
             } else {
-                hours = settings.timeFrom !== settings.timeTo ? `${settings.timeFrom}-${settings.timeTo}` : '*';
+                hours = `${settings.timeFrom}-${settings.timeTo}`;
             }
             if (settings.period > 60) {
                 settings.period = 60;
@@ -812,6 +876,33 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
         return this.getControlsPeriodElements('interval');
     }
 
+    getHourlyElements(): React.JSX.Element {
+        return (
+            <div style={{ marginLeft: 8 }}>
+                <TextField
+                    variant="standard"
+                    label={I18n.t('sc_hourly_minute')}
+                    value={this.state.hourly.minute}
+                    type="number"
+                    margin="normal"
+                    onChange={e => {
+                        const minute = Math.min(Math.max(parseInt(e.target.value, 10) || 0, 0), 59);
+                        this.setState({ hourly: { minute } }, () => this.recalcCron());
+                    }}
+                    slotProps={{
+                        htmlInput: {
+                            min: 0,
+                            max: 59,
+                        },
+                        inputLabel: {
+                            shrink: true,
+                        },
+                    }}
+                />
+            </div>
+        );
+    }
+
     getIntervalBetweenElements(): React.JSX.Element[] {
         const settings = this.state.intervalBetween;
         return [
@@ -906,7 +997,7 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
         ];
     }
 
-    onModeChange(mode: 'once' | 'interval' | 'intervalBetween' | 'specific'): void {
+    onModeChange(mode: SimpleCronType): void {
         if (mode !== this.state.mode) {
             this.setState({ mode }, () => this.recalcCron());
         }
@@ -914,12 +1005,14 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
 
     onChange(cron: string): void {
         if (cron !== this.state.cron) {
-            this.setState({ cron });
+            this.setState({ cron, notSimple: false });
             this.props.onChange && this.props.onChange(cron);
         }
     }
 
     render(): React.JSX.Element {
+        const valid = isValidCron(this.state.cron);
+
         return (
             <div style={styles.mainDiv}>
                 <div style={{ paddingLeft: 8, width: 'calc(100% - 8px)' }}>
@@ -928,13 +1021,14 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
                         style={{ width: '100%' }}
                         value={this.state.cron}
                         disabled
-                        error={this.state.cron.includes('_')}
+                        error={!valid}
                     />
                 </div>
-                <div style={{ paddingLeft: 8, width: 'calc(100% - 8px)', height: 60 }}>
-                    {this.state.cron.includes('_')
-                        ? I18n.t('sc_invalid_cron')
-                        : convertCronToText(this.state.cron, this.props.language || 'en')}
+                <div style={{ paddingLeft: 8, width: 'calc(100% - 8px)', minHeight: 60 }}>
+                    {valid
+                        ? convertCronToText(this.state.cron, this.props.language || 'en')
+                        : I18n.t('sc_invalid_cron')}
+                    {this.state.notSimple ? <div style={styles.notSimple}>{I18n.t('sc_not_simple')}</div> : null}
                 </div>
                 <div>
                     <FormControl
@@ -950,6 +1044,7 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
                         >
                             <MenuItem value="once">{I18n.t('sc_once')}</MenuItem>
                             <MenuItem value="interval">{I18n.t('sc_interval')}</MenuItem>
+                            <MenuItem value="hourly">{I18n.t('sc_hourly')}</MenuItem>
                             <MenuItem value="intervalBetween">{I18n.t('sc_intervalBetween')}</MenuItem>
                             <MenuItem value="specific">{I18n.t('sc_specific')}</MenuItem>
                         </Select>
@@ -957,6 +1052,7 @@ export class SimpleCron extends React.Component<SimpleCronProps, SimpleCronState
                 </div>
                 {this.state.mode === PERIODIC.once && this.getOnceElements()}
                 {this.state.mode === 'interval' && this.getIntervalElements()}
+                {this.state.mode === 'hourly' && this.getHourlyElements()}
                 {this.state.mode === 'intervalBetween' && this.getIntervalBetweenElements()}
                 {this.state.mode === 'specific' && this.getSpecificTimeElements()}
             </div>

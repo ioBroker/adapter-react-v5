@@ -877,6 +877,12 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Added: `SimpleCron` has the new mode "Hourly" for a fixed minute of every hour, e.g. `15 * * * *`
+- (@GermanBluefox) Fixed: `SimpleCron` replaced every schedule that it cannot show with `* * * * *`, or dropped the weekdays, as soon as it was opened. Now the schedule stays unchanged and a hint is shown
+- (@GermanBluefox) Fixed: `SimpleCron` "Interval between" over midnight gave the invalid `22-6`, and the same hour for from and to ran the whole day
+- (@GermanBluefox) Fixed: `SimpleCron` and `ComplexCron` crashed on an invalid CRON. `DialogCron` does not accept it with OK anymore
+
 ### 10.4.5 (2026-11-08)
 - (@GermanBluefox) Fixed: `ObjectBrowser`: `customFilter` with `common.role` as a string and with `common.custom` as an array hid the matching objects and showed all others
 

@@ -6,6 +6,7 @@ import { Check as IconOk, Cancel as IconCancel } from '@mui/icons-material';
 
 import { ComplexCron } from '../Components/ComplexCron';
 import { SimpleCron, cron2state } from '../Components/SimpleCron';
+import { isValidCron } from '../Components/SimpleCron/cronText';
 import { Schedule } from '../Components/Schedule';
 
 import { I18n } from '../i18n';
@@ -170,6 +171,7 @@ export class DialogCron extends React.Component<DialogCronProps, DialogCronState
                     <Button
                         variant="contained"
                         onClick={() => this.handleOk()}
+                        disabled={this.state.mode !== 'wizard' && !isValidCron(this.state.cron)}
                         color="primary"
                         startIcon={<IconOk />}
                     >

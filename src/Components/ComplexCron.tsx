@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { Checkbox, Button, MenuItem, Select, FormControlLabel, AppBar, Tabs, Tab, TextField } from '@mui/material';
 
 import { I18n } from '../i18n';
-import { convertCronToText } from './SimpleCron/cronText';
+import { convertCronToText, isValidCron } from './SimpleCron/cronText';
 
 const styles: Record<string, React.CSSProperties> = {
     mainDiv: {
@@ -432,10 +432,8 @@ export class ComplexCron extends Component<ComplexCronProps, ComplexCronState> {
     }
 
     static convertCronToText(cron: string, lang: ioBroker.Languages): string {
-        if (cron.split(' ').includes('-')) {
-            return I18n.t('ra_Invalid CRON');
-        }
-        return convertCronToText(cron, lang);
+        // The description is created while rendering: an invalid value must not crash the dialog
+        return isValidCron(cron) ? convertCronToText(cron, lang) : I18n.t('ra_Invalid CRON');
     }
 
     setCronAttr(attr: CronNames, value: string, modes?: CronProps): void {
