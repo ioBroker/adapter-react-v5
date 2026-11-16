@@ -325,6 +325,7 @@ the left) and the cancel button is last (on the right).
 | `DialogTextInput`   | `TextInput`         | Ask for a text                        |
 | `DialogSelectID`    | `SelectID`          | Object ID selector                    |
 | `DialogSelectFile`  | `SelectFile`        | File selector                         |
+| `DialogSelectDiskPath` |                 | File or folder on the disk of a host  |
 | `DialogCron`        | `Cron`              | CRON editor (wizard, simple, complex) |
 | `DialogSimpleCron`  | `SimpleCronDialog`  | Only the simple CRON editor           |
 | `DialogComplexCron` | `ComplexCronDialog` | Only the complex CRON editor          |
@@ -437,6 +438,35 @@ class MyComponent extends Component<MyComponentProps, { showSelectId: boolean; s
     render(): React.JSX.Element | null {
         return this.renderSelectIdDialog();
     }
+}
+```
+
+#### DialogSelectDiskPath
+
+Selects a file or a folder on the disk of an ioBroker host (not in the ioBroker file storage like `DialogSelectFile`).
+The host lists its directories with the command `readDiskDir` of js-controller, as the user ioBroker runs as. The socket
+server lets only users with the permission for `cmdExec` send it. A js-controller without this command is reported in the dialog.
+
+```tsx
+import { DialogSelectDiskPath } from '@iobroker/gui-components';
+
+function renderDiskDialog(): React.JSX.Element | null {
+    if (!showDialog) {
+        return null;
+    }
+    return (
+        <DialogSelectDiskPath
+            socket={socket}
+            host={instanceObj.common.host}
+            mode="file" // or "folder"
+            selected={path} // starts in the folder of this path
+            root="/opt/iobroker/iobroker-data/files/myAdapter.0" // optional: the user cannot leave this folder
+            pattern="*.json" // optional: only these files
+            instance="myAdapter.0" // optional: written into the log of the host
+            onOk={newPath => setPath(newPath)}
+            onClose={() => setShowDialog(false)}
+        />
+    );
 }
 ```
 
@@ -878,6 +908,7 @@ You can find the migration instructions:
 
 ## Changelog
 ### **WORK IN PROGRESS**
+- (@GermanBluefox) Added: `DialogSelectDiskPath` selects a file or a folder on the disk of a host (moved from the `diskSelector` of `@iobroker/json-config`)
 - (@GermanBluefox) Fixed: the description of a CRON schedule was shown in English for Portuguese, Dutch and Chinese
 
 ### 10.4.6 (2026-11-08)

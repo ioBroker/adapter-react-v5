@@ -161,6 +161,12 @@ export { DialogSelectID, type SelectIDFilters } from './Dialogs/SelectID';
 export { DialogSelectID as SelectID } from './Dialogs/SelectID'; // deprecated
 export { DialogSelectFile } from './Dialogs/SelectFile';
 export { DialogSelectFile as SelectFile } from './Dialogs/SelectFile'; // deprecated
+export {
+    DialogSelectDiskPath,
+    type DialogSelectDiskPathProps,
+    type DiskDirAnswer,
+    type DiskDirEntry,
+} from './Dialogs/SelectDiskPath';
 export { DialogSimpleCron } from './Dialogs/SimpleCron';
 export { DialogSimpleCron as SimpleCronDialog } from './Dialogs/SimpleCron'; // deprecated
 export { DialogTextInput } from './Dialogs/TextInput';
