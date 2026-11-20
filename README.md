@@ -907,6 +907,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Fixed: ObjectBrowser status icons overlapped a narrow ID column (admin#3741)
+
 ### 10.4.7 (2026-11-16)
 - (@GermanBluefox) Added: `DialogSelectDiskPath` selects a file or a folder on the disk of a host (moved from the `diskSelector` of `@iobroker/json-config`)
 - (@GermanBluefox) Fixed: the description of a CRON schedule was shown in English for Portuguese, Dutch and Chinese

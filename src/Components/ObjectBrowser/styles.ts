@@ -219,8 +219,9 @@ export const styles: Record<string, any> = {
             mt: '2px',
             float: 'right',
         },
+        // hidden and not removed: the status icons in front of it would move under the copy button
         '&:hover .iconOwn': {
-            display: 'none',
+            visibility: 'hidden',
         },
         '& *': {
             width: 'initial',
@@ -232,6 +233,11 @@ export const styles: Record<string, any> = {
         whiteSpace: 'nowrap',
         // display: 'inline-block',
         // verticalAlign: 'top',
+    },
+    /** The name itself: the "..." is only drawn at the element whose text is cut */
+    cellIdName: {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
     },
     // This style is used for simple div. Do not migrate it to "secondary.main"
     cellIdIconFolder: (theme: IobTheme): React.CSSProperties => ({
@@ -250,6 +256,19 @@ export const styles: Record<string, any> = {
         height: SMALL_BUTTON_SIZE,
     },
     cellIdIconOwn: {},
+    /** Online, offline and error of a device, in front of its icon */
+    cellIdStatusIcons: {
+        alignItems: 'center',
+        flexShrink: 0,
+        gap: '2px',
+        mr: '4px',
+    },
+    /** Keeps the place of the icon of the object free for the copy button */
+    cellIdIconPlaceholder: {
+        width: ROW_HEIGHT - 4,
+        height: ROW_HEIGHT - 4,
+        flexShrink: 0,
+    },
     cellCopyButton: {
         width: SMALL_BUTTON_SIZE,
         height: SMALL_BUTTON_SIZE,
@@ -673,27 +692,19 @@ export const styles: Record<string, any> = {
     iconDeviceConnected: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.mode === 'dark' ? COLOR_NAME_CONNECTED_DARK : COLOR_NAME_CONNECTED_LIGHT,
         opacity: 0.8,
-        position: 'absolute',
-        // IconConnectionState is 20 px high; the error icon (MUI, 20 px wide, 24 px high, top: 4) draws its glyph 2 px lower
-        top: 6,
-        right: 32,
+        flexShrink: 0,
         transition: 'color 0.3s',
     }),
     iconDeviceDisconnected: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.mode === 'dark' ? COLOR_NAME_DISCONNECTED_DARK : COLOR_NAME_DISCONNECTED_LIGHT,
         opacity: 0.8,
-        position: 'absolute',
-        // IconConnectionState is 20 px high; the error icon (MUI, 20 px wide, 24 px high, top: 4) draws its glyph 2 px lower
-        top: 6,
-        right: 32,
+        flexShrink: 0,
         transition: 'color 0.3s',
     }),
     iconDeviceError: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.mode === 'dark' ? COLOR_NAME_ERROR_DARK : COLOR_NAME_ERROR_LIGHT,
         opacity: 0.8,
-        position: 'absolute',
-        top: 4,
-        right: 50,
+        flexShrink: 0,
         width: 20,
     }),
     resizeHandle: {

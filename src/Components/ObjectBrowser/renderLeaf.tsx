@@ -1071,17 +1071,27 @@ export function renderLeaf(
                     title={getIdFieldTooltip(item.data, that.props.lang)}
                     slotProps={{ popper: { sx: styles.tooltip } }}
                 >
-                    <div>{item.data.name}</div>
+                    <div style={styles.cellIdName}>{item.data.name}</div>
                 </Tooltip>
                 {alias}
-                {icons}
             </Grid>
             <div style={{ ...styles.grow, ...(invertBackground ? that.styles.invertedBackgroundFlex : {}) }} />
+            {icons.length ? (
+                // in the row and not above it: a narrow column cuts the name before them (#3741 of admin)
+                <Grid
+                    container
+                    wrap="nowrap"
+                    sx={styles.cellIdStatusIcons}
+                >
+                    {icons}
+                </Grid>
+            ) : null}
             <Grid
                 container
                 sx={{ alignItems: 'center', flexShrink: 0 }}
             >
-                {iconItem}
+                {/* the copy button appears there on hover, it must not cover the status icons */}
+                {iconItem || (icons.length ? <div style={styles.cellIdIconPlaceholder} /> : null)}
             </Grid>
             {that.width !== 'xs' ? (
                 <div style={{ flexShrink: 0 }}>
