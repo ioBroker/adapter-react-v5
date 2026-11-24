@@ -263,10 +263,8 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                             onClick={() => that.onExpandAll()}
                             size="large"
                         >
-                            {/* the folder opens on hover: it shows what the button does */}
                             <IconFolder
                                 open={false}
-                                toggleOnHover
                                 fontSize={20}
                             />
                         </IconButton>
@@ -283,7 +281,6 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                     >
                         <IconFolder
                             open
-                            toggleOnHover
                             fontSize={20}
                         />
                     </IconButton>
@@ -313,7 +310,6 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                             >
                                 <IconFolder
                                     open={false}
-                                    toggleOnHover
                                     fontSize={20}
                                 />
                             </Badge>
@@ -345,7 +341,6 @@ export function getToolbar(that: ObjectBrowserClass): JSX.Element {
                             >
                                 <IconFolder
                                     open
-                                    toggleOnHover
                                     fontSize={20}
                                 />
                             </Badge>

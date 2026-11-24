@@ -907,6 +907,9 @@ You can find the migration instructions:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Changed: the folder buttons in the toolbar of the `ObjectBrowser` do not open or close on hover anymore
+
 ### 10.4.8 (2026-11-20)
 - (@GermanBluefox) Fixed: ObjectBrowser status icons overlapped a narrow ID column (admin#3741)
 
